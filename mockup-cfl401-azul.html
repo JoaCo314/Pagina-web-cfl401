@@ -7,6 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+  html {
+            scroll-behavior: smooth;
+        }
   :root{
     --navy:#122A45;
     --navy-2:#1B3A5C;
@@ -81,6 +84,7 @@
     color:var(--white);
     padding:56px 0 64px;
     position:relative; overflow:hidden;
+    background: linear-gradient(rgba(0, 86, 179, 0.85), rgba(0, 61, 128, 0.85)), url(https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80) center / cover;
   }
   .hero::after{
     content:''; position:absolute; right:-120px; top:-120px; width:420px; height:420px;
@@ -236,7 +240,7 @@
 <header>
   <nav class="wrap">
     <div class="logo">
-      <div class="logo-mark"></div>
+      <img src="/assets/cfl401azul_logo.jpg" alt="CFL 401 Azul" width="46" height="46"">
       <div class="logo-text">
         <div class="name">Centro de Formación Laboral 401</div>
         <div class="sub">Azul</div>
@@ -274,7 +278,7 @@
     <div class="rubro-row">
       <div class="rubro"><div class="rubro-icon">🧵</div><span>Indumentaria</span></div>
       <div class="rubro"><div class="rubro-icon">🎉</div><span>Eventos</span></div>
-      <div class="rubro"><div class="rubro-icon">🪚</div><span>Carpintería</span></div>
+      <div class="rubro"><div class="rubro-icon"><img src="/assets/emoji-curso-de-carpintería.webp" alt="Carpintería" width="40" height="40"></div><span>Carpintería</span></div>
       <div class="rubro"><div class="rubro-icon">📊</div><span>Adm. y Comercio</span></div>
       <div class="rubro"><div class="rubro-icon">🍞</div><span>Panadería</span></div>
       <div class="rubro"><div class="rubro-icon">🔌</div><span>Electricidad</span></div>
@@ -344,7 +348,7 @@
       </div>
       <div class="course-card">
         <div class="course-top">
-          <div class="course-icon">🪚</div>
+          <div class="course-icon"><img src="/assets/emoji-curso-de-carpintería.webp" alt="Carpintería" width="40" height="40"></div>
           <span class="cupos">9 cupos</span>
         </div>
         <h3>Carpintería General</h3>
