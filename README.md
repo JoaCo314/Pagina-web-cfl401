@@ -20,7 +20,8 @@ Pagina-web-cfl401/
 ├── contacto.html            # Sección de contacto e información de ubicación
 ├── cursos.html              # Listado y detalle de los cursos ofrecidos
 ├── docentes.html            # Información del cuerpo docente
-├── mockup-cfl401-azul.html       # Página principal
+├── index.html       # Página principal
+├── inscripcion.html         # Formulario e información sobre inscripciones
 ├── noticias.html            # Novedades e información institucional
 ├── preguntas-frecuentes.html # Preguntas habituales e información útil
 ├── sobre-el-centro.html     # Historia, visión e información del centro
