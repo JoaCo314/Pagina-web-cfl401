@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preguntas Frecuentes — CFL 401 Azul</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#122A45;
+    --navy-2:#1B3A5C;
+    --blue:#3E8FCC;
+    --blue-light:#EAF3FA;
+    --white:#FFFFFF;
+    --ink:#16202C;
+    --line: rgba(255,255,255,0.14);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ font-family:'IBM Plex Sans', sans-serif; background:var(--white); color:var(--ink); line-height:1.55; font-size:16px; }
+  h1,h2,h3{ font-family:'Poppins', sans-serif; font-weight:600; letter-spacing:-0.01em; }
+  a{ color:inherit; text-decoration:none; }
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 28px; }
+
+  .topbar{ background:var(--navy); color:var(--white); font-size:13.5px; padding:9px 0; }
+  .topbar .wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; }
+  .topbar-badges{ display:flex; gap:14px; }
+  .topbar-badges span{ display:flex; align-items:center; gap:6px; opacity:0.92; }
+  .dot{ width:6px; height:6px; border-radius:50%; background:var(--blue); display:inline-block; }
+
+  header{ background:var(--white); color:var(--ink); position:sticky; top:0; z-index:50; border-bottom:1px solid rgba(18,42,69,0.1); }
+  nav{ display:flex; align-items:center; justify-content:space-between; padding:16px 0; }
+  .logo{ display:flex; align-items:center; gap:12px; }
+  .logo-text .name{ font-family:'Poppins', sans-serif; font-size:16.5px; font-weight:700; color:var(--navy); }
+  .logo-text .sub{ font-size:11.5px; color:var(--blue); font-weight:600; text-transform:uppercase; letter-spacing:0.05em; }
+  .navlinks{ display:flex; gap:24px; font-size:14.5px; font-weight:500; }
+  .navlinks a{ color:var(--ink); opacity:0.8; }
+  .navlinks a.active, .navlinks a:hover{ opacity:1; color:var(--navy-2); font-weight:600; }
+  .nav-cta{ background:var(--navy-2); color:var(--white); padding:10px 20px; border-radius:4px; font-weight:600; font-size:14px; }
+
+  .page-header{ background:var(--navy-2); color:var(--white); padding:48px 0; }
+  .page-header h1{ font-size:32px; margin-bottom:8px; }
+  .page-header p{ opacity:0.85; max-width:600px; }
+
+  .faq-sec{ padding:64px 0; }
+  .faq-list{ max-width:800px; margin:0 auto; display:flex; flex-direction:column; gap:16px; }
+  .faq-item{ border:1px solid rgba(18,42,69,0.12); border-radius:8px; padding:20px 24px; background:var(--white); }
+  .faq-item h3{ font-size:17px; color:var(--navy); margin-bottom:8px; }
+  .faq-item p{ font-size:14.5px; opacity:0.8; line-height:1.6; }
+
+  footer{ background:var(--navy); color:var(--white); padding:46px 0 24px; }
+  .foot-grid{ display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:32px; margin-bottom:36px; }
+  footer h4{ font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; opacity:0.55; margin-bottom:14px; }
+  footer ul{ list-style:none; display:flex; flex-direction:column; gap:9px; font-size:14px; opacity:0.88; }
+  .foot-bottom{ border-top:1px solid var(--line); padding-top:18px; font-size:12px; opacity:0.5; display:flex; justify-content:space-between; flex-wrap:wrap; }
+
+  @media (max-width: 900px){
+    .navlinks{ display:none; }
+    .foot-grid{ grid-template-columns:1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <div class="topbar-badges">
+      <span><span class="dot"></span> Cursos 100% gratuitos</span>
+      <span><span class="dot"></span> Modalidad presencial</span>
+    </div>
+    <span>Azul, Buenos Aires</span>
+  </div>
+</div>
+
+<header>
+  <nav class="wrap">
+    <div class="logo">
+      <img src="./assets/cfl401azul_logo.jpg" alt="CFL 401 Azul" width="46" height="46">
+      <div class="logo-text">
+        <div class="name">Centro de Formación Laboral 401</div>
+        <div class="sub">Azul</div>
+      </div>
+    </div>
+    <div class="navlinks">
+      <a href="cursos.html">Cursos</a>
+      <a href="docentes.html">Docentes</a>
+      <a href="sobre-el-centro.html">Sobre el centro</a>
+      <a href="noticias.html">Noticias</a>
+      <a href="faq.html" class="active">Preguntas frecuentes</a>
+      <a href="contacto.html">Contacto</a>
+    </div>
+    <a href="contacto.html" class="nav-cta">Inscribirme</a>
+  </nav>
+</header>
+
+<div class="page-header">
+  <div class="wrap">
+    <h1>Preguntas Frecuentes</h1>
+    <p>Resolvemos las dudas más comunes sobre inscripciones, requisitos y el desarrollo de las cursadas.</p>
+  </div>
+</div>
+
+<section class="faq-sec">
+  <div class="wrap">
+    <div class="faq-list">
+      <div class="faq-item">
+        <h3>¿Los cursos tienen algún costo?</h3>
+        <p>No, todos los cursos dictados en el CFL 401 son 100% gratuitos y públicos, financiados por la Dirección General de Cultura y Educación de la Provincia de Buenos Aires.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>¿Qué documentación necesito para inscribirme?</h3>
+        <p>Generalmente se requiere fotocopia de DNI, constancia de CUIL y título secundario o primario (según los requisitos específicos del trayecto formativo al que te inscribas).</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>¿Los certificados son oficiales?</h3>
+        <p>Sí, los certificados otorgados poseen validez oficial expedida por la Provincia de Buenos Aires, acreditando las competencias laborales adquiridas.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>¿Puedo cursar más de una capacitación al mismo tiempo?</h3>
+        <p>Sí, siempre y cuando no existan superposiciones horarias entre las cursadas presenciales seleccionadas.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>¿A qué edad me puedo inscribir?</h3>
+        <p>La edad mínima requerida para acceder a los cursos es de 16 años cumplidos al momento de comenzar la cursada.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h4>CFL 401 Azul</h4>
+        <p style="font-size:14px; opacity:0.8; max-width:260px;">Cursos y capacitaciones gratuitas y presenciales para fortalecer las capacidades de las personas para el trabajo.</p>
+      </div>
+      <div>
+        <h4>Explorar</h4>
+        <ul>
+          <li><a href="cursos.html">Cursos</a></li>
+          <li><a href="docentes.html">Docentes</a></li>
+          <li><a href="sobre-el-centro.html">Sobre el centro</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Ayuda</h4>
+        <ul>
+          <li><a href="faq.html">Preguntas frecuentes</a></li>
+          <li><a href="noticias.html">Noticias</a></li>
+          <li><a href="contacto.html">Contacto</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contacto</h4>
+        <ul>
+          <li>cfl401azul@gmail.com</li>
+          <li>+54 2281 32-3444</li>
+          <li>Lunes a viernes de 8:00 a 12:00 y de 14:00 a 22:00</li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Centro de Formación Laboral 401 — Azul</span>
+      <span>Maqueta de referencia — no es el sitio oficial</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
