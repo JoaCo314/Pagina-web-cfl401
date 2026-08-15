@@ -290,5 +290,52 @@
   </div>
 </footer>
 
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const enrollmentForm = document.querySelector('.form-card form');
+    const dniInput = document.getElementById('dni');
+
+    // Permitir solo números en el campo DNI
+    dniInput.addEventListener('input', (e) => {
+      e.target.value = e.target.value.replace(/\D/g, '');
+    });
+
+    enrollmentForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const btnSubmit = enrollmentForm.querySelector('.btn-submit');
+      const nombre = document.getElementById('nombre').value;
+      const apellido = document.getElementById('apellido').value;
+      const cursoSelect = document.getElementById('curso');
+      const cursoTexto = cursoSelect.options[cursoSelect.selectedIndex].text;
+
+      // Estado de carga
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = 'Procesando preinscripción...';
+
+      setTimeout(() => {
+        // Reemplazar el formulario por una tarjeta de éxito
+        const formCard = document.querySelector('.form-card');
+        formCard.innerHTML = `
+          <div style="text-align: center; padding: 20px 0;">
+            <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
+            <h2 style="color: var(--navy); margin-bottom: 12px;">¡Preinscripción recibida!</h2>
+            <p style="font-size: 15px; opacity: 0.85; margin-bottom: 20px;">
+              Gracias <strong>${nombre} ${apellido}</strong>. Registramos tu solicitud para el curso:
+            </p>
+            <div style="background: var(--blue-light); padding: 14px; border-radius: 6px; font-weight: 600; color: var(--navy-2); margin-bottom: 24px;">
+              ${cursoTexto}
+            </div>
+            <p style="font-size: 13.5px; opacity: 0.75; margin-bottom: 24px;">
+              Recordá acercar la documentación requerida (DNI, CUIL y título) a la secretaría del centro para completar tu legajo.
+            </p>
+            <a href="index.html" class="nav-cta" style="display: inline-block;">Volver al inicio</a>
+          </div>
+        `;
+      }, 1200);
+    });
+  });
+</script>
+  
 </body>
 </html>
