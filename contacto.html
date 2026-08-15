@@ -212,6 +212,49 @@
     </div>
   </div>
 </footer>
+  
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const contactForm = document.querySelector('.form-box form');
+
+    contactForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const btnSubmit = contactForm.querySelector('.btn-submit');
+      const originalBtnText = btnSubmit.textContent;
+
+      // Estado de carga
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = 'Enviando...';
+
+      setTimeout(() => {
+        // Mensaje de éxito
+        const successNotice = document.createElement('div');
+        successNotice.style.cssText = `
+          background: #D1E7DD;
+          color: #0F5132;
+          padding: 14px;
+          border-radius: 4px;
+          margin-top: 16px;
+          font-weight: 600;
+          font-size: 14px;
+          text-align: center;
+        `;
+        successNotice.textContent = '¡Gracias por contactarnos! Te responderemos a la brevedad.';
+
+        contactForm.appendChild(successNotice);
+        contactForm.reset();
+
+        // Restaurar botón
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = originalBtnText;
+
+        // Ocultar mensaje luego de 5 segundos
+        setTimeout(() => successNotice.remove(), 5000);
+      }, 1000);
+    });
+  });
+</script>
 
 </body>
 </html>
