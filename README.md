@@ -16,6 +16,13 @@ Sitio web oficial / proyecto para el **Centro de Formación Laboral N° 401**. E
 
 ```text
 Pagina-web-cfl401/
-├── assets/          # Imágenes, íconos y recursos estáticos
-├── mockup-cfl401-azul.html       # Página principal
-└── README.md        # Documentación del proyecto
+├── assets/                  # Imágenes, íconos y recursos estáticos
+├── contacto.html            # Sección de contacto e información de ubicación
+├── cursos.html              # Listado y detalle de los cursos ofrecidos
+├── docentes.html            # Información del cuerpo docente
+├── index.html               # Página principal
+├── inscripcion.html         # Formulario e información sobre inscripciones
+├── noticias.html            # Novedades e información institucional
+├── faq.html                 # Preguntas habituales e información útil
+├── sobre-el-centro.html     # Historia, visión e información del centro
+└── README.md                # Documentación del proyecto

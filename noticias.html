@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Noticias y Novedades — CFL 401 Azul</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#122A45;
+    --navy-2:#1B3A5C;
+    --blue:#3E8FCC;
+    --blue-light:#EAF3FA;
+    --white:#FFFFFF;
+    --ink:#16202C;
+    --line: rgba(255,255,255,0.14);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ font-family:'IBM Plex Sans', sans-serif; background:var(--white); color:var(--ink); line-height:1.55; font-size:16px; }
+  h1,h2,h3{ font-family:'Poppins', sans-serif; font-weight:600; letter-spacing:-0.01em; }
+  a{ color:inherit; text-decoration:none; }
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 28px; }
+
+  .topbar{ background:var(--navy); color:var(--white); font-size:13.5px; padding:9px 0; }
+  .topbar .wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; }
+  .topbar-badges{ display:flex; gap:14px; }
+  .topbar-badges span{ display:flex; align-items:center; gap:6px; opacity:0.92; }
+  .dot{ width:6px; height:6px; border-radius:50%; background:var(--blue); display:inline-block; }
+
+  header{ background:var(--white); color:var(--ink); position:sticky; top:0; z-index:50; border-bottom:1px solid rgba(18,42,69,0.1); }
+  nav{ display:flex; align-items:center; justify-content:space-between; padding:16px 0; }
+  .logo{ display:flex; align-items:center; gap:12px; }
+  .logo-text .name{ font-family:'Poppins', sans-serif; font-size:16.5px; font-weight:700; color:var(--navy); }
+  .logo-text .sub{ font-size:11.5px; color:var(--blue); font-weight:600; text-transform:uppercase; letter-spacing:0.05em; }
+  .navlinks{ display:flex; gap:24px; font-size:14.5px; font-weight:500; }
+  .navlinks a{ color:var(--ink); opacity:0.8; }
+  .navlinks a.active, .navlinks a:hover{ opacity:1; color:var(--navy-2); font-weight:600; }
+  .nav-cta{ background:var(--navy-2); color:var(--white); padding:10px 20px; border-radius:4px; font-weight:600; font-size:14px; }
+
+  .page-header{ background:var(--navy-2); color:var(--white); padding:48px 0; }
+  .page-header h1{ font-size:32px; margin-bottom:8px; }
+  .page-header p{ opacity:0.85; max-width:600px; }
+
+  .news-section{ padding:60px 0; }
+  .news-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:24px; }
+  .noticia-card{ background:var(--white); border-radius:8px; overflow:hidden; border:1px solid rgba(18,42,69,0.1); display:flex; flex-direction:column; }
+  .noticia-img{ height:180px; background:linear-gradient(135deg, var(--navy-2), var(--blue)); display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.7); font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; }
+  .noticia-body{ padding:20px; display:flex; flex-direction:column; flex-grow:1; }
+  .noticia-date{ font-size:12px; color:var(--blue); font-weight:700; text-transform:uppercase; margin-bottom:8px; }
+  .noticia-card h3{ font-size:18px; color:var(--navy); margin-bottom:8px; line-height:1.3; }
+  .noticia-card p{ font-size:13.5px; opacity:0.75; margin-bottom:16px; }
+  .read-more{ margin-top:auto; font-size:13.5px; font-weight:700; color:var(--navy-2); }
+
+  footer{ background:var(--navy); color:var(--white); padding:46px 0 24px; }
+  .foot-grid{ display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:32px; margin-bottom:36px; }
+  footer h4{ font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; opacity:0.55; margin-bottom:14px; }
+  footer ul{ list-style:none; display:flex; flex-direction:column; gap:9px; font-size:14px; opacity:0.88; }
+  .foot-bottom{ border-top:1px solid var(--line); padding-top:18px; font-size:12px; opacity:0.5; display:flex; justify-content:space-between; flex-wrap:wrap; }
+
+  @media (max-width: 900px){
+    .navlinks{ display:none; }
+    .news-grid{ grid-template-columns:1fr; }
+    .foot-grid{ grid-template-columns:1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <div class="topbar-badges">
+      <span><span class="dot"></span> Cursos 100% gratuitos</span>
+      <span><span class="dot"></span> Modalidad presencial</span>
+    </div>
+    <span>Azul, Buenos Aires</span>
+  </div>
+</div>
+
+<header>
+  <nav class="wrap">
+    <a href="index.html" class="logo">
+      <img src="/assets/cfl401azul_logo.jpg" alt="CFL 401 Azul" width="46" height="46">
+      <div class="logo-text">
+        <div class="name">Centro de Formación Laboral 401</div>
+        <div class="sub">Azul</div>
+      </div>
+    </a>
+    <div class="navlinks">
+      <a href="cursos.html">Cursos</a>
+      <a href="docentes.html">Docentes</a>
+      <a href="sobre-el-centro.html">Sobre el centro</a>
+      <a href="noticias.html" class="active">Noticias</a>
+      <a href="faq.html">Preguntas frecuentes</a>
+      <a href="contacto.html">Contacto</a>
+    </div>
+    <a href="contacto.html" class="nav-cta">Inscribirme</a>
+  </nav>
+</header>
+
+<div class="page-header">
+  <div class="wrap">
+    <h1>Noticias y Novedades</h1>
+    <p>Mantenete al tanto de convocatorias, aperturas de inscripciones y actividades institucionales.</p>
+  </div>
+</div>
+
+<section class="news-section">
+  <div class="wrap">
+    <div class="news-grid">
+      <article class="noticia-card">
+        <div class="noticia-img">Comunicado</div>
+        <div class="noticia-body">
+          <span class="noticia-date">12 de agosto, 2026</span>
+          <h3>Ya está abierta la preinscripción a los cursos 2026</h3>
+          <p>Conocé la documentación necesaria y los pasos online para asegurar tu cupo en la oferta del segundo cuatrimestre.</p>
+          <a href="#" class="read-more">Leer nota completa →</a>
+        </div>
+      </article>
+
+      <article class="noticia-card">
+        <div class="noticia-img">Convocatoria</div>
+        <div class="noticia-body">
+          <span class="noticia-date">8 de agosto, 2026</span>
+          <h3>Se busca instructor para el curso de Robótica y Automatización</h3>
+          <p>Llamado público para cobertura de horas cátedra en el trayecto formativo técnico de Robótica.</p>
+          <a href="#" class="read-more">Leer nota completa →</a>
+        </div>
+      </article>
+
+      <article class="noticia-card">
+        <div class="noticia-img">Institucional</div>
+        <div class="noticia-body">
+          <span class="noticia-date">3 de agosto, 2026</span>
+          <h3>Arrancó el proyecto de los alumnos para la Expo del CFL 401</h3>
+          <p>Estudiantes de los talleres de Madera y Electricidad colaboran en la estructura de la muestra colectiva anual.</p>
+          <a href="#" class="read-more">Leer nota completa →</a>
+        </div>
+      </article>
+
+      <article class="noticia-card">
+        <div class="noticia-img">Talleres</div>
+        <div class="noticia-body">
+          <span class="noticia-date">20 de julio, 2026</span>
+          <h3>Entrega de certificados a egresados de Panadería</h3>
+          <p>En un cálido acto institucional se entregaron los certificados oficializados a más de 30 alumnos.</p>
+          <a href="#" class="read-more">Leer nota completa →</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h4>CFL 401 Azul</h4>
+        <p style="font-size:14px; opacity:0.8; max-width:260px;">Cursos y capacitaciones gratuitas y presenciales para fortalecer las capacidades de las personas para el trabajo.</p>
+      </div>
+      <div>
+        <h4>Explorar</h4>
+        <ul>
+          <li><a href="cursos.html">Cursos</a></li>
+          <li><a href="docentes.html">Docentes</a></li>
+          <li><a href="sobre-el-centro.html">Sobre el centro</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Ayuda</h4>
+        <ul>
+          <li><a href="faq.html">Preguntas frecuentes</a></li>
+          <li><a href="noticias.html">Noticias</a></li>
+          <li><a href="contacto.html">Contacto</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contacto</h4>
+        <ul>
+          <li>cfl401azul@gmail.com</li>
+          <li>+54 2281 32-3444</li>
+          <li>Lunes a viernes de 8:00 a 12:00 y de 14:00 a 22:00</li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Centro de Formación Laboral 401 — Azul</span>
+      <span>Maqueta de referencia — no es el sitio oficial</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
