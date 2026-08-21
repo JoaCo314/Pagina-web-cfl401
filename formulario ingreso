@@ -1,0 +1,326 @@
+
+<!--este es un formulario de ingreso hecho con chatgpt, controlar la parte de contraseñas y acomodar estilos-->
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Crear usuario</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            min-height: 100vh;
+        }
+
+        .formulario {
+            width: 400px;
+
+            background-color: white;
+
+            padding: 30px;
+
+            border-radius: 10px;
+
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+
+            margin-bottom: 18px;
+        }
+
+        label {
+            margin-bottom: 6px;
+
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            padding: 10px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 5px;
+
+            font-size: 15px;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+
+            border-color: #555;
+        }
+
+        button {
+            width: 100%;
+
+            padding: 12px;
+
+            border: none;
+
+            border-radius: 5px;
+
+            background-color: #333;
+
+            color: white;
+
+            font-size: 16px;
+
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        #mensaje {
+            text-align: center;
+
+            margin-top: 15px;
+
+            font-weight: bold;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <div class="formulario">
+
+        <h1>Crear usuario</h1>
+
+
+        <form id="formularioUsuario">
+
+
+            <div class="campo">
+
+                <label for="nombre">
+                    Nombre
+                </label>
+
+                <input
+                    type="text"
+                    id="nombre"
+                    name="nombre"
+                    placeholder="Ingrese su nombre"
+                    required
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="apellido">
+                    Apellido
+                </label>
+
+                <input
+                    type="text"
+                    id="apellido"
+                    name="apellido"
+                    placeholder="Ingrese su apellido"
+                    required
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="cargo">
+                    Cargo
+                </label>
+
+                <select
+                    id="cargo"
+                    name="cargo"
+                    required
+                >
+
+                    <option value="">
+                        Seleccione un cargo
+                    </option>
+
+                    <option value="directivo">
+                        Directivo
+                    </option>
+
+                    <option value="profesor">
+                        Profesor
+                    </option>
+
+                    <option value="alumno">
+                        Alumno
+                    </option>
+
+                    <option value="preceptor">
+                        Preceptor
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="usuario">
+                    Nombre de usuario
+                </label>
+
+                <input
+                    type="text"
+                    id="usuario"
+                    name="usuario"
+                    placeholder="Ingrese un usuario"
+                    required
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="password">
+                    Contraseña
+                </label>
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Ingrese una contraseña"
+                    required
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="repetirPassword">
+                    Repetir contraseña
+                </label>
+
+                <input
+                    type="password"
+                    id="repetirPassword"
+                    name="repetirPassword"
+                    placeholder="Repita la contraseña"
+                    required
+                >
+
+            </div>
+
+
+            <button type="submit">
+                Crear usuario
+            </button>
+
+
+            <p id="mensaje"></p>
+
+
+        </form>
+
+    </div>
+
+
+    <script>
+
+        const formulario =
+            document.getElementById("formularioUsuario");
+
+
+        const mensaje =
+            document.getElementById("mensaje");
+
+
+        formulario.addEventListener("submit", function (event) {
+
+            event.preventDefault();
+
+
+            const nombre =
+                document.getElementById("nombre").value;
+
+
+            const apellido =
+                document.getElementById("apellido").value;
+
+
+            const cargo =
+                document.getElementById("cargo").value;
+
+
+            const usuario =
+                document.getElementById("usuario").value;
+
+
+            const password =
+                document.getElementById("password").value;
+
+
+            const repetirPassword =
+                document.getElementById("repetirPassword").value;
+
+
+            if (password !== repetirPassword) {
+
+                mensaje.textContent =
+                    "Las contraseñas no coinciden.";
+
+                return;
+            }
+
+
+            mensaje.textContent =
+                "Usuario creado correctamente.";
+
+
+            console.log("Nombre:", nombre);
+
+            console.log("Apellido:", apellido);
+
+            console.log("Cargo:", cargo);
+
+            console.log("Usuario:", usuario);
+
+        });
+
+    </script>
+
+</body>
+
+</html>
