@@ -155,43 +155,34 @@
 
             </div>
 
+<div class="campo">
 
-            <div class="campo">
+    <label for="dni">
+        DNI
+    </label>
 
-                <label for="cargo">
-                    Cargo
-                </label>
+    <input
+        type="text"
+        id="dni"
+        name="dni"
+        placeholder="Ingrese su DNI"
+        required
+    >
 
-                <select
-                    id="cargo"
-                    name="cargo"
-                    required
-                >
+</div>
 
-                    <option value="">
-                        Seleccione un cargo
-                    </option>
 
-                    <option value="directivo">
-                        Directivo
-                    </option>
 
-                    <option value="profesor">
-                        Profesor
-                    </option>
 
-                    <option value="alumno">
-                        Alumno
-                    </option>
 
-                    <option value="preceptor">
-                        Preceptor
-                    </option>
 
-                </select>
 
-            </div>
 
+
+
+
+
+          
 
             <div class="campo">
 
@@ -276,16 +267,16 @@
                 document.getElementById("nombre").value;
 
 
-            const apellido =
-                document.getElementById("apellido").value;
+           const apellido =
+    document.getElementById("apellido").value;
 
 
-            const cargo =
-                document.getElementById("cargo").value;
+const dni =
+    document.getElementById("dni").value;
 
 
-            const usuario =
-                document.getElementById("usuario").value;
+const usuario =
+    document.getElementById("usuario").value;
 
 
             const password =
@@ -308,15 +299,13 @@
             mensaje.textContent =
                 "Usuario creado correctamente.";
 
+console.log("Nombre:", nombre);
 
-            console.log("Nombre:", nombre);
+console.log("Apellido:", apellido);
 
-            console.log("Apellido:", apellido);
+console.log("DNI:", dni);
 
-            console.log("Cargo:", cargo);
-
-            console.log("Usuario:", usuario);
-
+console.log("Usuario:", usuario);
         });
 
     </script>
