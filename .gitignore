@@ -35,9 +35,14 @@ dev-server.log
 .env*
 !.env.example
 
+# prisma generated client
+/src/generated/
+
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma

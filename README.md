@@ -5,7 +5,7 @@ Sitio web del **Centro de Formación Laboral N° 401**. Plataforma para presenta
 ## 🚀 Tecnologías
 
 - **Frontend + Backend:** Next.js 16 (App Router, TypeScript, API Routes)
-- **Base de datos:** PostgreSQL 16
+- **Base de datos:** PostgreSQL 16 con **Prisma ORM 7** (migraciones + cliente tipado)
 - **DevOps:** Docker + Docker Compose
 
 ## 📁 Estructura del proyecto
@@ -19,8 +19,14 @@ Pagina-web-cfl401/
 │   │   ├── layout.tsx        # Layout raíz
 │   │   ├── page.tsx          # Página principal
 │   │   └── globals.css       # Estilos globales
-│   └── lib/
-│       └── db.ts             # Conexión a PostgreSQL
+│   ├── lib/
+│   │   ├── db.ts             # Health check de la base de datos
+│   │   └── prisma.ts         # Cliente Prisma (singleton)
+│   └── generated/            # Cliente Prisma generado (no se commitea)
+├── prisma/
+│   ├── schema.prisma         # Modelo de datos (entidades y relaciones)
+│   └── migrations/           # Migraciones versionadas
+├── prisma7.config.ts         # Config de Prisma 7 (DATABASE_URL)
 ├── public/                   # Imágenes y recursos estáticos
 ├── assets/                   # Assets originales del sitio (referencia)
 ├── Dockerfile                # Build de producción
@@ -81,10 +87,30 @@ npm run dev
 | `POSTGRES_USER` | Usuario de PostgreSQL | `postgres` |
 | `POSTGRES_PASSWORD` | Contraseña de PostgreSQL | `postgres` |
 | `POSTGRES_DB` | Nombre de la base de datos | `cfl401` |
-| `POSTGRES_HOST` | Host de PostgreSQL (`db` en Docker, `localhost` local) | `localhost` |
-| `POSTGRES_PORT` | Puerto de PostgreSQL | `5432` |
+| `DATABASE_URL` | URL de conexión que usa Prisma | `postgresql://postgres:postgres@localhost:5432/cfl401?schema=public` |
 
 > Copia `.env.example` a `.env` para ajustar valores. `.env` está en `.gitignore` y no se commitea.
+> En Docker, el `docker-compose.yml` arma `DATABASE_URL` apuntando al servicio `db` automáticamente.
+
+## 🗄️ Base de datos (Prisma)
+
+El modelo de datos se define en `prisma/schema.prisma`. Entidades:
+
+- **Rol** — los 3 roles que se persisten (Administrador, Preceptor, Docente) con campo `nivel` para la jerarquía. El Visitante no tiene rol: es todo usuario sin sesión.
+- **Usuario** — usuarios del sistema (`activo` permite desactivar el login).
+- **Curso** — oferta educativa (campos de la sección 7 del documento).
+- **CursoDocente** — relación N:N entre cursos y docentes asignados.
+
+Comandos de base de datos:
+
+```bash
+npm run db:migrate    # Crea/aplica una migración en dev (prisma migrate dev)
+npm run db:deploy     # Aplica migraciones pendientes (producción)
+npm run db:generate   # Regenera el cliente Prisma en src/generated
+npm run db:studio     # Abre Prisma Studio (GUI para ver/editar datos)
+```
+
+> El cliente generado (`src/generated/`) no se commitea; se regenera con `npm run db:generate` (el `Dockerfile` ya lo hace en el build).
 
 ## 🔍 Verificación
 
@@ -110,10 +136,12 @@ Respuesta esperada:
 ## 📌 Comandos útiles
 
 ```bash
-npm run dev      # Desarrollo (hot-reload)
-npm run build    # Build de producción
-npm run start    # Iniciar el build de producción
-npm run lint     # ESLint
+npm run dev          # Desarrollo (hot-reload)
+npm run build        # Build de producción
+npm run start        # Iniciar el build de producción
+npm run lint         # ESLint
+npm run db:migrate   # Crea/aplica migraciones en dev
+npm run db:studio    # Abre Prisma Studio
 docker compose down        # Detener contenedores
 docker compose down -v     # Detener y borrar datos de la BD
 ```
