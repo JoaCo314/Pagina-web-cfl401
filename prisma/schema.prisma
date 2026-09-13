@@ -54,7 +54,6 @@ model Curso {
   fechaInicio DateTime?
   programaContenidos String?
   categoria String?
-  duracion  String?
   imagenUrl String?
   informacionAdicional String?
   activo    Boolean  @default(true)
