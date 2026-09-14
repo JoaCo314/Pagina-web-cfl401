@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Roles del sistema que se persisten en DB: ADMINISTRADOR (3), PRECEPTOR (2) y DOCENTE (1).
+/// El Visitante no tiene rol en la DB: es todo usuario sin sesión (accede solo al sitio público).
+/// `nivel` codifica la jerarquía (Admin > Preceptor > Docente) y se usa para validar
+/// reglas de creación de usuarios (RF-13/RF-14).
+model Rol {
+  id        Int       @id @default(autoincrement())
+  nombre    String    @unique
+  nivel     Int       @unique
+  descripcion String?
+  usuarios  Usuario[]
+
+  @@map("roles")
+}
+
+/// Usuario del sistema. Puede tener rol ADMINISTRADOR, PRECEPTOR o DOCENTE.
+/// `activo` permite desactivar un usuario e impedir que inicie sesión (RF-15).
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  apellido  String
+  email     String   @unique
+  passwordHash String
+  activo    Boolean  @default(true)
+  rolId     Int
+  rol       Rol      @relation(fields: [rolId], references: [id])
+  cursosAsignados CursoDocente[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([rolId])
+  @@map("usuarios")
+}
+
+/// Curso de la oferta educativa. Información mínima según sección 7 del documento
+/// (nombre, descripción, modalidad, horarios, meses de cursada, fecha de inicio,
+/// docente y programa/contenidos), más campos opcionales sugeridos.
+model Curso {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  descripcion String?
+  modalidad String?
+  horarios  String?
+  mesesCursada String?
+  fechaInicio DateTime?
+  programaContenidos String?
+  categoria String?
+  imagenUrl String?
+  informacionAdicional String?
+  activo    Boolean  @default(true)
+
+  docentes  CursoDocente[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("cursos")
+}
+
+/// Tabla intermedia que relaciona un curso con uno o más docentes asignados (RF-11).
+/// Un Docente solo puede gestionar los cursos que figuren aquí (RF-16).
+model CursoDocente {
+  cursoId   Int
+  curso     Curso   @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  docenteId Int
+  docente   Usuario @relation(fields: [docenteId], references: [id], onDelete: Restrict)
+
+  @@id([cursoId, docenteId])
+  @@index([docenteId])
+  @@map("cursos_docentes")
+}

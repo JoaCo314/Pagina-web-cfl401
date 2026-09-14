@@ -1,4 +1,5 @@
 import { checkDatabase } from '@/lib/db';
+import CursosList from '@/components/CursosList';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,6 +41,11 @@ export default async function Home() {
           Último check: {new Date().toLocaleString('es-AR')}
         </p>
       </div>
+
+      <section className="w-full max-w-xl mt-10 text-left">
+        <h2 className="text-xl font-semibold mb-3">Cursos (desde la BD)</h2>
+        <CursosList />
+      </section>
     </main>
   );
 }
