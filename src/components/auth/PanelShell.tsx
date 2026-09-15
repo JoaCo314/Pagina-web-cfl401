@@ -2,6 +2,7 @@
 
 import { ReactNode, useState } from "react";
 import { useRouter } from "next/navigation";
+import type { SeccionPanel } from "@/lib/auth/autorizacion";
 
 type UsuarioSesion = {
   id: number;
@@ -13,9 +14,11 @@ type UsuarioSesion = {
 
 export default function PanelShell({
   user,
+  secciones,
   children,
 }: {
   user: UsuarioSesion;
+  secciones: SeccionPanel[];
   children: ReactNode;
 }) {
   const router = useRouter();
@@ -61,10 +64,14 @@ export default function PanelShell({
 
       <nav className="panel-nav">
         <div className="wrap panel-nav-inner">
-          <span className="panel-nav-item active">Inicio</span>
-          <span className="panel-nav-item">Cursos</span>
-          <span className="panel-nav-item">Usuarios</span>
-          <span className="panel-nav-item">Guía de inscripción</span>
+          {secciones.map((seccion) => (
+            <span
+              key={seccion.clave}
+              className={`panel-nav-item${seccion.clave === "inicio" ? " active" : ""}`}
+            >
+              {seccion.titulo}
+            </span>
+          ))}
         </div>
       </nav>
 
