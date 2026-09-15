@@ -1,51 +1,62 @@
-import { checkDatabase } from '@/lib/db';
-import CursosList from '@/components/CursosList';
+import Link from "next/link";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
+import GuiaInscripcion from "@/components/GuiaInscripcion";
 
-export const dynamic = 'force-dynamic';
-
-export default async function Home() {
-  const db = await checkDatabase();
-  const appStatus = db.status === 'ok' ? 'ok' : 'degraded';
+export default function Home() {
+  const anio = new Date().getFullYear();
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-8">
-      <h1 className="text-4xl font-bold mb-4">CFL 401</h1>
-      <p className="text-lg text-gray-600 mb-8">Plataforma Web</p>
+    <>
+      <SiteHeader />
 
-      <div className="border rounded-lg p-6 shadow-sm">
-        <h2 className="text-xl font-semibold mb-2">Estado del Backend</h2>
-        <div className="flex items-center gap-2">
-          <span
-            className={`w-3 h-3 rounded-full ${
-              appStatus === 'ok' ? 'bg-green-500' : 'bg-red-500'
-            }`}
-          />
-          <span className="capitalize">{appStatus}</span>
-        </div>
-
-        <div className="mt-3 text-sm">
-          <div className="flex items-center gap-2">
-            <span
-              className={`w-2.5 h-2.5 rounded-full ${
-                db.status === 'ok' ? 'bg-green-500' : 'bg-red-500'
-              }`}
-            />
-            <span>
-              Base de datos: <span className="capitalize">{db.status}</span>
-            </span>
+      <section className="hero">
+        <div className="wrap">
+          <div className="badge-row">
+            <div className="pill">
+              <span className="dot"></span>Preinscripción {anio} abierta
+            </div>
           </div>
-          {db.error && <p className="text-red-600 mt-1 text-xs">{db.error}</p>}
+          <h1>Capacitate en un oficio, gratis y cerca de casa.</h1>
+          <p className="lead">
+            Cursos presenciales dictados por profesionales en actividad. Elegí
+            tu curso, consultá cupos y horarios, e inscribite en minutos.
+          </p>
+          <div className="hero-actions">
+            <Link href="/cursos" className="btn-primary">
+              Ver oferta de cursos
+            </Link>
+            <a href="#guia" className="btn-ghost">
+              Cómo inscribirme
+            </a>
+          </div>
         </div>
-
-        <p className="text-sm text-gray-500 mt-3">
-          Último check: {new Date().toLocaleString('es-AR')}
-        </p>
-      </div>
-
-      <section className="w-full max-w-xl mt-10 text-left">
-        <h2 className="text-xl font-semibold mb-3">Cursos (desde la BD)</h2>
-        <CursosList />
       </section>
-    </main>
+
+      <section className="guia-section" id="guia">
+        <div className="wrap">
+          <div className="section-head">
+            <h2>¿Cómo inscribirme?</h2>
+            <p>
+              Seguí estos pasos y presentá la documentación requerida. La
+              inscripción es gratuita y abierta a toda la comunidad.
+            </p>
+          </div>
+          <GuiaInscripcion />
+        </div>
+      </section>
+
+      <section className="cta-band" id="oferta">
+        <div className="wrap">
+          <h2>¿Tenés dudas sobre un curso o tu inscripción?</h2>
+          <p>Nuestro equipo te responde de lunes a viernes de 9 a 18 hs.</p>
+          <Link href="/cursos" className="btn-primary">
+            Explorar la oferta educativa
+          </Link>
+        </div>
+      </section>
+
+      <SiteFooter />
+    </>
   );
 }
