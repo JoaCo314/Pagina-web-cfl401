@@ -22,7 +22,7 @@ services:
       dockerfile: Dockerfile
     container_name: cfl401-web
     ports:
-      - '3000:3000'
+      - '4088:3000'
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-cfl401}?schema=public
       AUTH_SECRET: ${AUTH_SECRET:-cfl401-dev-secret-cambiar-en-produccion}
