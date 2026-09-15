@@ -39,7 +39,6 @@ const volverAlCatalogo = (
 function MensajeSinCurso({ titulo, texto }: { titulo: string; texto: string }) {
   return (
     <section className="wrap detail-body">
-      {volverAlCatalogo}
       <div className="detail-notfound">
         <span className="detail-nf-code">404</span>
         <h1>{titulo}</h1>
