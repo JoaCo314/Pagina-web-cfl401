@@ -14,6 +14,7 @@ type CursoData = {
   fechaInicio?: Date;
   programaContenidos?: string;
   categoria?: string;
+  cupos?: number;
   imagenUrl?: string;
   informacionAdicional?: string;
   activo?: boolean;
@@ -114,6 +115,7 @@ async function main() {
       programaContenidos:
         "Hardware, diagnóstico de fallas, armado y mantenimiento general de equipos.",
       informacionAdicional: "Cupos limitados a 15 estudiantes.",
+      cupos: 15,
       activo: true,
       docentes: ["docente1@cfl401.edu.ar", "docente2@cfl401.edu.ar"],
     },
@@ -127,6 +129,7 @@ async function main() {
       fechaInicio: new Date("2026-03-05T00:00:00Z"),
       programaContenidos:
         "Técnicas básicas de cocina, higiene y seguridad alimentaria, y manipulación de alimentos.",
+      cupos: 12,
       activo: true,
       docentes: ["docente1@cfl401.edu.ar"],
     },
@@ -140,6 +143,7 @@ async function main() {
       fechaInicio: new Date("2026-04-04T00:00:00Z"),
       programaContenidos:
         "Instalaciones eléctricas domiciliarias, seguridad, y normativa vigente (IRAM).",
+      cupos: 10,
       activo: true,
       docentes: ["docente2@cfl401.edu.ar"],
     },
@@ -153,6 +157,7 @@ async function main() {
       fechaInicio: new Date("2026-03-10T00:00:00Z"),
       programaContenidos:
         "Liquidación de sueldos, facturación, atención al cliente y herramientas informáticas.",
+      cupos: 20,
       activo: true,
       docentes: ["docente2@cfl401.edu.ar"],
     },
