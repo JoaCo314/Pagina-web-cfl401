@@ -1,9 +1,19 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
+import { hashSync } from "bcryptjs";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
+
+// Contraseñas reales de los usuarios de prueba (solo para desarrollo).
+// Se hashean con bcrypt en el propio seed; en producción se crean vía el panel.
+const PASSWORDS: Record<string, string> = {
+  "admin@cfl401.edu.ar": "Admin123!",
+  "preceptor@cfl401.edu.ar": "Preceptor123!",
+  "docente1@cfl401.edu.ar": "Docente123!",
+  "docente2@cfl401.edu.ar": "Docente123!",
+};
 
 type CursoData = {
   nombre: string;
@@ -57,8 +67,7 @@ async function main() {
     roleIds[rol.nombre] = saved.id;
   }
 
-  // Los passwords son placeholders: se reemplazarán por hashes bcrypt reales
-  // cuando se implemente la autenticación (Tarea de login).
+  // Los usuarios de prueba usan contraseñas reales hasheadas con bcrypt (constante PASSWORDS).
   const usuarios = [
     {
       nombre: "María",
@@ -90,12 +99,17 @@ async function main() {
   for (const u of usuarios) {
     const saved = await prisma.usuario.upsert({
       where: { email: u.email },
-      update: { nombre: u.nombre, apellido: u.apellido, rolId: roleIds[u.rol] },
+      update: {
+        nombre: u.nombre,
+        apellido: u.apellido,
+        rolId: roleIds[u.rol],
+        passwordHash: hashSync(PASSWORDS[u.email] ?? "Cambiar-123!", 10),
+      },
       create: {
         nombre: u.nombre,
         apellido: u.apellido,
         email: u.email,
-        passwordHash: "pendiente-bcrypt",
+        passwordHash: hashSync(PASSWORDS[u.email] ?? "Cambiar-123!", 10),
         activo: true,
         rolId: roleIds[u.rol],
       },
