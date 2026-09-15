@@ -82,8 +82,6 @@ export default function CourseCatalog() {
     [categorias]
   );
 
-  const hayFiltros = busqueda.trim() !== "" || rubro !== "";
-
   const cursosFiltrados = useMemo(() => {
     if (!categorias) return [];
     const termino = busqueda.trim().toLowerCase();
@@ -143,23 +141,12 @@ export default function CourseCatalog() {
             <p className="courses-empty">
               No encontramos cursos con esos filtros. Probá con otros términos.
             </p>
-          ) : hayFiltros ? (
+          ) : (
             <div className="course-grid">
               {cursosFiltrados.map((curso) => (
                 <CourseCard key={curso.id} curso={curso} />
               ))}
             </div>
-          ) : (
-            categorias.map((categoria) => (
-              <div key={categoria.categoria} className="category-group">
-                <h2 className="category-label">{categoria.categoria}</h2>
-                <div className="course-grid">
-                  {categoria.cursos.map((curso) => (
-                    <CourseCard key={curso.id} curso={curso} />
-                  ))}
-                </div>
-              </div>
-            ))
           )}
         </div>
       </section>
