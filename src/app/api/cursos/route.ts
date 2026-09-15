@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
         nombre: true,
         descripcion: true,
         categoria: true,
+        cupos: true,
         modalidad: true,
         horarios: true,
         mesesCursada: true,
