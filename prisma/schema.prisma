@@ -79,3 +79,21 @@ model CursoDocente {
   @@index([docenteId])
   @@map("cursos_docentes")
 }
+
+/// Contenido textual editable de la guía general de inscripción (RF-05).
+/// Cada registro corresponde a un bloque temático (pasos, documentación,
+/// requisitos, información adicional). El contenido proviene de la BD,
+/// no de texto fijo en el código.
+model ContenidoGuia {
+  id        Int      @id @default(autoincrement())
+  clave     String   @unique
+  titulo    String
+  contenido String
+  orden     Int?
+  activo    Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contenidos_guia")
+}

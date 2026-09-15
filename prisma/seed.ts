@@ -189,8 +189,58 @@ async function main() {
   const totalCursos = await prisma.curso.count();
   const totalAsignaciones = await prisma.cursoDocente.count();
 
+  const contenidosGuia = [
+    {
+      clave: "pasos",
+      titulo: "Pasos para inscribirte",
+      contenido: `1. Elegí la capacitación que te interesa en la sección de Oferta Educativa.
+2. Completá el formulario de preinscripción con tus datos personales.
+3. Presentá la documentación requerida en la sede del CFL 401 dentro de los plazos indicados.
+4. Esperá la confirmación de tu vacante por correo electrónico o vía telefónica.`,
+      orden: 1,
+    },
+    {
+      clave: "documentacion",
+      titulo: "Documentación requerida",
+      contenido: `• Documento Nacional de Identidad (DNI) en curso de vigencia.
+• Certificado de estudios último nivel cursado (alumnos nuevos) o libreta de calificaciones (alumnos regulares).
+• Fotocopia del DNI (frente y dorso).
+• Foto carnet 4×4 reciente (fondo blanco).
+• Comprobante de domicilio actualizado.`,
+      orden: 2,
+    },
+    {
+      clave: "requisitos",
+      titulo: "Requisitos",
+      contenido: `• Ser mayor de 18 años o contar con autorización del padre/madre/tutor.
+• Residir en la jurisdicción del CFL 401 o zona de cobertura.
+• Presentar la documentación completa dentro del período de inscripción.
+• Cumplir con los requisitos específicos de la capacitación elegida, de existir.`,
+      orden: 3,
+    },
+    {
+      clave: "informacion_adicional",
+      titulo: "Información adicional",
+      contenido: `• Todas las capacitaciones son gratuitas y de carácter público.
+• Los horarios varían según la cursada; consultá la ficha de cada curso.
+• La sede principal del CFL 401 se encuentra en [dirección a completar].
+• Para consultas podés comunicarte al teléfono [teléfono] o escribirnos por correo electrónico.`,
+      orden: 4,
+    },
+  ];
+
+  for (const c of contenidosGuia) {
+    await prisma.contenidoGuia.upsert({
+      where: { clave: c.clave },
+      update: { titulo: c.titulo, contenido: c.contenido, orden: c.orden },
+      create: c,
+    });
+  }
+
+  const totalContenidosGuia = await prisma.contenidoGuia.count();
+
   console.log("---");
-  console.log(`Seed completado: ${totalUsuarios} usuarios, ${totalCursos} cursos, ${totalAsignaciones} asignaciones.`);
+  console.log(`Seed completado: ${totalUsuarios} usuarios, ${totalCursos} cursos, ${totalAsignaciones} asignaciones, ${totalContenidosGuia} contenidos de guía.`);
 }
 
 main()
