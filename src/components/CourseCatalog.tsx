@@ -1,6 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import {
+  formatearFecha,
+  iconoCategoria,
+  nombresDocentes,
+} from "@/lib/cursoUtils";
 
 type Docente = { id: number; nombre: string; apellido: string };
 
@@ -19,31 +25,6 @@ type Curso = {
 
 type Categoria = { categoria: string; cursos: Curso[] };
 
-function iconoCategoria(categoria: string | null): string {
-  const texto = (categoria ?? "").toLowerCase();
-  if (/(inform|tecnolog|robot|comput)/.test(texto)) return "🤖";
-  if (/(gastronom|panader|cocina)/.test(texto)) return "🍞";
-  if (/(electric|oficio|mecan)/.test(texto)) return "🔌";
-  if (/(administr|comerc|pyme|contab)/.test(texto)) return "📊";
-  if (/(carpinter|madera)/.test(texto)) return "🪵";
-  if (/(textil|indumentaria|costur)/.test(texto)) return "🧵";
-  return "📘";
-}
-
-function formatearFecha(fecha: string | null): string {
-  if (!fecha) return "A confirmar";
-  return new Date(fecha).toLocaleDateString("es-AR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-}
-
-function nombresDocentes(curso: Curso): string {
-  if (curso.docentes.length === 0) return "A definir";
-  return curso.docentes.map((d) => `${d.docente.nombre} ${d.docente.apellido}`).join(", ");
-}
-
 function CourseCard({ curso }: { curso: Curso }) {
   const cuposBajos = curso.cupos !== null && curso.cupos <= 5;
 
@@ -60,7 +41,7 @@ function CourseCard({ curso }: { curso: Curso }) {
       <h3>{curso.nombre}</h3>
       <p>{curso.descripcion ?? "Información disponible próximamente."}</p>
       <p className="course-docente">
-        Docente: {nombresDocentes(curso)}
+        Docente: {nombresDocentes(curso.docentes)}
         {" · "}Inicia {formatearFecha(curso.fechaInicio)}
       </p>
       <div className="course-tags">
@@ -71,9 +52,9 @@ function CourseCard({ curso }: { curso: Curso }) {
       </div>
       <div className="course-meta">
         <span className="course-gratis">Gratuito</span>
-        <a href="#" className="course-link">
+        <Link href={`/cursos/${curso.id}`} className="course-link">
           Ver detalle →
-        </a>
+        </Link>
       </div>
     </div>
   );
