@@ -40,6 +40,21 @@ export type CursoInputNormalizado = {
   docenteIds: number[];
 };
 
+export type DocenteActivo = {
+  id: number;
+  nombre: string;
+  apellido: string;
+  email: string;
+};
+
+export async function obtenerDocentesActivos(): Promise<DocenteActivo[]> {
+  return prisma.usuario.findMany({
+    where: { activo: true, rol: { nombre: "Docente" } },
+    select: { id: true, nombre: true, apellido: true, email: true },
+    orderBy: [{ apellido: "asc" }, { nombre: "asc" }],
+  });
+}
+
 export type ResultadoCursoInput =
   | { ok: true; datos: CursoInputNormalizado; presentes: string[] }
   | { ok: false; error: string };

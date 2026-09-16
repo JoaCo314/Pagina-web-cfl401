@@ -107,6 +107,7 @@ export type SeccionPanel = {
   clave: "inicio" | "cursos" | "mis_cursos" | "usuarios" | "guia";
   titulo: string;
   descripcion: string;
+  href?: string;
 };
 
 /// Secciones del panel que el usuario puede ver. Se calculan en el servidor
@@ -121,6 +122,7 @@ export function obtenerSeccionesPanel(
       clave: "inicio",
       titulo: "Inicio",
       descripcion: "Resumen del panel y atajos.",
+      href: "/panel",
     },
   ];
 
@@ -130,12 +132,14 @@ export function obtenerSeccionesPanel(
         clave: "mis_cursos",
         titulo: "Mis cursos",
         descripcion: "Gestión de los cursos que te fueron asignados.",
+        href: "/panel",
       });
     } else {
       secciones.push({
         clave: "cursos",
         titulo: "Cursos",
         descripcion: "Alta, edición, eliminación y asignación de docentes.",
+        href: "/panel/cursos",
       });
     }
   }
