@@ -2,6 +2,9 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import CampoImagen from "@/components/panel/CampoImagen";
+import type { EstadoImagen } from "@/components/panel/CampoImagen";
+import { subirImagen, validarArchivoImagen } from "@/lib/imagenesCliente";
 
 export type NoticiaFormInicial = {
   id: number;
@@ -30,9 +33,13 @@ export default function NoticiaForm({
     resumen: inicial?.resumen ?? "",
     contenido: inicial?.contenido ?? "",
     fecha: inicial?.fecha ?? hoyISO(),
-    imagenUrl: inicial?.imagenUrl ?? "",
   });
   const [activo, setActivo] = useState(inicial?.activo ?? true);
+  const [estadoImagen, setEstadoImagen] = useState<EstadoImagen>({
+    archivo: null,
+    quitar: false,
+  });
+  const imagenActual = inicial?.imagenUrl ?? null;
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
@@ -56,12 +63,6 @@ export default function NoticiaForm({
     if (Number.isNaN(new Date(datos.fecha).getTime())) {
       return "La fecha de publicación no es válida.";
     }
-    if (
-      datos.imagenUrl.trim() !== "" &&
-      !/^https?:\/\/\S+$/i.test(datos.imagenUrl.trim())
-    ) {
-      return "La URL de la imagen debe ser completa y empezar con http:// o https://.";
-    }
     return null;
   }
 
@@ -77,7 +78,24 @@ export default function NoticiaForm({
 
     setEnviando(true);
     try {
-      const body = { ...datos, activo };
+      let imagenUrl: string | null = imagenActual;
+      if (estadoImagen.quitar) {
+        imagenUrl = null;
+      } else if (estadoImagen.archivo) {
+        const errorImagen = validarArchivoImagen(estadoImagen.archivo);
+        if (errorImagen) {
+          setError(errorImagen);
+          return;
+        }
+        const subida = await subirImagen(estadoImagen.archivo);
+        if (!subida.ok) {
+          setError(subida.error);
+          return;
+        }
+        imagenUrl = subida.url;
+      }
+
+      const body = { ...datos, imagenUrl: imagenUrl ?? "", activo };
 
       const res = await fetch(
         esEdicion ? `/api/noticias/${inicial!.id}` : "/api/noticias",
@@ -130,15 +148,11 @@ export default function NoticiaForm({
         />
       </label>
 
-      <label className="form-field">
-        <span>URL de imagen (opcional)</span>
-        <input
-          type="url"
-          value={datos.imagenUrl}
-          onChange={(e) => setCampo("imagenUrl", e.target.value)}
-          placeholder="https://"
-        />
-      </label>
+      <CampoImagen
+        valorActual={imagenActual}
+        onChange={setEstadoImagen}
+        etiqueta="Imagen de la noticia (opcional)"
+      />
 
       <div className="form-field form-field-full">
         <span>Resumen (opcional)</span>

@@ -3,6 +3,9 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { DocenteActivo } from "@/lib/cursoAdmin";
+import CampoImagen from "@/components/panel/CampoImagen";
+import type { EstadoImagen } from "@/components/panel/CampoImagen";
+import { subirImagen, validarArchivoImagen } from "@/lib/imagenesCliente";
 
 export type CursoFormInicial = {
   id: number;
@@ -49,10 +52,14 @@ export default function CursoForm({
     programaContenidos: inicial?.programaContenidos ?? "",
     categoria: inicial?.categoria ?? "",
     cupos: inicial?.cupos != null ? String(inicial.cupos) : "",
-    imagenUrl: inicial?.imagenUrl ?? "",
     informacionAdicional: inicial?.informacionAdicional ?? "",
   });
   const [activo, setActivo] = useState(inicial?.activo ?? true);
+  const [estadoImagen, setEstadoImagen] = useState<EstadoImagen>({
+    archivo: null,
+    quitar: false,
+  });
+  const imagenActual = inicial?.imagenUrl ?? null;
   const [docenteIds, setDocenteIds] = useState<number[]>(
     inicial?.docentes.map((d) => d.docenteId) ?? []
   );
@@ -118,11 +125,28 @@ export default function CursoForm({
 
     setEnviando(true);
     try {
+      let imagenUrl: string | null = imagenActual;
+      if (estadoImagen.quitar) {
+        imagenUrl = null;
+      } else if (estadoImagen.archivo) {
+        const errorImagen = validarArchivoImagen(estadoImagen.archivo);
+        if (errorImagen) {
+          setError(errorImagen);
+          return;
+        }
+        const subida = await subirImagen(estadoImagen.archivo);
+        if (!subida.ok) {
+          setError(subida.error);
+          return;
+        }
+        imagenUrl = subida.url;
+      }
+
       if (esEdicion) {
         const resCurso = await fetch(`/api/cursos/${inicial!.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...datos, activo }),
+          body: JSON.stringify({ ...datos, imagenUrl: imagenUrl ?? "", activo }),
         });
 
         if (!resCurso.ok) {
@@ -161,6 +185,7 @@ export default function CursoForm({
 
       const body = {
         ...datos,
+        imagenUrl: imagenUrl ?? "",
         activo,
         ...(puedeAsignarDocentes ? { docenteIds } : {}),
       };
@@ -281,15 +306,11 @@ export default function CursoForm({
         />
       </label>
 
-      <label className="form-field">
-        <span>URL de imagen (opcional)</span>
-        <input
-          type="url"
-          value={datos.imagenUrl}
-          onChange={(e) => setCampo("imagenUrl", e.target.value)}
-          placeholder="https://"
-        />
-      </label>
+      <CampoImagen
+        valorActual={imagenActual}
+        onChange={setEstadoImagen}
+        etiqueta="Imagen del curso (opcional)"
+      />
 
       <label className="form-field">
         <span>Link de inscripción en el IPFL (opcional)</span>

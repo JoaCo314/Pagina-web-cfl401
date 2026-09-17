@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
 import { NOTICIA_SELECT, validarDatosNoticia } from "@/lib/noticiaAdmin";
+import { borrarImagenPorUrl } from "@/lib/imagenes";
 
 export const dynamic = "force-dynamic";
 
@@ -71,7 +72,7 @@ export async function PUT(
 
   const existente = await prisma.noticia.findUnique({
     where: { id: noticiaId },
-    select: { id: true },
+    select: { id: true, imagenUrl: true },
   });
   if (!existente) {
     return NextResponse.json(
@@ -115,6 +116,14 @@ export async function PUT(
       select: NOTICIA_SELECT,
     });
 
+    // Limpieza de mejor esfuerzo de la imagen anterior si cambió o se quitó.
+    const nuevaImagen = presentes.has("imagenUrl")
+      ? ((data.imagenUrl as string | null) ?? null)
+      : existente.imagenUrl;
+    if (nuevaImagen !== existente.imagenUrl) {
+      await borrarImagenPorUrl(existente.imagenUrl);
+    }
+
     return NextResponse.json({ noticia });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Error desconocido";
@@ -152,7 +161,7 @@ export async function DELETE(
 
   const existente = await prisma.noticia.findUnique({
     where: { id: noticiaId },
-    select: { id: true, titulo: true },
+    select: { id: true, titulo: true, imagenUrl: true },
   });
   if (!existente) {
     return NextResponse.json(
@@ -166,6 +175,8 @@ export async function DELETE(
       where: { id: noticiaId },
       select: { id: true, titulo: true },
     });
+
+    await borrarImagenPorUrl(existente.imagenUrl);
 
     return NextResponse.json({ eliminado: true, noticia: noticiaEliminada });
   } catch (err) {

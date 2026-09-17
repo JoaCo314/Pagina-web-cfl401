@@ -1,3 +1,5 @@
+import { validarImagenUrl } from "@/lib/imagenes";
+
 /// Selección estándar de una noticia para respuestas de la API y del panel.
 export const NOTICIA_SELECT = {
   id: true,
@@ -87,20 +89,7 @@ function parsearFecha(valor: unknown): { error?: string; valor: Date | null } {
   return { valor: fecha };
 }
 
-/// La imagen es opcional; si se informa debe ser una URL http(s) absoluta.
-function parsearImagen(valor: unknown): { error?: string; valor: string | null } {
-  const texto = limpiarTexto(valor, "imagenUrl", 1000);
-  if (texto.error) return texto;
-  if (!texto.valor) return { valor: null };
-  if (!/^https?:\/\/\S+$/i.test(texto.valor)) {
-    return {
-      error:
-        "La URL de la imagen debe ser completa y empezar con http:// o https://.",
-      valor: null,
-    };
-  }
-  return { valor: texto.valor };
-}
+/// La imagen es opcional; se valida con `validarImagenUrl` (subida o URL).
 
 /// Valida y normaliza el cuerpo de alta/edición de una noticia. `presentes`
 /// indica qué claves vinieron en el cuerpo, de modo que la edición pueda
@@ -125,7 +114,7 @@ export function validarDatosNoticia(input: unknown): ResultadoNoticiaInput {
   const fecha = parsearFecha(fuente.fecha);
   if (fecha.error) return { ok: false, error: fecha.error };
 
-  const imagenUrl = parsearImagen(fuente.imagenUrl);
+  const imagenUrl = validarImagenUrl(fuente.imagenUrl);
   if (imagenUrl.error) return { ok: false, error: imagenUrl.error };
 
   let activo: boolean | undefined;

@@ -122,6 +122,14 @@ export default function CourseDetail({ id }: { id: number }) {
 
       <div className="detail-layout">
         <div className="detail-main">
+          {curso.imagenUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              className="detail-img"
+              src={curso.imagenUrl}
+              alt={curso.nombre}
+            />
+          )}
           <div className="detail-head">
             <div className="course-icon">{iconoCategoria(curso.categoria)}</div>
             <div>

@@ -7,6 +7,7 @@ import {
   puedeGestionarCurso,
 } from "@/lib/auth/autorizacion";
 import { CURSO_SELECT, validarDatosCurso } from "@/lib/cursoAdmin";
+import { borrarImagenPorUrl } from "@/lib/imagenes";
 
 export const dynamic = "force-dynamic";
 
@@ -93,7 +94,7 @@ export async function PUT(
 
   const existente = await prisma.curso.findUnique({
     where: { id: cursoId },
-    select: { id: true, docentes: { select: { docenteId: true } } },
+    select: { id: true, imagenUrl: true, docentes: { select: { docenteId: true } } },
   });
   if (!existente) {
     return NextResponse.json(
@@ -175,6 +176,15 @@ export async function PUT(
       select: CURSO_SELECT,
     });
 
+    // Limpieza de mejor esfuerzo: si la imagen cambió o se quitó, se borra la
+    // anterior (solo si era una imagen administrada desde el panel).
+    const nuevaImagen = presentes.has("imagenUrl")
+      ? ((data.imagenUrl as string | null) ?? null)
+      : existente.imagenUrl;
+    if (nuevaImagen !== existente.imagenUrl) {
+      await borrarImagenPorUrl(existente.imagenUrl);
+    }
+
     return NextResponse.json({ curso });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Error desconocido";
@@ -215,7 +225,7 @@ export async function DELETE(
 
   const existente = await prisma.curso.findUnique({
     where: { id: cursoId },
-    select: { id: true, nombre: true },
+    select: { id: true, nombre: true, imagenUrl: true },
   });
   if (!existente) {
     return NextResponse.json(
@@ -230,6 +240,8 @@ export async function DELETE(
       where: { id: cursoId },
       select: { id: true, nombre: true },
     });
+
+    await borrarImagenPorUrl(existente.imagenUrl);
 
     return NextResponse.json({ eliminado: true, curso: cursoEliminado });
   } catch (err) {

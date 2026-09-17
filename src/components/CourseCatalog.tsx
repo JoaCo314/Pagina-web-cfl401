@@ -21,6 +21,7 @@ type Curso = {
   mesesCursada: string | null;
   fechaInicio: string | null;
   sede: string | null;
+  imagenUrl: string | null;
   docentes: { docente: Docente }[];
 };
 
@@ -31,6 +32,10 @@ function CourseCard({ curso }: { curso: Curso }) {
 
   return (
     <div className="course-card">
+      {curso.imagenUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img className="course-img" src={curso.imagenUrl} alt={curso.nombre} />
+      )}
       <div className="course-top">
         <div className="course-icon">{iconoCategoria(curso.categoria)}</div>
         {curso.cupos !== null && (

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { validarImagenUrl } from "@/lib/imagenes";
 
 /// Selección estándar de un curso para respuestas del panel (con docentes).
 export const CURSO_SELECT = {
@@ -192,7 +193,7 @@ export async function validarDatosCurso(
   const mesesCursada = limpiarTexto(fuente.mesesCursada);
   const programaContenidos = limpiarTexto(fuente.programaContenidos);
   const categoria = limpiarTexto(fuente.categoria);
-  const imagenUrl = limpiarTexto(fuente.imagenUrl);
+  const imagenUrl = validarImagenUrl(fuente.imagenUrl);
   const informacionAdicional = limpiarTexto(fuente.informacionAdicional);
   const sede = limpiarTexto(fuente.sede);
 
