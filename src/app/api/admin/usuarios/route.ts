@@ -2,23 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { hashSync } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
+import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
 import {
-  PERMISOS,
-  tienePermiso,
-  type Permiso,
-} from "@/lib/auth/autorizacion";
-import { USUARIO_SELECT, validarDatosUsuario } from "@/lib/usuariosAdmin";
+  NOMBRE_ROL_A_PERMISO_CREAR,
+  USUARIO_SELECT,
+  validarDatosUsuario,
+} from "@/lib/usuariosAdmin";
 
 export const dynamic = "force-dynamic";
-
-/// Permiso específico necesario para crear cada rol (RF-13/RF-14).
-/// Administrador: puede crear Administrador, Preceptor y Docente.
-/// Preceptor: solo Docente. El Docente no crea usuarios.
-const PERMISO_POR_ROL: Record<string, Permiso> = {
-  Administrador: PERMISOS.USUARIOS_CREAR_ADMIN,
-  Preceptor: PERMISOS.USUARIOS_CREAR_PRECEPTOR,
-  Docente: PERMISOS.USUARIOS_CREAR_DOCENTE,
-};
 
 /// Creación de usuario (RF-13/RF-14): solo Administrador y Preceptor crean
 /// cuentas y respetando la jerarquía: el Administrador crea cualquier rol y el
@@ -52,7 +43,7 @@ export async function POST(request: NextRequest) {
   const rolPeticion =
     typeof fuente.rol === "string" ? fuente.rol.trim() : "";
 
-  const permisoRol = PERMISO_POR_ROL[rolPeticion];
+  const permisoRol = NOMBRE_ROL_A_PERMISO_CREAR[rolPeticion];
   if (!permisoRol) {
     return NextResponse.json(
       { error: "El rol elegido no existe o no es válido." },

@@ -148,7 +148,8 @@ export function obtenerSeccionesPanel(
     secciones.push({
       clave: "usuarios",
       titulo: "Usuarios",
-      descripcion: "Creación, listado y baja de cuentas del equipo.",
+      descripcion: "Alta, listado y baja de cuentas del equipo.",
+      href: "/panel/usuarios",
     });
   }
 

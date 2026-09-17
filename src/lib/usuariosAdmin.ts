@@ -1,3 +1,27 @@
+import {
+  PERMISOS,
+  tienePermiso,
+  type Permiso,
+} from "@/lib/auth/autorizacion";
+import type { UsuarioSesion } from "@/lib/auth/session";
+
+/// Permiso específico necesario para crear cada rol (RF-13/RF-14).
+/// Administrador: puede crear Administrador, Preceptor y Docente.
+/// Preceptor: solo Docente. El Docente no crea usuarios.
+export const NOMBRE_ROL_A_PERMISO_CREAR: Record<string, Permiso> = {
+  Administrador: PERMISOS.USUARIOS_CREAR_ADMIN,
+  Preceptor: PERMISOS.USUARIOS_CREAR_PRECEPTOR,
+  Docente: PERMISOS.USUARIOS_CREAR_DOCENTE,
+};
+
+/// Roles que el usuario puede crear según la matriz de permisos. Se usa en el
+/// formulario de alta para mostrar solamente las opciones habilitadas.
+export function rolesQuePuedeCrear(usuario: UsuarioSesion): string[] {
+  return Object.entries(NOMBRE_ROL_A_PERMISO_CREAR)
+    .filter(([, permiso]) => tienePermiso(usuario, permiso))
+    .map(([nombre]) => nombre);
+}
+
 /// Selección estándar de un usuario para respuestas del panel (sin hash).
 export const USUARIO_SELECT = {
   id: true,
