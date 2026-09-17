@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { PERMISOS, obtenerSeccionesPanel, tienePermiso } from "@/lib/auth/autorizacion";
 import { prisma } from "@/lib/prisma";
 import PanelShell from "@/components/auth/PanelShell";
+import ToggleUsuario from "@/components/panel/ToggleUsuario";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,11 @@ export default async function UsuariosPanelPage() {
   if (!user) {
     redirect("/panel/login");
   }
-  if (!tienePermiso(user, PERMISOS.USUARIOS_VER)) {
+  // RF-15: el listado completo de usuarios es exclusivo de Administrador.
+  if (!tienePermiso(user, PERMISOS.USUARIOS_VER_TODOS)) {
+    if (tienePermiso(user, PERMISOS.USUARIOS_CREAR)) {
+      redirect("/panel/usuarios/nuevo");
+    }
     redirect("/panel");
   }
 
@@ -29,7 +34,6 @@ export default async function UsuariosPanelPage() {
     orderBy: [{ rol: { nivel: "desc" } }, { apellido: "asc" }],
   });
   const secciones = obtenerSeccionesPanel(user);
-  const puedeCrear = tienePermiso(user, PERMISOS.USUARIOS_CREAR);
 
   return (
     <PanelShell user={user} secciones={secciones}>
@@ -37,15 +41,14 @@ export default async function UsuariosPanelPage() {
         <div>
           <h1 className="panel-title">Usuarios</h1>
           <p className="panel-lead">
-            Cuentas del equipo del CFL 401. Desde acá podés dar de alta a
-            preceptores y docentes según tu rol.
+            Listado completo de las cuentas del CFL 401. Podés dar de alta,
+            desactivar o reactivar usuarios. Un usuario desactivado pierde el
+            acceso al panel inmediatamente.
           </p>
         </div>
-        {puedeCrear && (
-          <Link href="/panel/usuarios/nuevo" className="btn-primary btn-sm">
-            + Nuevo usuario
-          </Link>
-        )}
+        <Link href="/panel/usuarios/nuevo" className="btn-primary btn-sm">
+          + Nuevo usuario
+        </Link>
       </div>
 
       {usuarios.length === 0 ? (
@@ -62,6 +65,7 @@ export default async function UsuariosPanelPage() {
                 <th>Email</th>
                 <th>Rol</th>
                 <th>Estado</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -80,6 +84,14 @@ export default async function UsuariosPanelPage() {
                     >
                       {u.activo ? "Activo" : "Inactivo"}
                     </span>
+                  </td>
+                  <td>
+                    <ToggleUsuario
+                      usuarioId={u.id}
+                      nombre={`${u.nombre} ${u.apellido}`}
+                      activo={u.activo}
+                      esPropio={u.id === user.id}
+                    />
                   </td>
                 </tr>
               ))}

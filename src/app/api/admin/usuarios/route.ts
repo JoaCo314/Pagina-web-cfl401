@@ -11,6 +11,35 @@ import {
 
 export const dynamic = "force-dynamic";
 
+/// Listado completo de usuarios (RF-15): exclusivo de Administrador. El
+/// Preceptor no puede ver el listado del equipo (matriz RNF-04).
+export async function GET() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  }
+
+  if (!tienePermiso(user, PERMISOS.USUARIOS_VER_TODOS)) {
+    return NextResponse.json(
+      { error: "No tenés permiso para realizar esta acción." },
+      { status: 403 }
+    );
+  }
+
+  try {
+    const usuarios = await prisma.usuario.findMany({
+      select: USUARIO_SELECT,
+      orderBy: [{ rol: { nivel: "desc" } }, { apellido: "asc" }],
+    });
+
+    return NextResponse.json({ usuarios, total: usuarios.length });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Error desconocido";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
 /// Creación de usuario (RF-13/RF-14): solo Administrador y Preceptor crean
 /// cuentas y respetando la jerarquía: el Administrador crea cualquier rol y el
 /// Preceptor solo Docentes. La validación de jerarquía siempre antecede a la de

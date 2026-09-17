@@ -8,6 +8,7 @@ export const PERMISOS = {
   CURSOS_ELIMINAR: "cursos:eliminar",
   CURSOS_ASIGNAR_DOCENTES: "cursos:asignar_docentes",
   USUARIOS_VER: "usuarios:ver",
+  USUARIOS_VER_TODOS: "usuarios:ver_todos",
   USUARIOS_CREAR: "usuarios:crear",
   USUARIOS_CREAR_ADMIN: "usuarios:crear_admin",
   USUARIOS_CREAR_PRECEPTOR: "usuarios:crear_preceptor",
@@ -38,6 +39,7 @@ const PERMISOS_POR_ROL: Record<
     PERMISOS.CURSOS_ELIMINAR,
     PERMISOS.CURSOS_ASIGNAR_DOCENTES,
     PERMISOS.USUARIOS_VER,
+    PERMISOS.USUARIOS_VER_TODOS,
     PERMISOS.USUARIOS_CREAR,
     PERMISOS.USUARIOS_CREAR_ADMIN,
     PERMISOS.USUARIOS_CREAR_PRECEPTOR,
@@ -145,11 +147,14 @@ export function obtenerSeccionesPanel(
   }
 
   if (tienePermiso(usuario, PERMISOS.USUARIOS_VER)) {
+    const esAdministrador = esRol(usuario, ROLES.ADMINISTRADOR);
     secciones.push({
       clave: "usuarios",
       titulo: "Usuarios",
-      descripcion: "Alta, listado y baja de cuentas del equipo.",
-      href: "/panel/usuarios",
+      descripcion: esAdministrador
+        ? "Listado completo, alta y baja de cuentas del equipo."
+        : "Alta de cuentas de docentes.",
+      href: esAdministrador ? "/panel/usuarios" : "/panel/usuarios/nuevo",
     });
   }
 
