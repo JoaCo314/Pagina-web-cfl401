@@ -103,6 +103,45 @@ function parsearCupos(
   return { valor: numero };
 }
 
+export type ResultadoListaDocentes =
+  | { ok: true; ids: number[] }
+  | { ok: false; error: string };
+
+/// Valida una lista de IDs de docentes para asignar a un curso (RF-11/RF-12).
+/// Solo se aceptan usuarios existentes, activos y con rol Docente. Devuelve los
+/// IDs únicos y válidos; una lista vacía es válida (desasignar todos).
+export async function validarListaDocentes(
+  valor: unknown
+): Promise<ResultadoListaDocentes> {
+  if (valor === undefined || valor === null) {
+    return { ok: true, ids: [] };
+  }
+  if (!Array.isArray(valor)) {
+    return { ok: false, error: "docenteIds debe ser una lista de usuarios." };
+  }
+  const ids = valor
+    .map((id) => Number(id))
+    .filter((id) => Number.isInteger(id) && id > 0);
+  if (ids.length !== valor.length) {
+    return { ok: false, error: "La lista de docentes contiene IDs inválidos." };
+  }
+  const docentes = await prisma.usuario.findMany({
+    where: {
+      id: { in: ids },
+      activo: true,
+      rol: { nombre: "Docente" },
+    },
+    select: { id: true },
+  });
+  if (docentes.length !== ids.length) {
+    return {
+      ok: false,
+      error: "Uno o varios docentes no existen, están desactivados o no tienen rol Docente.",
+    };
+  }
+  return { ok: true, ids: Array.from(new Set(ids)) };
+}
+
 /// Valida y normaliza el cuerpo de alta/edición de un curso (RF-08/RF-09).
 /// `presentes` indica qué claves vino en el cuerpo (permite a la edición
 /// actualizar solo los campos enviados y preservar el resto).
@@ -164,33 +203,11 @@ export async function validarDatosCurso(
     activo = fuente.activo;
   }
 
-  let docenteIds: number[] = [];
-  if (fuente.docenteIds !== undefined && fuente.docenteIds !== null) {
-    if (!Array.isArray(fuente.docenteIds)) {
-      return { ok: false, error: "docenteIds debe ser una lista de usuarios." };
-    }
-    const ids = fuente.docenteIds
-      .map((id) => Number(id))
-      .filter((id) => Number.isInteger(id) && id > 0);
-    if (ids.length !== fuente.docenteIds.length) {
-      return { ok: false, error: "La lista de docentes contiene IDs inválidos." };
-    }
-    const docentes = await prisma.usuario.findMany({
-      where: {
-        id: { in: ids },
-        activo: true,
-        rol: { nombre: "Docente" },
-      },
-      select: { id: true },
-    });
-    if (docentes.length !== ids.length) {
-      return {
-        ok: false,
-        error: "Uno o varios docentes no existen, están desactivados o no tienen rol Docente.",
-      };
-    }
-    docenteIds = Array.from(new Set(ids));
+  const listaDocentes = await validarListaDocentes(fuente.docenteIds);
+  if (!listaDocentes.ok) {
+    return { ok: false, error: listaDocentes.error };
   }
+  const docenteIds = listaDocentes.ids;
 
   return {
     ok: true,
