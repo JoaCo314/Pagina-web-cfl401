@@ -15,6 +15,9 @@ export const PERMISOS = {
   USUARIOS_CREAR_DOCENTE: "usuarios:crear_docente",
   USUARIOS_DESACTIVAR: "usuarios:desactivar",
   GUIA_EDITAR: "guia:editar",
+  NOTICIAS_CREAR: "noticias:crear",
+  NOTICIAS_EDITAR: "noticias:editar",
+  NOTICIAS_ELIMINAR: "noticias:eliminar",
 } as const;
 
 export type Permiso = (typeof PERMISOS)[keyof typeof PERMISOS];
@@ -46,6 +49,9 @@ const PERMISOS_POR_ROL: Record<
     PERMISOS.USUARIOS_CREAR_DOCENTE,
     PERMISOS.USUARIOS_DESACTIVAR,
     PERMISOS.GUIA_EDITAR,
+    PERMISOS.NOTICIAS_CREAR,
+    PERMISOS.NOTICIAS_EDITAR,
+    PERMISOS.NOTICIAS_ELIMINAR,
   ],
   [ROLES.PRECEPTOR]: [
     PERMISOS.CURSOS_VER,
@@ -57,6 +63,9 @@ const PERMISOS_POR_ROL: Record<
     PERMISOS.USUARIOS_CREAR,
     PERMISOS.USUARIOS_CREAR_DOCENTE,
     PERMISOS.GUIA_EDITAR,
+    PERMISOS.NOTICIAS_CREAR,
+    PERMISOS.NOTICIAS_EDITAR,
+    PERMISOS.NOTICIAS_ELIMINAR,
   ],
   [ROLES.DOCENTE]: [PERMISOS.CURSOS_VER],
 };
@@ -106,7 +115,7 @@ export function puedeGestionarCurso(
 }
 
 export type SeccionPanel = {
-  clave: "inicio" | "cursos" | "mis_cursos" | "usuarios" | "guia";
+  clave: "inicio" | "cursos" | "mis_cursos" | "usuarios" | "guia" | "noticias";
   titulo: string;
   descripcion: string;
   href?: string;
@@ -164,6 +173,15 @@ export function obtenerSeccionesPanel(
       titulo: "Guía de inscripción",
       descripcion: "Edición del contenido público de la guía.",
       href: "/panel/guia",
+    });
+  }
+
+  if (tienePermiso(usuario, PERMISOS.NOTICIAS_CREAR)) {
+    secciones.push({
+      clave: "noticias",
+      titulo: "Noticias",
+      descripcion: "Publicación y edición de las noticias del sitio.",
+      href: "/panel/noticias",
     });
   }
 

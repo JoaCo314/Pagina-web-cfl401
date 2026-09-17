@@ -83,6 +83,24 @@ model CursoDocente {
   @@map("cursos_docentes")
 }
 
+/// Noticia institucional publicada en el sitio público (RF-17). Se administra
+/// desde el panel por Administrador y Preceptor. `activo` controla si se
+/// muestra en el listado y detalle públicos.
+model Noticia {
+  id        Int      @id @default(autoincrement())
+  titulo    String
+  resumen   String?
+  contenido String
+  fecha     DateTime
+  imagenUrl String?
+  activo    Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("noticias")
+}
+
 /// Contenido textual editable de la guía general de inscripción (RF-05).
 /// Cada registro corresponde a un bloque temático (pasos, documentación,
 /// requisitos, información adicional). El contenido proviene de la BD,

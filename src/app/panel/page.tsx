@@ -66,20 +66,41 @@ export default async function PanelPage() {
               )}
             </article>
           ) : seccion.clave === "cursos" ? (
-            <div className="panel-card" key={seccion.clave}>
+            <Link
+              href="/panel/cursos"
+              className="panel-card panel-card-link"
+              key={seccion.clave}
+            >
               <h2>Cursos</h2>
               <p>Alta, edición, eliminación y asignación de docentes.</p>
-            </div>
+            </Link>
           ) : seccion.clave === "usuarios" ? (
-            <div className="panel-card" key={seccion.clave}>
+            <Link
+              href={seccion.href ?? "/panel/usuarios"}
+              className="panel-card panel-card-link"
+              key={seccion.clave}
+            >
               <h2>Usuarios</h2>
               <p>Creación, listado y baja de cuentas del equipo.</p>
-            </div>
+            </Link>
           ) : seccion.clave === "guia" ? (
-            <div className="panel-card" key={seccion.clave}>
+            <Link
+              href="/panel/guia"
+              className="panel-card panel-card-link"
+              key={seccion.clave}
+            >
               <h2>Guía de inscripción</h2>
               <p>Edición del contenido público de la guía.</p>
-            </div>
+            </Link>
+          ) : seccion.clave === "noticias" ? (
+            <Link
+              href="/panel/noticias"
+              className="panel-card panel-card-link"
+              key={seccion.clave}
+            >
+              <h2>Noticias</h2>
+              <p>Publicación y edición de las noticias del sitio.</p>
+            </Link>
           ) : (
             <div className="panel-card" key={seccion.clave}>
               <h2>{seccion.titulo}</h2>

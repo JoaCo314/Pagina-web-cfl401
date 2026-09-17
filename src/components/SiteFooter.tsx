@@ -33,7 +33,7 @@ export default function SiteFooter() {
                 <a href="#">Preguntas frecuentes</a>
               </li>
               <li>
-                <a href="#">Noticias</a>
+                <Link href="/noticias">Noticias</Link>
               </li>
               <li>
                 <a href="#">Contacto</a>

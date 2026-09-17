@@ -10,7 +10,7 @@ type SiteHeaderProps = {
 const NAV_ITEMS = [
   { label: "Cursos", href: "/cursos", key: "cursos" },
   { label: "Sobre el centro", href: "#", key: "sobre" },
-  { label: "Noticias", href: "#", key: "noticias" },
+  { label: "Noticias", href: "/noticias", key: "noticias" },
   { label: "Preguntas frecuentes", href: "#", key: "faq" },
   { label: "Contacto", href: "#", key: "contacto" },
 ];
