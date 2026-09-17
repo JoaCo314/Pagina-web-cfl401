@@ -160,6 +160,25 @@ a {
   font-weight: 600;
   font-size: 14px;
 }
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.btn-login {
+  border: 1.5px solid var(--cfl-navy-2);
+  color: var(--cfl-navy-2);
+  background: var(--cfl-white);
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.btn-login:hover {
+  background: var(--cfl-navy-2);
+  color: var(--cfl-white);
+}
 
 /* ── Home: hero ──────────────────────────────────────────── */
 .hero {
@@ -633,6 +652,16 @@ a {
   font-size: 14px;
   opacity: 0.65;
   margin-bottom: 22px;
+}
+.auth-note {
+  font-size: 13px;
+  color: var(--cfl-blue);
+  background: #eef5ff;
+  border: 1px solid rgba(18, 42, 69, 0.1);
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 18px;
+  text-align: center;
 }
 .auth-form {
   display: flex;

@@ -67,9 +67,14 @@ export default function SiteHeader({ active }: SiteHeaderProps) {
               )
             )}
           </div>
-          <a href="#" className="nav-cta">
-            Inscribirme
-          </a>
+          <div className="nav-actions">
+            <Link href="/panel/login" className="btn-login">
+              Iniciar sesión
+            </Link>
+            <a href="#" className="nav-cta">
+              Inscribirme
+            </a>
+          </div>
         </nav>
       </header>
     </>
