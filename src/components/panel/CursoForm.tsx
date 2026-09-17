@@ -24,9 +24,11 @@ export type CursoFormInicial = {
 export default function CursoForm({
   docentes,
   inicial,
+  puedeAsignarDocentes = true,
 }: {
   docentes: DocenteActivo[];
   inicial?: CursoFormInicial;
+  puedeAsignarDocentes?: boolean;
 }) {
   const esEdicion = Boolean(inicial);
   const router = useRouter();
@@ -95,20 +97,58 @@ export default function CursoForm({
 
     setEnviando(true);
     try {
+      if (esEdicion) {
+        const resCurso = await fetch(`/api/cursos/${inicial!.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...datos, activo }),
+        });
+
+        if (!resCurso.ok) {
+          const data = (await resCurso.json().catch(() => null)) as {
+            error?: string;
+          } | null;
+          setError(data?.error ?? "No se pudo guardar el curso.");
+          return;
+        }
+
+        if (puedeAsignarDocentes) {
+          const resDocentes = await fetch(
+            `/api/cursos/${inicial!.id}/docentes`,
+            {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ docenteIds }),
+            }
+          );
+
+          if (!resDocentes.ok) {
+            const data = (await resDocentes.json().catch(() => null)) as {
+              error?: string;
+            } | null;
+            setError(
+              data?.error ?? "No se pudieron guardar los docentes asignados."
+            );
+            return;
+          }
+        }
+
+        router.push("/panel/cursos");
+        router.refresh();
+        return;
+      }
+
       const body = {
         ...datos,
         activo,
-        docenteIds,
+        ...(puedeAsignarDocentes ? { docenteIds } : {}),
       };
 
-      const res = await fetch(
-        esEdicion ? `/api/cursos/${inicial!.id}` : "/api/cursos",
-        {
-          method: esEdicion ? "PUT" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        }
-      );
+      const res = await fetch("/api/cursos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
 
       if (res.ok) {
         router.push("/panel/cursos");
@@ -241,39 +281,41 @@ export default function CursoForm({
         />
       </div>
 
-      <div className="form-field form-field-full">
-        <span>Docentes asignados</span>
-        {docentes.length === 0 ? (
-          <p className="form-aviso">
-            Todavía no hay docentes activos. Creá usuarios con rol Docente para
-            poder asignarlos.
-          </p>
-        ) : (
-          <div className="docentes-box">
-            {docentes.map((docente) => {
-              const activoDocente = docenteIds.includes(docente.id);
-              return (
-                <label
-                  key={docente.id}
-                  className={`docente-opt${activoDocente ? " activo" : ""}`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={activoDocente}
-                    onChange={() => alternarDocente(docente.id)}
-                  />
-                  <span>
-                    <strong>
-                      {docente.nombre} {docente.apellido}
-                    </strong>
-                    <small>{docente.email}</small>
-                  </span>
-                </label>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      {puedeAsignarDocentes && (
+        <div className="form-field form-field-full">
+          <span>Docentes asignados</span>
+          {docentes.length === 0 ? (
+            <p className="form-aviso">
+              Todavía no hay docentes activos. Creá usuarios con rol Docente
+              para poder asignarlos.
+            </p>
+          ) : (
+            <div className="docentes-box">
+              {docentes.map((docente) => {
+                const activoDocente = docenteIds.includes(docente.id);
+                return (
+                  <label
+                    key={docente.id}
+                    className={`docente-opt${activoDocente ? " activo" : ""}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={activoDocente}
+                      onChange={() => alternarDocente(docente.id)}
+                    />
+                    <span>
+                      <strong>
+                        {docente.nombre} {docente.apellido}
+                      </strong>
+                      <small>{docente.email}</small>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {esEdicion && (
         <label className="form-field form-field-full form-toggle">

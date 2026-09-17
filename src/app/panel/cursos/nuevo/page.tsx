@@ -27,7 +27,13 @@ export default async function NuevoCursoPage() {
         Completá los datos del curso. El nombre es obligatorio; el resto puede
         editarse más adelante.
       </p>
-      <CursoForm docentes={docentes} />
+      <CursoForm
+        docentes={docentes}
+        puedeAsignarDocentes={tienePermiso(
+          user,
+          PERMISOS.CURSOS_ASIGNAR_DOCENTES
+        )}
+      />
     </PanelShell>
   );
 }

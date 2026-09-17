@@ -69,7 +69,14 @@ export default async function EditarCursoPage({
         Modificá la información del curso <strong>{curso.nombre}</strong>. Los
         campos no enviados conservan su valor actual.
       </p>
-      <CursoForm docentes={docentes} inicial={inicial} />
+      <CursoForm
+        docentes={docentes}
+        inicial={inicial}
+        puedeAsignarDocentes={tienePermiso(
+          user,
+          PERMISOS.CURSOS_ASIGNAR_DOCENTES
+        )}
+      />
     </PanelShell>
   );
 }
