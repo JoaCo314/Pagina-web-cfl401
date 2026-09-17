@@ -27,6 +27,8 @@ export async function GET(request: NextRequest) {
         horarios: true,
         mesesCursada: true,
         fechaInicio: true,
+        sede: true,
+        imagenUrl: true,
         docentes: {
           include: {
             docente: { select: { id: true, nombre: true, apellido: true } },

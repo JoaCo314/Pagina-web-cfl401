@@ -60,6 +60,11 @@ export default async function EditarCursoPage({
     fechaInicio: curso.fechaInicio
       ? new Date(curso.fechaInicio).toISOString().slice(0, 10)
       : null,
+    fechaFin: curso.fechaFin
+      ? new Date(curso.fechaFin).toISOString().slice(0, 10)
+      : null,
+    sede: curso.sede,
+    enlaceInscripcion: curso.enlaceInscripcion,
     programaContenidos: curso.programaContenidos,
     categoria: curso.categoria,
     cupos: curso.cupos,

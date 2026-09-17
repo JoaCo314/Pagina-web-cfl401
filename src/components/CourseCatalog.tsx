@@ -20,6 +20,8 @@ type Curso = {
   horarios: string | null;
   mesesCursada: string | null;
   fechaInicio: string | null;
+  sede: string | null;
+  imagenUrl: string | null;
   docentes: { docente: Docente }[];
 };
 
@@ -30,6 +32,10 @@ function CourseCard({ curso }: { curso: Curso }) {
 
   return (
     <div className="course-card">
+      {curso.imagenUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img className="course-img" src={curso.imagenUrl} alt={curso.nombre} />
+      )}
       <div className="course-top">
         <div className="course-icon">{iconoCategoria(curso.categoria)}</div>
         {curso.cupos !== null && (
@@ -43,6 +49,7 @@ function CourseCard({ curso }: { curso: Curso }) {
       <p className="course-docente">
         Docente: {nombresDocentes(curso.docentes)}
         {" · "}Inicia {formatearFecha(curso.fechaInicio)}
+        {curso.sede ? ` · Sede: ${curso.sede}` : ""}
       </p>
       <div className="course-tags">
         {curso.horarios && <span className="tag">{curso.horarios}</span>}
