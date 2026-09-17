@@ -84,9 +84,9 @@ export default function SiteHeader({ active }: SiteHeaderProps) {
             <Link href="/panel/login" className="btn-login">
               Iniciar sesión
             </Link>
-            <a href="#" className="nav-cta">
+            <Link href="/cursos" className="nav-cta">
               Inscribirme
-            </a>
+            </Link>
           </div>
 
           <button
@@ -133,9 +133,9 @@ export default function SiteHeader({ active }: SiteHeaderProps) {
               >
                 Iniciar sesión
               </Link>
-              <a href="#" className="nav-cta">
+              <Link href="/cursos" className="nav-cta" onClick={cerrarMenu}>
                 Inscribirme
-              </a>
+              </Link>
             </div>
           </div>
         )}

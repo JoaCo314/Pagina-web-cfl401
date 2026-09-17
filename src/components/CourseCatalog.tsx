@@ -20,6 +20,7 @@ type Curso = {
   horarios: string | null;
   mesesCursada: string | null;
   fechaInicio: string | null;
+  sede: string | null;
   docentes: { docente: Docente }[];
 };
 
@@ -43,6 +44,7 @@ function CourseCard({ curso }: { curso: Curso }) {
       <p className="course-docente">
         Docente: {nombresDocentes(curso.docentes)}
         {" · "}Inicia {formatearFecha(curso.fechaInicio)}
+        {curso.sede ? ` · Sede: ${curso.sede}` : ""}
       </p>
       <div className="course-tags">
         {curso.horarios && <span className="tag">{curso.horarios}</span>}

@@ -52,6 +52,9 @@ model Curso {
   horarios  String?
   mesesCursada String?
   fechaInicio DateTime?
+  fechaFin   DateTime?
+  sede       String?
+  enlaceInscripcion String?
   programaContenidos String?
   categoria String?
   cupos     Int?

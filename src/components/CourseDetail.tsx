@@ -16,6 +16,9 @@ type CursoDetail = {
   horarios: string | null;
   mesesCursada: string | null;
   fechaInicio: string | null;
+  fechaFin: string | null;
+  sede: string | null;
+  enlaceInscripcion: string | null;
   programaContenidos: string | null;
   categoria: string | null;
   cupos: number | null;
@@ -164,6 +167,10 @@ export default function CourseDetail({ id }: { id: number }) {
                 <dd>{curso.modalidad ?? "A confirmar"}</dd>
               </div>
               <div className="detail-item">
+                <dt>Sede</dt>
+                <dd>{curso.sede ?? "A confirmar"}</dd>
+              </div>
+              <div className="detail-item">
                 <dt>Horarios</dt>
                 <dd>{curso.horarios ?? "A confirmar"}</dd>
               </div>
@@ -176,6 +183,10 @@ export default function CourseDetail({ id }: { id: number }) {
                 <dd>{formatearFecha(curso.fechaInicio)}</dd>
               </div>
               <div className="detail-item">
+                <dt>Fin de cursada</dt>
+                <dd>{formatearFecha(curso.fechaFin)}</dd>
+              </div>
+              <div className="detail-item">
                 <dt>Docente</dt>
                 <dd>{nombresDocentes(curso.docentes)}</dd>
               </div>
@@ -184,9 +195,16 @@ export default function CourseDetail({ id }: { id: number }) {
                 <dd>{cuposText}</dd>
               </div>
             </dl>
-            <Link href="/inscripcion" className="detail-cta">
-              Inscribirme
-            </Link>
+            {curso.enlaceInscripcion && (
+              <a
+                href={curso.enlaceInscripcion}
+                className="detail-cta"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Inscribirme
+              </a>
+            )}
           </div>
         </aside>
       </div>

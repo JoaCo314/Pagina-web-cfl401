@@ -9,6 +9,9 @@ export const CURSO_SELECT = {
   horarios: true,
   mesesCursada: true,
   fechaInicio: true,
+  fechaFin: true,
+  sede: true,
+  enlaceInscripcion: true,
   programaContenidos: true,
   categoria: true,
   cupos: true,
@@ -31,6 +34,9 @@ export type CursoInputNormalizado = {
   horarios: string | null;
   mesesCursada: string | null;
   fechaInicio: Date | null;
+  fechaFin: Date | null;
+  sede: string | null;
+  enlaceInscripcion: string | null;
   programaContenidos: string | null;
   categoria: string | null;
   cupos: number | null;
@@ -75,19 +81,38 @@ function limpiarTexto(
 }
 
 function parsearFecha(
-  valor: unknown
+  valor: unknown,
+  campo = "fechaInicio"
 ): { error?: string; valor: Date | null } {
   if (valor === undefined || valor === null || valor === "") {
     return { valor: null };
   }
   if (typeof valor !== "string") {
-    return { error: "fechaInicio debe ser una fecha válida.", valor: null };
+    return { error: `${campo} debe ser una fecha válida.`, valor: null };
   }
   const fecha = new Date(valor);
   if (Number.isNaN(fecha.getTime())) {
-    return { error: "Fecha de inicio inválida.", valor: null };
+    return { error: `El campo ${campo} contiene una fecha inválida.`, valor: null };
   }
   return { valor: fecha };
+}
+
+/// Valida el enlace externo de inscripción (página del IPFL). Debe ser una URL
+/// http(s) absoluta; una cadena vacía lo deja sin definir.
+function parsearEnlaceInscripcion(
+  valor: unknown
+): { error?: string; valor: string | null } {
+  const texto = limpiarTexto(valor);
+  if (texto.error) return { error: texto.error, valor: null };
+  if (!texto.valor) return { valor: null };
+  if (!/^https?:\/\/\S+$/i.test(texto.valor)) {
+    return {
+      error:
+        "El link de inscripción debe ser una URL completa que empiece con http:// o https://.",
+      valor: null,
+    };
+  }
+  return { valor: texto.valor };
 }
 
 function parsearCupos(
@@ -169,6 +194,7 @@ export async function validarDatosCurso(
   const categoria = limpiarTexto(fuente.categoria);
   const imagenUrl = limpiarTexto(fuente.imagenUrl);
   const informacionAdicional = limpiarTexto(fuente.informacionAdicional);
+  const sede = limpiarTexto(fuente.sede);
 
   const textos = [
     ["descripcion", descripcion],
@@ -179,6 +205,7 @@ export async function validarDatosCurso(
     ["categoria", categoria],
     ["imagenUrl", imagenUrl],
     ["informacionAdicional", informacionAdicional],
+    ["sede", sede],
   ] as const;
   for (const [campo, resultado] of textos) {
     if (resultado.error) {
@@ -188,6 +215,14 @@ export async function validarDatosCurso(
 
   const fechaInicio = parsearFecha(fuente.fechaInicio);
   if (fechaInicio.error) return { ok: false, error: fechaInicio.error };
+
+  const fechaFin = parsearFecha(fuente.fechaFin, "fechaFin");
+  if (fechaFin.error) return { ok: false, error: fechaFin.error };
+
+  const enlaceInscripcion = parsearEnlaceInscripcion(fuente.enlaceInscripcion);
+  if (enlaceInscripcion.error) {
+    return { ok: false, error: enlaceInscripcion.error };
+  }
 
   const cupos = parsearCupos(fuente.cupos);
   if (cupos.error) return { ok: false, error: cupos.error };
@@ -219,6 +254,9 @@ export async function validarDatosCurso(
       horarios: horarios.valor,
       mesesCursada: mesesCursada.valor,
       fechaInicio: fechaInicio.valor,
+      fechaFin: fechaFin.valor,
+      sede: sede.valor,
+      enlaceInscripcion: enlaceInscripcion.valor,
       programaContenidos: programaContenidos.valor,
       categoria: categoria.valor,
       cupos: cupos.valor,

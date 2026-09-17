@@ -12,6 +12,9 @@ export type CursoFormInicial = {
   horarios: string | null;
   mesesCursada: string | null;
   fechaInicio: string | null;
+  fechaFin: string | null;
+  sede: string | null;
+  enlaceInscripcion: string | null;
   programaContenidos: string | null;
   categoria: string | null;
   cupos: number | null;
@@ -40,6 +43,9 @@ export default function CursoForm({
     horarios: inicial?.horarios ?? "",
     mesesCursada: inicial?.mesesCursada ?? "",
     fechaInicio: inicial?.fechaInicio ?? "",
+    fechaFin: inicial?.fechaFin ?? "",
+    sede: inicial?.sede ?? "",
+    enlaceInscripcion: inicial?.enlaceInscripcion ?? "",
     programaContenidos: inicial?.programaContenidos ?? "",
     categoria: inicial?.categoria ?? "",
     cupos: inicial?.cupos != null ? String(inicial.cupos) : "",
@@ -81,6 +87,21 @@ export default function CursoForm({
       if (!datos.fechaInicio.match(/^\d{4}-\d{2}-\d{2}$/)) {
         return "La fecha de inicio debe tener el formato AAAA-MM-DD.";
       }
+    }
+    if (datos.fechaFin.trim() !== "") {
+      const fecha = new Date(datos.fechaFin);
+      if (Number.isNaN(fecha.getTime())) {
+        return "La fecha de fin de cursada no es válida.";
+      }
+      if (!datos.fechaFin.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        return "La fecha de fin de cursada debe tener el formato AAAA-MM-DD.";
+      }
+    }
+    if (
+      datos.enlaceInscripcion.trim() !== "" &&
+      !/^https?:\/\/\S+$/i.test(datos.enlaceInscripcion.trim())
+    ) {
+      return "El link de inscripción debe ser una URL completa que empiece con http:// o https://.";
     }
     return null;
   }
@@ -222,11 +243,30 @@ export default function CursoForm({
       </label>
 
       <label className="form-field">
+        <span>Sede</span>
+        <input
+          type="text"
+          value={datos.sede}
+          onChange={(e) => setCampo("sede", e.target.value)}
+          placeholder="Ej: Sede CFL 401 - Av. Mitre 200"
+        />
+      </label>
+
+      <label className="form-field">
         <span>Fecha de inicio</span>
         <input
           type="date"
           value={datos.fechaInicio}
           onChange={(e) => setCampo("fechaInicio", e.target.value)}
+        />
+      </label>
+
+      <label className="form-field">
+        <span>Fecha de fin de cursada</span>
+        <input
+          type="date"
+          value={datos.fechaFin}
+          onChange={(e) => setCampo("fechaFin", e.target.value)}
         />
       </label>
 
@@ -249,6 +289,20 @@ export default function CursoForm({
           onChange={(e) => setCampo("imagenUrl", e.target.value)}
           placeholder="https://"
         />
+      </label>
+
+      <label className="form-field">
+        <span>Link de inscripción en el IPFL (opcional)</span>
+        <input
+          type="url"
+          value={datos.enlaceInscripcion}
+          onChange={(e) => setCampo("enlaceInscripcion", e.target.value)}
+          placeholder="https://..."
+        />
+        <small className="form-hint">
+          Si se carga, el botón “Inscribirme” del curso lleva a esa página. Si
+          queda vacío, no se muestra el botón.
+        </small>
       </label>
 
       <div className="form-field form-field-full">
