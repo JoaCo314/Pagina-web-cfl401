@@ -301,7 +301,7 @@ export default function CursoForm({
         />
         <small className="form-hint">
           Si se carga, el botón “Inscribirme” del curso lleva a esa página. Si
-          queda vacío, no se muestra el botón.
+          queda vacío, el botón lleva a la guía “Cómo inscribirme”.
         </small>
       </label>
 

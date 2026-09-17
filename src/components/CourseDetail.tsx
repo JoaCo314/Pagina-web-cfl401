@@ -195,7 +195,7 @@ export default function CourseDetail({ id }: { id: number }) {
                 <dd>{cuposText}</dd>
               </div>
             </dl>
-            {curso.enlaceInscripcion && (
+            {curso.enlaceInscripcion ? (
               <a
                 href={curso.enlaceInscripcion}
                 className="detail-cta"
@@ -204,6 +204,10 @@ export default function CourseDetail({ id }: { id: number }) {
               >
                 Inscribirme
               </a>
+            ) : (
+              <Link href="/#guia" className="detail-cta">
+                Inscribirme
+              </Link>
             )}
           </div>
         </aside>

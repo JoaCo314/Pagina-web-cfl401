@@ -7,8 +7,8 @@ Fecha: 2026-09-17 · Branch `Joaquin`
 Incorporar a los cursos tres campos nuevos: **sede** (lugar donde se dicta),
 **fecha de fin de cursada** y **link de inscripción en el IPFL**. Las
 inscripciones no se gestionan en el sitio: el botón "Inscribirme" del curso
-redirige a la página del IPFL. Si el curso no tiene link cargado, el botón no se
-muestra.
+redirige a la página del IPFL. Si el curso no tiene link cargado, el botón se
+muestra igual y lleva a la sección "Cómo inscribirme" de la home (`/#guia`).
 
 ## Cambios
 
@@ -26,9 +26,9 @@ muestra.
 - **Sitio público**:
   - Catálogo: la tarjeta muestra `Sede: …` cuando está cargada.
   - Detalle: "Datos del curso" agrega **Sede** y **Fin de cursada**.
-  - CTA "Inscribirme": link externo al IPFL (`target="_blank"`,
-    `rel="noopener noreferrer"`), visible solo si el curso tiene
-    `enlaceInscripcion`.
+  - CTA "Inscribirme": aparece siempre. Con `enlaceInscripcion` es un link
+    externo al IPFL (`target="_blank"`, `rel="noopener noreferrer"`); sin link
+    lleva a la sección "Cómo inscribirme" de la home (`/#guia`).
   - Header: el botón genérico "Inscribirme" (antes `href="#"`) ahora lleva al
     catálogo `/cursos`.
 - **Fix de fechas**: `formatearFecha` formatea en `timeZone: "UTC"`. Antes, con el
@@ -52,7 +52,7 @@ Sesión de administrador y operaciones usando las mismas APIs que el panel:
 | 8 | Catálogo público muestra la sede | true |
 | 9 | Detalle: sede, "Fin de cursada" = 20/12/2026 y CTA `href` al IPFL con `target="_blank"` | true |
 | 10 | `PUT` vaciando el link | 200, `enlaceInscripcion: null` |
-| 11 | Sin link: botón "Inscribirme" oculto; sede y fin siguen visibles | true |
+| 11 | Sin link: el botón "Inscribirme" redirige a `/#guia`; sede y fin siguen visibles | true |
 | 12 | Curso del seed: "Inicio" = 02/03/2026 (sin corrimiento por zona horaria) | true |
 | 13 | Baja del curso QA | 200 |
 | 14 | Total del catálogo restaurado | 5 |
