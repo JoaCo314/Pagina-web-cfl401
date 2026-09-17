@@ -1303,6 +1303,14 @@ a.panel-nav-item:hover {
 }
 
 /* ── Responsive ──────────────────────────────────────────── */
+/* Tablet / laptops chicos: el catálogo pasa de 3 a 2 columnas. */
+@media (max-width: 1024px) {
+  .course-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Tablet vertical y teléfonos apaisados (navbar a hamburguesa). */
 @media (max-width: 900px) {
   .navlinks {
     display: none;
@@ -1323,9 +1331,6 @@ a.panel-nav-item:hover {
   .filters-grid {
     grid-template-columns: 1fr;
   }
-  .course-grid {
-    grid-template-columns: 1fr;
-  }
   .foot-grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -1335,11 +1340,11 @@ a.panel-nav-item:hover {
   .detail-aside {
     position: static;
   }
+  .detail-head h1 {
+    font-size: 26px;
+  }
   .hero h1 {
     font-size: 30px;
-  }
-  .guia-grid {
-    grid-template-columns: 1fr;
   }
   .panel-cards {
     grid-template-columns: 1fr;
@@ -1352,5 +1357,91 @@ a.panel-nav-item:hover {
   }
   .docentes-box {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Celulares: 1 columna, tipografía y paddings compactos, sin desbordes. */
+@media (max-width: 680px) {
+  .wrap {
+    padding: 0 20px;
+  }
+  .site-header .wrap {
+    padding: 0 20px;
+  }
+  .logo-text .name {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+  }
+  .course-grid {
+    grid-template-columns: 1fr;
+  }
+  .guia-grid {
+    grid-template-columns: 1fr;
+  }
+  .guia-card {
+    padding: 20px;
+  }
+  .course-card {
+    padding: 18px;
+  }
+  .detail-layout {
+    gap: 28px;
+  }
+  .detail-head {
+    flex-direction: column;
+  }
+  .detail-head .course-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 22px;
+  }
+  .detail-head h1 {
+    font-size: 24px;
+  }
+  .detail-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+  .detail-item dd {
+    text-align: left;
+  }
+  .foot-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero {
+    padding: 44px 0 52px;
+  }
+  .hero h1 {
+    font-size: 27px;
+  }
+  .hero p.lead {
+    font-size: 15.5px;
+  }
+  .page-header {
+    padding: 34px 0;
+  }
+  .page-header h1 {
+    font-size: 26px;
+  }
+  .detail-body {
+    padding: 24px 0 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-text .sub {
+    display: none;
+  }
+  .topbar-badges span:nth-child(2) {
+    display: none;
+  }
+  .hero-actions .btn-primary,
+  .hero-actions .btn-ghost {
+    width: 100%;
+    text-align: center;
   }
 }
