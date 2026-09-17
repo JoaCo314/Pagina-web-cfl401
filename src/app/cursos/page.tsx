@@ -9,7 +9,7 @@ export default function CursosPage() {
     <>
       <SiteHeader active="cursos" />
 
-      <div className="page-header">
+      <div className="page-header" id="contenido" tabIndex={-1}>
         <div className="wrap">
           <h1>Oferta Educativa {anio}</h1>
           <p>

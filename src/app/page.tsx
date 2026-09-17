@@ -10,7 +10,7 @@ export default function Home() {
     <>
       <SiteHeader />
 
-      <section className="hero">
+      <section className="hero" id="contenido" tabIndex={-1}>
         <div className="wrap">
           <div className="badge-row">
             <div className="pill">

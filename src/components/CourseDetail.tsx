@@ -38,7 +38,7 @@ const volverAlCatalogo = (
 
 function MensajeSinCurso({ titulo, texto }: { titulo: string; texto: string }) {
   return (
-    <section className="wrap detail-body">
+    <section className="wrap detail-body" id="contenido" tabIndex={-1}>
       <div className="detail-notfound">
         <span className="detail-nf-code">404</span>
         <h1>{titulo}</h1>
@@ -85,7 +85,7 @@ export default function CourseDetail({ id }: { id: number }) {
 
   if (estado.estado === "cargando") {
     return (
-      <section className="wrap detail-body">
+      <section className="wrap detail-body" id="contenido" tabIndex={-1}>
         {volverAlCatalogo}
         <p className="courses-empty">Cargando curso…</p>
       </section>
@@ -114,7 +114,7 @@ export default function CourseDetail({ id }: { id: number }) {
   const cuposText = curso.cupos === null ? "—" : `${curso.cupos} cupos`;
 
   return (
-    <section className="wrap detail-body">
+    <section className="wrap detail-body" id="contenido" tabIndex={-1}>
       {volverAlCatalogo}
 
       <div className="detail-layout">
