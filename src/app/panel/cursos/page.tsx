@@ -5,6 +5,7 @@ import { PERMISOS, obtenerSeccionesPanel, tienePermiso } from "@/lib/auth/autori
 import { prisma } from "@/lib/prisma";
 import { CURSO_SELECT } from "@/lib/cursoAdmin";
 import PanelShell from "@/components/auth/PanelShell";
+import EliminarCurso from "@/components/panel/EliminarCurso";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,7 @@ export default async function CursosPanelPage() {
     orderBy: [{ activo: "desc" }, { nombre: "asc" }],
   });
   const secciones = obtenerSeccionesPanel(user);
+  const puedeEliminar = tienePermiso(user, PERMISOS.CURSOS_ELIMINAR);
 
   return (
     <PanelShell user={user} secciones={secciones}>
@@ -97,12 +99,21 @@ export default async function CursosPanelPage() {
                     </span>
                   </td>
                   <td>
-                    <Link
-                      href={`/panel/cursos/${curso.id}/editar`}
-                      className="link-accion"
-                    >
-                      Editar
-                    </Link>
+                    <div className="acciones-curso">
+                      <Link
+                        href={`/panel/cursos/${curso.id}/editar`}
+                        className="link-accion"
+                      >
+                        Editar
+                      </Link>
+                      {puedeEliminar && (
+                        <EliminarCurso
+                          cursoId={curso.id}
+                          nombre={curso.nombre}
+                          cantidadDocentes={curso.docentes.length}
+                        />
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

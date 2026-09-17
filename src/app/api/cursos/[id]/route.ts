@@ -159,3 +159,59 @@ export async function PUT(
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+/// Eliminación de curso (RF-10): solo Administrador y Preceptor.
+/// Un Docente no puede eliminar ningún curso, ni siquiera los que tiene
+/// asignados (RF-10/RF-16). Las asignaciones de docentes (CursoDocente) se
+/// borran en cascada junto con el curso.
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  const cursoId = Number(id);
+  if (!Number.isInteger(cursoId) || cursoId <= 0) {
+    return NextResponse.json(
+      { error: "ID de curso inválido" },
+      { status: 400 }
+    );
+  }
+
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  }
+
+  if (!tienePermiso(user, PERMISOS.CURSOS_ELIMINAR)) {
+    return NextResponse.json(
+      { error: "No tenés permiso para realizar esta acción." },
+      { status: 403 }
+    );
+  }
+
+  const existente = await prisma.curso.findUnique({
+    where: { id: cursoId },
+    select: { id: true, nombre: true },
+  });
+  if (!existente) {
+    return NextResponse.json(
+      { error: "El curso a eliminar no existe." },
+      { status: 404 }
+    );
+  }
+
+  try {
+    // CursoDocente se elimina en cascada al borrar el curso (onDelete: Cascade).
+    const cursoEliminado = await prisma.curso.delete({
+      where: { id: cursoId },
+      select: { id: true, nombre: true },
+    });
+
+    return NextResponse.json({ eliminado: true, curso: cursoEliminado });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Error desconocido";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}

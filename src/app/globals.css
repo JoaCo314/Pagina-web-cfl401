@@ -976,6 +976,77 @@ a.panel-nav-item:hover {
 .link-accion:hover {
   text-decoration: underline;
 }
+.link-eliminar {
+  color: var(--cfl-warn-low-fg);
+}
+.link-eliminar:hover {
+  color: #8e2f2f;
+}
+.acciones-curso {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* ── Panel: modal de confirmación ────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 42, 69, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 200;
+}
+.modal-card {
+  background: var(--cfl-white);
+  border-radius: 10px;
+  padding: 26px 28px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 18px 50px rgba(18, 42, 69, 0.28);
+}
+.modal-card .panel-title {
+  margin: 0 0 6px;
+}
+.modal-texto {
+  font-size: 14.5px;
+  margin: 0 0 12px;
+}
+.modal-aviso {
+  font-size: 13.5px;
+  background: var(--cfl-warn-bg);
+  color: var(--cfl-warn-fg);
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin: 0 0 6px;
+}
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+.btn-danger {
+  background: var(--cfl-warn-low-fg);
+  color: var(--cfl-white);
+  border: none;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn-danger:hover {
+  filter: brightness(1.08);
+}
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 /* ── Panel: formulario de curso ──────────────────────────── */
 .curso-form {
