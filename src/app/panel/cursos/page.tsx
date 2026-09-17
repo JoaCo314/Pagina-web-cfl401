@@ -61,7 +61,7 @@ export default async function CursosPanelPage() {
             <tbody>
               {cursos.map((curso) => (
                 <tr key={curso.id}>
-                  <td>
+                  <td data-label="Curso">
                     <strong>{curso.nombre}</strong>
                     <small className="td-sub">
                       Inicio:{" "}
@@ -78,9 +78,9 @@ export default async function CursosPanelPage() {
                       {curso.horarios ? ` · ${curso.horarios}` : ""}
                     </small>
                   </td>
-                  <td>{curso.categoria ?? "—"}</td>
-                  <td>{curso.modalidad ?? "—"}</td>
-                  <td>
+                  <td data-label="Categoría">{curso.categoria ?? "—"}</td>
+                  <td data-label="Modalidad">{curso.modalidad ?? "—"}</td>
+                  <td data-label="Docentes">
                     {curso.docentes.length > 0
                       ? curso.docentes
                           .map(
@@ -89,7 +89,7 @@ export default async function CursosPanelPage() {
                           .join(", ")
                       : "A definir"}
                   </td>
-                  <td>
+                  <td data-label="Estado">
                     <span
                       className={`badge-estado ${
                         curso.activo ? "ok" : "off"
@@ -98,7 +98,7 @@ export default async function CursosPanelPage() {
                       {curso.activo ? "Activo" : "Inactivo"}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="">
                     <div className="acciones-curso">
                       <Link
                         href={`/panel/cursos/${curso.id}/editar`}

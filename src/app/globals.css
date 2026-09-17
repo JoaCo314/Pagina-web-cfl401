@@ -1445,3 +1445,119 @@ a.panel-nav-item:hover {
     text-align: center;
   }
 }
+
+/* ── Panel administrativo responsive (RNF-02) ────────────── */
+@media (max-width: 900px) {
+  .panel-user-info {
+    display: none;
+  }
+}
+@media (max-width: 680px) {
+  .auth-page {
+    padding: 20px 14px;
+  }
+  .auth-card {
+    padding: 26px 18px;
+  }
+  .panel-main {
+    padding: 24px 16px 48px;
+  }
+  .panel-header-inner {
+    gap: 10px;
+  }
+  .panel-nav-inner {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .panel-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .panel-head .btn-primary {
+    text-align: center;
+  }
+  .panel-lista li {
+    flex-wrap: wrap;
+  }
+  .curso-form,
+  .guia-form {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .curso-form {
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+  .guia-bloque {
+    padding: 14px 14px 16px;
+  }
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .form-actions .btn-primary,
+  .form-actions .btn-ghost-dark {
+    text-align: center;
+  }
+
+  /* Tablas del panel → tarjetas apiladas */
+  .panel-table-wrap {
+    border: none;
+    background: transparent;
+    overflow: visible;
+  }
+  .panel-table,
+  .panel-table thead,
+  .panel-table tbody,
+  .panel-table tr,
+  .panel-table th,
+  .panel-table td {
+    display: block;
+    width: 100%;
+  }
+  .panel-table thead {
+    display: none;
+  }
+  .panel-table tr {
+    background: var(--cfl-white);
+    border: 1.5px solid rgba(18, 42, 69, 0.1);
+    border-radius: 8px;
+    padding: 8px 0;
+    margin-bottom: 12px;
+  }
+  .panel-table tbody tr:hover {
+    background: var(--cfl-white);
+  }
+  .panel-table td {
+    display: block;
+    text-align: right;
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(18, 42, 69, 0.06);
+  }
+  .panel-table td:last-child {
+    border-bottom: none;
+  }
+  .panel-table td[data-label=""]::before {
+    content: none;
+  }
+  .panel-table td::before {
+    content: attr(data-label);
+    display: block;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--cfl-navy-2);
+    opacity: 0.55;
+    margin-bottom: 4px;
+  }
+  .panel-table .td-sub {
+    text-align: right;
+  }
+  .acciones-curso {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+  }
+}
