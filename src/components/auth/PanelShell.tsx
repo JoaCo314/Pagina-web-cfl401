@@ -1,7 +1,9 @@
 "use client";
 
 import { ReactNode, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import type { SeccionPanel } from "@/lib/auth/autorizacion";
 
 type UsuarioSesion = {
   id: number;
@@ -13,12 +15,15 @@ type UsuarioSesion = {
 
 export default function PanelShell({
   user,
+  secciones,
   children,
 }: {
   user: UsuarioSesion;
+  secciones: SeccionPanel[];
   children: ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [cerrando, setCerrando] = useState(false);
 
   async function cerrarSesion() {
@@ -61,10 +66,24 @@ export default function PanelShell({
 
       <nav className="panel-nav">
         <div className="wrap panel-nav-inner">
-          <span className="panel-nav-item active">Inicio</span>
-          <span className="panel-nav-item">Cursos</span>
-          <span className="panel-nav-item">Usuarios</span>
-          <span className="panel-nav-item">Guía de inscripción</span>
+          {secciones.map((seccion) => {
+            const activa =
+              seccion.clave === "inicio"
+                ? pathname === "/panel"
+                : seccion.href
+                  ? pathname.startsWith(seccion.href)
+                  : false;
+            const clase = `panel-nav-item${activa ? " active" : ""}`;
+            return seccion.href ? (
+              <Link key={seccion.clave} href={seccion.href} className={clase}>
+                {seccion.titulo}
+              </Link>
+            ) : (
+              <span key={seccion.clave} className={clase}>
+                {seccion.titulo}
+              </span>
+            );
+          })}
         </div>
       </nav>
 

@@ -16,6 +16,9 @@ type CursoDetail = {
   horarios: string | null;
   mesesCursada: string | null;
   fechaInicio: string | null;
+  fechaFin: string | null;
+  sede: string | null;
+  enlaceInscripcion: string | null;
   programaContenidos: string | null;
   categoria: string | null;
   cupos: number | null;
@@ -38,7 +41,7 @@ const volverAlCatalogo = (
 
 function MensajeSinCurso({ titulo, texto }: { titulo: string; texto: string }) {
   return (
-    <section className="wrap detail-body">
+    <section className="wrap detail-body" id="contenido" tabIndex={-1}>
       <div className="detail-notfound">
         <span className="detail-nf-code">404</span>
         <h1>{titulo}</h1>
@@ -85,7 +88,7 @@ export default function CourseDetail({ id }: { id: number }) {
 
   if (estado.estado === "cargando") {
     return (
-      <section className="wrap detail-body">
+      <section className="wrap detail-body" id="contenido" tabIndex={-1}>
         {volverAlCatalogo}
         <p className="courses-empty">Cargando curso…</p>
       </section>
@@ -114,11 +117,19 @@ export default function CourseDetail({ id }: { id: number }) {
   const cuposText = curso.cupos === null ? "—" : `${curso.cupos} cupos`;
 
   return (
-    <section className="wrap detail-body">
+    <section className="wrap detail-body" id="contenido" tabIndex={-1}>
       {volverAlCatalogo}
 
       <div className="detail-layout">
         <div className="detail-main">
+          {curso.imagenUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              className="detail-img"
+              src={curso.imagenUrl}
+              alt={curso.nombre}
+            />
+          )}
           <div className="detail-head">
             <div className="course-icon">{iconoCategoria(curso.categoria)}</div>
             <div>
@@ -164,6 +175,10 @@ export default function CourseDetail({ id }: { id: number }) {
                 <dd>{curso.modalidad ?? "A confirmar"}</dd>
               </div>
               <div className="detail-item">
+                <dt>Sede</dt>
+                <dd>{curso.sede ?? "A confirmar"}</dd>
+              </div>
+              <div className="detail-item">
                 <dt>Horarios</dt>
                 <dd>{curso.horarios ?? "A confirmar"}</dd>
               </div>
@@ -176,6 +191,10 @@ export default function CourseDetail({ id }: { id: number }) {
                 <dd>{formatearFecha(curso.fechaInicio)}</dd>
               </div>
               <div className="detail-item">
+                <dt>Fin de cursada</dt>
+                <dd>{formatearFecha(curso.fechaFin)}</dd>
+              </div>
+              <div className="detail-item">
                 <dt>Docente</dt>
                 <dd>{nombresDocentes(curso.docentes)}</dd>
               </div>
@@ -184,9 +203,20 @@ export default function CourseDetail({ id }: { id: number }) {
                 <dd>{cuposText}</dd>
               </div>
             </dl>
-            <Link href="/inscripcion" className="detail-cta">
-              Inscribirme
-            </Link>
+            {curso.enlaceInscripcion ? (
+              <a
+                href={curso.enlaceInscripcion}
+                className="detail-cta"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Inscribirme
+              </a>
+            ) : (
+              <Link href="/#guia" className="detail-cta">
+                Inscribirme
+              </Link>
+            )}
           </div>
         </aside>
       </div>

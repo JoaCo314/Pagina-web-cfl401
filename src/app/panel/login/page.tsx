@@ -22,6 +22,9 @@ export default async function PanelLoginPage() {
         <p className="auth-sub">
           Ingresá con tu cuenta para administrar la plataforma del CFL 401.
         </p>
+        <p className="auth-note">
+          Solo nuestro personal institucional necesita ingresar al sistema.
+        </p>
         <LoginForm />
       </div>
     </main>

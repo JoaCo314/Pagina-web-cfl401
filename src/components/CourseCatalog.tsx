@@ -20,6 +20,8 @@ type Curso = {
   horarios: string | null;
   mesesCursada: string | null;
   fechaInicio: string | null;
+  sede: string | null;
+  imagenUrl: string | null;
   docentes: { docente: Docente }[];
 };
 
@@ -30,6 +32,10 @@ function CourseCard({ curso }: { curso: Curso }) {
 
   return (
     <div className="course-card">
+      {curso.imagenUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img className="course-img" src={curso.imagenUrl} alt={curso.nombre} />
+      )}
       <div className="course-top">
         <div className="course-icon">{iconoCategoria(curso.categoria)}</div>
         {curso.cupos !== null && (
@@ -43,6 +49,7 @@ function CourseCard({ curso }: { curso: Curso }) {
       <p className="course-docente">
         Docente: {nombresDocentes(curso.docentes)}
         {" · "}Inicia {formatearFecha(curso.fechaInicio)}
+        {curso.sede ? ` · Sede: ${curso.sede}` : ""}
       </p>
       <div className="course-tags">
         {curso.horarios && <span className="tag">{curso.horarios}</span>}
@@ -114,11 +121,13 @@ export default function CourseCatalog() {
               type="text"
               className="filter-input"
               placeholder="Buscar por nombre de curso o palabra clave..."
+              aria-label="Buscar cursos por nombre o palabra clave"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
             />
             <select
               className="filter-select"
+              aria-label="Filtrar cursos por rubro"
               value={rubro}
               onChange={(e) => setRubro(e.target.value)}
             >

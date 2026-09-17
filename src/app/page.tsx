@@ -2,6 +2,7 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import GuiaInscripcion from "@/components/GuiaInscripcion";
+import NoticiasHome from "@/components/NoticiasHome";
 
 export default function Home() {
   const anio = new Date().getFullYear();
@@ -10,7 +11,7 @@ export default function Home() {
     <>
       <SiteHeader />
 
-      <section className="hero">
+      <section className="hero" id="contenido" tabIndex={-1}>
         <div className="wrap">
           <div className="badge-row">
             <div className="pill">
@@ -45,6 +46,8 @@ export default function Home() {
           <GuiaInscripcion />
         </div>
       </section>
+
+      <NoticiasHome />
 
       <section className="cta-band" id="oferta">
         <div className="wrap">

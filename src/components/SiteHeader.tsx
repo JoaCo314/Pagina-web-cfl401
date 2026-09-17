@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 
 type SiteHeaderProps = {
   active?: string;
@@ -6,16 +9,24 @@ type SiteHeaderProps = {
 
 const NAV_ITEMS = [
   { label: "Cursos", href: "/cursos", key: "cursos" },
-  { label: "Docentes", href: "#", key: "docentes" },
   { label: "Sobre el centro", href: "#", key: "sobre" },
-  { label: "Noticias", href: "#", key: "noticias" },
+  { label: "Noticias", href: "/noticias", key: "noticias" },
   { label: "Preguntas frecuentes", href: "#", key: "faq" },
   { label: "Contacto", href: "#", key: "contacto" },
 ];
 
 export default function SiteHeader({ active }: SiteHeaderProps) {
+  const [menuAbierto, setMenuAbierto] = useState(false);
+
+  function cerrarMenu() {
+    setMenuAbierto(false);
+  }
+
   return (
     <>
+      <a href="#contenido" className="skip-link">
+        Saltar al contenido
+      </a>
       <div className="topbar">
         <div className="wrap">
           <div className="topbar-badges">
@@ -32,7 +43,7 @@ export default function SiteHeader({ active }: SiteHeaderProps) {
 
       <header className="site-header">
         <nav className="wrap site-nav">
-          <Link href="/" className="logo">
+          <Link href="/" className="logo" onClick={cerrarMenu}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/cfl401azul_logo.jpg"
@@ -46,6 +57,7 @@ export default function SiteHeader({ active }: SiteHeaderProps) {
               <span className="sub">Azul</span>
             </span>
           </Link>
+
           <div className="navlinks">
             {NAV_ITEMS.map((item) =>
               item.href.startsWith("/") ? (
@@ -67,10 +79,66 @@ export default function SiteHeader({ active }: SiteHeaderProps) {
               )
             )}
           </div>
-          <a href="#" className="nav-cta">
-            Inscribirme
-          </a>
+
+          <div className="nav-actions">
+            <Link href="/panel/login" className="btn-login">
+              Iniciar sesión
+            </Link>
+            <Link href="/cursos" className="nav-cta">
+              Inscribirme
+            </Link>
+          </div>
+
+          <button
+            type="button"
+            className={`nav-burger${menuAbierto ? " abierto" : ""}`}
+            aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}
+            aria-expanded={menuAbierto}
+            onClick={() => setMenuAbierto((v) => !v)}
+          >
+            <span className="burger-line" />
+            <span className="burger-line" />
+            <span className="burger-line" />
+          </button>
         </nav>
+
+        {menuAbierto && (
+          <div className="nav-mobile">
+            {NAV_ITEMS.map((item) =>
+              item.href.startsWith("/") ? (
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  className={active === item.key ? "active" : undefined}
+                  onClick={cerrarMenu}
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <a
+                  key={item.key}
+                  href={item.href}
+                  className={active === item.key ? "active" : undefined}
+                  onClick={cerrarMenu}
+                >
+                  {item.label}
+                </a>
+              )
+            )}
+            <div className="nav-mobile-actions">
+              <Link
+                href="/panel/login"
+                className="btn-login"
+                onClick={cerrarMenu}
+              >
+                Iniciar sesión
+              </Link>
+              <Link href="/cursos" className="nav-cta" onClick={cerrarMenu}>
+                Inscribirme
+              </Link>
+            </div>
+          </div>
+        )}
       </header>
     </>
   );

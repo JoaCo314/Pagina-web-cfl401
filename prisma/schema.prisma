@@ -52,6 +52,9 @@ model Curso {
   horarios  String?
   mesesCursada String?
   fechaInicio DateTime?
+  fechaFin   DateTime?
+  sede       String?
+  enlaceInscripcion String?
   programaContenidos String?
   categoria String?
   cupos     Int?
@@ -78,6 +81,38 @@ model CursoDocente {
   @@id([cursoId, docenteId])
   @@index([docenteId])
   @@map("cursos_docentes")
+}
+
+/// Imagen subida desde el panel (cursos y noticias). Se guarda en la base como
+/// bytes y se sirve por /api/imagenes/[id]. En Curso.imagenUrl y
+/// Noticia.imagenUrl se persiste esa URL interna (o una URL externa heredada).
+model Imagen {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  mimeType  String
+  tamano    Int
+  datos     Bytes
+  createdAt DateTime @default(now())
+
+  @@map("imagenes")
+}
+
+/// Noticia institucional publicada en el sitio público (RF-17). Se administra
+/// desde el panel por Administrador y Preceptor. `activo` controla si se
+/// muestra en el listado y detalle públicos.
+model Noticia {
+  id        Int      @id @default(autoincrement())
+  titulo    String
+  resumen   String?
+  contenido String
+  fecha     DateTime
+  imagenUrl String?
+  activo    Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("noticias")
 }
 
 /// Contenido textual editable de la guía general de inscripción (RF-05).

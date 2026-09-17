@@ -38,6 +38,25 @@ async function upsertCurso(data: CursoData) {
   return prisma.curso.create({ data });
 }
 
+type NoticiaData = {
+  titulo: string;
+  resumen?: string;
+  contenido: string;
+  fecha: Date;
+  imagenUrl?: string;
+  activo?: boolean;
+};
+
+async function upsertNoticia(data: NoticiaData) {
+  const existing = await prisma.noticia.findFirst({
+    where: { titulo: data.titulo },
+  });
+  if (existing) {
+    return prisma.noticia.update({ where: { id: existing.id }, data });
+  }
+  return prisma.noticia.create({ data });
+}
+
 async function main() {
   const roles = [
     {
@@ -199,9 +218,66 @@ async function main() {
     console.log(`Curso listo: "${saved.nombre}" (${docentes.length} docente(s))`);
   }
 
+  const noticias: NoticiaData[] = [
+    {
+      titulo: "Ya está abierta la preinscripción a los cursos 2026",
+      resumen:
+        "Conocé la documentación necesaria y los pasos online para asegurar tu cupo en la oferta del segundo cuatrimestre.",
+      contenido: `La preinscripción a la oferta educativa 2026 ya se encuentra abierta en todas las sedes del CFL 401.
+
+Para anotarte, elegí la capacitación que te interesa en la sección de Oferta Educativa y completá el formulario de preinscripción con tus datos personales.
+
+Luego presentá la documentación requerida en la sede dentro de los plazos indicados. La inscripción es gratuita y abierta a toda la comunidad.`,
+      fecha: new Date("2026-08-12T00:00:00Z"),
+      activo: true,
+    },
+    {
+      titulo: "Se busca instructor para el curso de Robótica y Automatización",
+      resumen:
+        "Llamado público para cobertura de horas cátedra en el trayecto formativo técnico de Robótica.",
+      contenido: `El Centro de Formación Laboral 401 llama a interesados para cubrir horas cátedra del curso de Robótica y Automatización.
+
+Requisitos: formación técnica afín y experiencia comprobable en el dictado de capacitaciones.
+
+Los interesados deben enviar su currículum al correo institucional indicando el trayecto al que se postulan.`,
+      fecha: new Date("2026-08-08T00:00:00Z"),
+      activo: true,
+    },
+    {
+      titulo: "Arrancó el proyecto de los alumnos para la Expo del CFL 401",
+      resumen:
+        "Estudiantes de los talleres de Madera y Electricidad colaboran en la estructura de la muestra colectiva anual.",
+      contenido: `Con gran entusiasmo comenzó el proyecto conjunto de los talleres de Madera y Electricidad para la Expo anual del CFL 401.
+
+Los estudiantes trabajan en el diseño y la construcción de la estructura de la muestra, guiados por sus docentes.
+
+La exposición será abierta al público y contará con la presencia de la comunidad educativa.`,
+      fecha: new Date("2026-08-03T00:00:00Z"),
+      activo: true,
+    },
+    {
+      titulo: "Entrega de certificados a egresados de Panadería",
+      resumen:
+        "En un cálido acto institucional se entregaron los certificados oficializados a más de 30 alumnos.",
+      contenido: `Se realizó la entrega de certificados a los egresados del taller de Panadería, en un acto que reunió a alumnos, docentes y familias.
+
+Más de 30 estudiantes completaron la formación y recibieron su certificación oficial.
+
+Felicitamos a todos los egresados y los invitamos a continuar su formación en los nuevos trayectos del centro.`,
+      fecha: new Date("2026-07-20T00:00:00Z"),
+      activo: true,
+    },
+  ];
+
+  for (const noticia of noticias) {
+    const saved = await upsertNoticia(noticia);
+    console.log(`Noticia lista: "${saved.titulo}"`);
+  }
+
   const totalUsuarios = await prisma.usuario.count();
   const totalCursos = await prisma.curso.count();
   const totalAsignaciones = await prisma.cursoDocente.count();
+  const totalNoticias = await prisma.noticia.count();
 
   const contenidosGuia = [
     {
@@ -254,7 +330,7 @@ async function main() {
   const totalContenidosGuia = await prisma.contenidoGuia.count();
 
   console.log("---");
-  console.log(`Seed completado: ${totalUsuarios} usuarios, ${totalCursos} cursos, ${totalAsignaciones} asignaciones, ${totalContenidosGuia} contenidos de guía.`);
+  console.log(`Seed completado: ${totalUsuarios} usuarios, ${totalCursos} cursos, ${totalAsignaciones} asignaciones, ${totalContenidosGuia} contenidos de guía, ${totalNoticias} noticias.`);
 }
 
 main()
