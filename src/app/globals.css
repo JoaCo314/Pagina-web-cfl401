@@ -699,6 +699,18 @@ a {
 .noticias-section {
   padding: 56px 0;
 }
+.noticias-section .section-head {
+  max-width: 620px;
+  margin-bottom: 32px;
+}
+.noticias-section .section-head h2 {
+  font-size: 28px;
+  color: var(--cfl-navy);
+  margin-bottom: 8px;
+}
+.noticias-section .section-head p {
+  opacity: 0.7;
+}
 .noticias-list {
   display: flex;
   flex-direction: column;
