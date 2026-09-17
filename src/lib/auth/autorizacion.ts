@@ -163,6 +163,7 @@ export function obtenerSeccionesPanel(
       clave: "guia",
       titulo: "Guía de inscripción",
       descripcion: "Edición del contenido público de la guía.",
+      href: "/panel/guia",
     });
   }
 
