@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
-import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
+import {
+  PERMISOS,
+  tienePermiso,
+  puedeGestionarCurso,
+} from "@/lib/auth/autorizacion";
 import { CURSO_SELECT, validarDatosCurso } from "@/lib/cursoAdmin";
 
 export const dynamic = "force-dynamic";
@@ -60,9 +64,10 @@ export async function GET(
   }
 }
 
-/// Edición de curso (RF-09, parte admin/preceptor): cualquier curso,
-/// incluyendo la reasignación de docentes. Los docentes se manejan por
-/// separado (solo sus cursos asignados) en su correspondiente tarea.
+/// Edición de curso (RF-09): Administrador y Preceptor gestionan cualquier
+/// curso (incluida la reasignación de docentes). Un Docente puede editar SOLO
+/// los cursos que le fueron asignados (CursoDocente) y nunca la asignación de
+/// docentes (RF-12). Los docentes no eliminan cursos (se maneja en DELETE).
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -83,21 +88,24 @@ export async function PUT(
     return NextResponse.json({ error: "No autorizado." }, { status: 401 });
   }
 
-  if (!tienePermiso(user, PERMISOS.CURSOS_EDITAR)) {
-    return NextResponse.json(
-      { error: "No tenés permiso para realizar esta acción." },
-      { status: 403 }
-    );
-  }
-
   const existente = await prisma.curso.findUnique({
     where: { id: cursoId },
-    select: { id: true },
+    select: { id: true, docentes: { select: { docenteId: true } } },
   });
   if (!existente) {
     return NextResponse.json(
       { error: "El curso a editar no existe." },
       { status: 404 }
+    );
+  }
+
+  // RF-09/RF-16: un Docente gestiona únicamente los cursos que le fueron
+  // asignados; Administrador y Preceptor gestionan cualquier curso.
+  const esGestorGlobal = tienePermiso(user, PERMISOS.CURSOS_EDITAR);
+  if (!puedeGestionarCurso(user, existente)) {
+    return NextResponse.json(
+      { error: "No tenés permiso para realizar esta acción." },
+      { status: 403 }
     );
   }
 
@@ -119,6 +127,17 @@ export async function PUT(
   const { docenteIds, activo, ...campos } = resultado.datos;
   const presentes = new Set(resultado.presentes);
 
+  // RF-12: la asignación de docentes solo la decide Administrador o
+  // Preceptor. Un Docente (aunque gestione el curso) no puede modificarla.
+  if (!esGestorGlobal && presentes.has("docenteIds")) {
+    return NextResponse.json(
+      {
+        error: "El Docente no puede modificar la asignación de docentes del curso.",
+      },
+      { status: 403 }
+    );
+  }
+
   const data: Record<string, unknown> = {};
   for (const clave of Object.keys(campos)) {
     if (presentes.has(clave)) {
@@ -128,7 +147,7 @@ export async function PUT(
   if (presentes.has("activo") && activo !== undefined) {
     data.activo = activo;
   }
-  const reasignarDocentes = presentes.has("docenteIds");
+  const reasignarDocentes = esGestorGlobal && presentes.has("docenteIds");
 
   try {
     await prisma.$transaction([

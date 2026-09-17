@@ -1,6 +1,11 @@
 import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/session";
-import { PERMISOS, obtenerSeccionesPanel, tienePermiso } from "@/lib/auth/autorizacion";
+import {
+  PERMISOS,
+  obtenerSeccionesPanel,
+  tienePermiso,
+  puedeGestionarCurso,
+} from "@/lib/auth/autorizacion";
 import { prisma } from "@/lib/prisma";
 import { CURSO_SELECT, obtenerDocentesActivos } from "@/lib/cursoAdmin";
 import PanelShell from "@/components/auth/PanelShell";
@@ -17,16 +22,13 @@ export default async function EditarCursoPage({
   const { id } = await params;
   const cursoId = Number(id);
   if (!Number.isInteger(cursoId) || cursoId <= 0) {
-    notFound();
+    return notFound();
   }
 
   const user = await getCurrentUser();
 
   if (!user) {
     redirect("/panel/login");
-  }
-  if (!tienePermiso(user, PERMISOS.CURSOS_EDITAR)) {
-    redirect("/panel");
   }
 
   const [curso, docentes] = await Promise.all([
@@ -38,7 +40,14 @@ export default async function EditarCursoPage({
   ]);
 
   if (!curso) {
-    notFound();
+    return notFound();
+  }
+
+  // RF-09/RF-16: el Docente puede editar únicamente los cursos que le fueron
+  // asignados; Administrador y Preceptor editan cualquier curso. El selector
+  // de docentes queda oculto para el Docente (puedeAsignarDocentes=false).
+  if (!puedeGestionarCurso(user, curso)) {
+    redirect("/panel");
   }
 
   const inicial: CursoFormInicial = {

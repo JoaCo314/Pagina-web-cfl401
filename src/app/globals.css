@@ -844,6 +844,14 @@ a.panel-nav-item:hover {
   font-size: 12.5px;
   text-align: right;
 }
+.panel-lista li .curso-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.panel-lista li .curso-info span {
+  text-align: left;
+}
 .panel-vacio {
   margin-top: 14px;
 }

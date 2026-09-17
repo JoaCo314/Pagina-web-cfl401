@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/session";
 import { obtenerSeccionesPanel } from "@/lib/auth/autorizacion";
 import { ROLES } from "@/lib/auth/roles";
@@ -30,7 +31,7 @@ export default async function PanelPage() {
       <h1 className="panel-title">Hola, {user.nombre}</h1>
       <p className="panel-lead">
         {user.rol.nombre === ROLES.DOCENTE
-          ? "Desde acá vas a gestionar los cursos que te fueron asignados. No tenés acceso a los cursos de otros docentes ni a las secciones administrativas."
+          ? "Desde acá vas a gestionar los cursos que te fueron asignados: podés editarlos, pero no eliminar tus cursos ni modificar la asignación de docentes. No tenés acceso a los cursos de otros docentes ni a las secciones administrativas."
           : "Desde acá vas a administrar los cursos, los usuarios y la guía de inscripción de la plataforma."}
       </p>
 
@@ -44,8 +45,16 @@ export default async function PanelPage() {
                 <ul className="panel-lista">
                   {misCursos.map((c) => (
                     <li key={c.id}>
-                      <strong>{c.nombre}</strong>
-                      <span>{c.horarios ?? "Sin horario definido"}</span>
+                      <div className="curso-info">
+                        <strong>{c.nombre}</strong>
+                        <span>{c.horarios ?? "Sin horario definido"}</span>
+                      </div>
+                      <Link
+                        href={`/panel/cursos/${c.id}/editar`}
+                        className="link-accion"
+                      >
+                        Editar
+                      </Link>
                     </li>
                   ))}
                 </ul>
