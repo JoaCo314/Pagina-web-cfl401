@@ -114,11 +114,13 @@ export default function CourseCatalog() {
               type="text"
               className="filter-input"
               placeholder="Buscar por nombre de curso o palabra clave..."
+              aria-label="Buscar cursos por nombre o palabra clave"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
             />
             <select
               className="filter-select"
+              aria-label="Filtrar cursos por rubro"
               value={rubro}
               onChange={(e) => setRubro(e.target.value)}
             >

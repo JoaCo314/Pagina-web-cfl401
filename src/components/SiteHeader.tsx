@@ -24,6 +24,9 @@ export default function SiteHeader({ active }: SiteHeaderProps) {
 
   return (
     <>
+      <a href="#contenido" className="skip-link">
+        Saltar al contenido
+      </a>
       <div className="topbar">
         <div className="wrap">
           <div className="topbar-badges">

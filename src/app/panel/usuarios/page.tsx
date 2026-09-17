@@ -71,21 +71,21 @@ export default async function UsuariosPanelPage() {
             <tbody>
               {usuarios.map((u) => (
                 <tr key={u.id}>
-                  <td>
+                  <td data-label="Nombre">
                     <strong>
                       {u.nombre} {u.apellido}
                     </strong>
                   </td>
-                  <td>{u.email}</td>
-                  <td>{u.rol.nombre}</td>
-                  <td>
+                  <td data-label="Email">{u.email}</td>
+                  <td data-label="Rol">{u.rol.nombre}</td>
+                  <td data-label="Estado">
                     <span
                       className={`badge-estado ${u.activo ? "ok" : "off"}`}
                     >
                       {u.activo ? "Activo" : "Inactivo"}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="">
                     <ToggleUsuario
                       usuarioId={u.id}
                       nombre={`${u.nombre} ${u.apellido}`}
