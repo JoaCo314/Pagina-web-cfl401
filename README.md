@@ -31,6 +31,7 @@ Pagina-web-cfl401/
 ├── assets/                   # Assets originales del sitio (referencia)
 ├── Dockerfile                # Build de producción (web + init)
 ├── docker-compose.yml        # Orquestación (web + db + init)
+├── docker-entrypoint.sh      # Arranque del contenedor: migraciones + seed + server
 ├── .env.example              # Variables de entorno de ejemplo
 └── README.md
 ```
@@ -148,13 +149,18 @@ docker compose down -v     # Detener y borrar datos de la BD
 
 ## ☁️ Producción (VPS / Dokploy)
 
-El stack es el mismo `docker-compose.yml`. Al desplegar en un VPS (por ejemplo con Dokploy) verificá:
+Se puede desplegar tanto el stack completo (`docker-compose.yml`) como un **contenedor único** en Dokploy (build del `Dockerfile`). En ambos casos las migraciones corren automáticamente:
+
+- **Contenedor único (Dokploy)**: el contenedor que arranca la web ejecuta `prisma migrate deploy` en cada inicio, dentro de `docker-entrypoint.sh`, antes de levantar el servidor. Si la base aún no está lista, reintenta hasta `MIGRATE_RETRIES` veces (default `30`, cada 2 s) y luego falla con error (visible en los logs del deploy).
+- **Stack con Compose**: el servicio `init` corre las migraciones (y el seed si `RUN_SEED=true`) antes de que arranque `web`. Con el nuevo entrypoint, `web` también las vuelve a aplicar en cada arranque (no-op si ya están aplicadas).
+
+Opciones al desplegar:
 
 - **`AUTH_SECRET`**: definilo como variable/secreto del stack con un valor aleatorio de 32 bytes (`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`). Sin esto las sesiones usan el fallback de desarrollo.
 - **`POSTGRES_PASSWORD`**: usá una contraseña fuerte y distinta de la de desarrollo.
-- **Migraciones**: el servicio `init` corre `npx prisma migrate deploy` (y el seed si `RUN_SEED=true`) antes de que arranque `web`. El servicio `web` espera a que `init` termine con éxito.
-- **`RUN_SEED`**: en producción con datos reales ponelo en `false` para no regenerar datos de prueba.
-- **Base expuesta**: el servicio `db` queda en loopback (`127.0.0.1:5432:5432`); no es accesible desde afuera.
+- **`RUN_SEED`**: controla el seed de datos de prueba (default `true` en Compose). En producción con datos reales ponelo en `false` para no regenerar datos de prueba.
+- **`MIGRATE_RETRIES`**: cantidad de reintentos de `migrate deploy` al arrancar (default `30`).
+- **Base expuesta**: en el stack Compose el servicio `db` queda en loopback (`127.0.0.1:5432:5432`); en Dokploy la base suele ser otro contenedor del mismo proyecto, configurado como secreto/URL en `DATABASE_URL`.
 - **Firewall**: abrí el puerto `4088/tcp` (o el que configuren en el mapeo) y `80/443` si usan dominio con HTTPS.
 - **HTTPS con proxy**: si ponés dominio con HTTPS delante (ej. Traefik), el login no marca la cookie como `Secure` (funciona igual); para endurecerlo se puede habilitar `server.hostname`/`trustHost` en `next.config.ts`.
 

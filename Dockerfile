@@ -34,15 +34,24 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
+ENV HOME=/home/nextjs
 
-RUN addgroup -S nodejs && adduser -S nextjs -G nodejs
+RUN addgroup -S nodejs && adduser -S nextjs -G nodejs && mkdir -p /home/nextjs && chown -R nextjs:nodejs /home/nextjs
 
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Herramientas para correr las migraciones (y el seed) al arrancar el contenedor:
+# CLI de Prisma, engines (musl), tsx, dotenv y el cliente generado.
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app/src/generated ./src/generated
+COPY prisma ./prisma
+COPY prisma7.config.ts ./prisma7.config.ts
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
+
 USER nextjs
 
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+ENTRYPOINT ["sh", "./docker-entrypoint.sh"]
