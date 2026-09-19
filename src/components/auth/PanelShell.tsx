@@ -53,6 +53,9 @@ export default function PanelShell({
               </strong>
               <span>{user.rol.nombre}</span>
             </div>
+            <Link href="/" className="panel-ver-sitio">
+              Ver sitio ↗
+            </Link>
             <button
               type="button"
               className="panel-logout"

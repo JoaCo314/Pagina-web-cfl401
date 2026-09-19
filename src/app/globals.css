@@ -1255,6 +1255,20 @@ a {
 .panel-logout:disabled {
   opacity: 0.6;
 }
+.panel-ver-sitio {
+  background: var(--cfl-blue);
+  color: var(--cfl-white);
+  padding: 8px 14px;
+  border-radius: 5px;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.panel-ver-sitio:hover {
+  background: var(--cfl-blue-deep);
+}
 .panel-nav {
   position: relative;
   background: var(--cfl-white);

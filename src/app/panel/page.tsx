@@ -92,10 +92,6 @@ export default async function PanelPage() {
       where: { activo: true },
     });
     sobreElCentroCargado = sobre !== null;
-    estadisticas.push({
-      etiqueta: "Página institucional",
-      valor: sobre ? "Cargada" : "Pendiente",
-    });
   }
 
   const atajos = secciones.filter((s) => s.clave !== "inicio");
