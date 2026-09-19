@@ -18,6 +18,8 @@ export const PERMISOS = {
   NOTICIAS_CREAR: "noticias:crear",
   NOTICIAS_EDITAR: "noticias:editar",
   NOTICIAS_ELIMINAR: "noticias:eliminar",
+  SOBRE_EL_CENTRO_EDITAR: "sobre_el_centro:editar",
+  PREGUNTAS_FAQS_EDITAR: "preguntas_faqs:editar",
 } as const;
 
 export type Permiso = (typeof PERMISOS)[keyof typeof PERMISOS];
@@ -52,6 +54,8 @@ const PERMISOS_POR_ROL: Record<
     PERMISOS.NOTICIAS_CREAR,
     PERMISOS.NOTICIAS_EDITAR,
     PERMISOS.NOTICIAS_ELIMINAR,
+    PERMISOS.SOBRE_EL_CENTRO_EDITAR,
+    PERMISOS.PREGUNTAS_FAQS_EDITAR,
   ],
   [ROLES.PRECEPTOR]: [
     PERMISOS.CURSOS_VER,
@@ -66,6 +70,8 @@ const PERMISOS_POR_ROL: Record<
     PERMISOS.NOTICIAS_CREAR,
     PERMISOS.NOTICIAS_EDITAR,
     PERMISOS.NOTICIAS_ELIMINAR,
+    PERMISOS.SOBRE_EL_CENTRO_EDITAR,
+    PERMISOS.PREGUNTAS_FAQS_EDITAR,
   ],
   [ROLES.DOCENTE]: [PERMISOS.CURSOS_VER],
 };
@@ -115,7 +121,15 @@ export function puedeGestionarCurso(
 }
 
 export type SeccionPanel = {
-  clave: "inicio" | "cursos" | "mis_cursos" | "usuarios" | "guia" | "noticias";
+  clave:
+    | "inicio"
+    | "cursos"
+    | "mis_cursos"
+    | "usuarios"
+    | "guia"
+    | "noticias"
+    | "sobre"
+    | "faqs";
   titulo: string;
   descripcion: string;
   href?: string;
@@ -182,6 +196,24 @@ export function obtenerSeccionesPanel(
       titulo: "Noticias",
       descripcion: "Publicación y edición de las noticias del sitio.",
       href: "/panel/noticias",
+    });
+  }
+
+  if (tienePermiso(usuario, PERMISOS.SOBRE_EL_CENTRO_EDITAR)) {
+    secciones.push({
+      clave: "sobre",
+      titulo: "Sobre el centro",
+      descripcion: "Edición de la página institucional con la historia del centro.",
+      href: "/panel/sobre-el-centro",
+    });
+  }
+
+  if (tienePermiso(usuario, PERMISOS.PREGUNTAS_FAQS_EDITAR)) {
+    secciones.push({
+      clave: "faqs",
+      titulo: "Preguntas frecuentes",
+      descripcion: "Categorías y preguntas de la página pública.",
+      href: "/panel/preguntas-frecuentes",
     });
   }
 

@@ -329,8 +329,104 @@ Felicitamos a todos los egresados y los invitamos a continuar su formación en l
 
   const totalContenidosGuia = await prisma.contenidoGuia.count();
 
+  // ── Contenido de "Sobre el centro" (sección institucional) ────────────────
+  const sobreExistente = await prisma.sobreElCentro.findFirst();
+  if (!sobreExistente) {
+    await prisma.sobreElCentro.create({
+      data: {
+        intro:
+          "El Centro de Formación Laboral 401 de Azul acompaña a la comunidad en su formación para el trabajo desde hace más de 30 años, con cursos gratuitos y presenciales.",
+        misionTitulo: "Nuestra misión",
+        misionTexto:
+          "Brindamos capacitación laboral pública, gratuita y de calidad para fortalecer las capacidades de las personas para el trabajo, acompañando la inserción de la comunidad de Azul y la región.",
+        historiaTitulo: "Nuestra historia",
+        historiaTexto:
+          "El Centro de Formación Laboral 401 nació con el objetivo de acercar oficios a la comunidad de Azul. A lo largo de los años fue creciendo su oferta educativa y su equipamiento, siempre apostando a la formación para el trabajo.",
+        hitos: [
+          {
+            anio: "Década del 90",
+            titulo: "Los comienzos",
+            texto:
+              "El centro inicia sus actividades con los primeros cursos de oficio.",
+          },
+          {
+            anio: "Hoy",
+            titulo: "Más de 30 cursos",
+            texto:
+              "Una amplia oferta educativa presencial y gratuita para toda la comunidad.",
+          },
+        ],
+        estadisticasTitulo: "Números que nos respaldan",
+        estadisticas: [
+          { valor: "30+", etiqueta: "años de historia" },
+          { valor: "25+", etiqueta: "cursos por año" },
+        ],
+      },
+    });
+  }
+
+  const tieneSobre = (await prisma.sobreElCentro.count()) > 0;
+
+  // ── Preguntas frecuentes (página pública) ────────────────────────────────
+  const categoriasSemilla = [
+    {
+      nombre: "Inscripción",
+      preguntas: [
+        {
+          pregunta: "¿Cómo me inscribo a un curso?",
+          respuesta:
+            "Elegí la capacitación que te interesa en la sección de Oferta Educativa, completá el formulario de preinscripción y presentá la documentación requerida dentro de los plazos indicados. La inscripción es gratuita.",
+        },
+        {
+          pregunta: "¿Hay límite de edad para inscribirme?",
+          respuesta:
+            "Podés inscribirte a partir de los 18 años. Menores de edad pueden hacerlo con autorización de padre, madre o tutor.",
+        },
+      ],
+    },
+    {
+      nombre: "Cursada",
+      preguntas: [
+        {
+          pregunta: "¿Los cursos son gratuitos?",
+          respuesta:
+            "Sí, todas las capacitaciones del CFL 401 son gratuitas y de carácter público.",
+        },
+        {
+          pregunta: "¿Qué modalidad tienen las clases?",
+          respuesta:
+            "Las clases son presenciales. Los horarios varían según la cursada; consultá la ficha de cada curso.",
+        },
+      ],
+    },
+  ];
+
+  let totalCategorias = 0;
+  let totalPreguntas = 0;
+  for (const cat of categoriasSemilla) {
+    const categoria = await prisma.categoriaPregunta.upsert({
+      where: { nombre: cat.nombre },
+      update: { orden: 1 },
+      create: { nombre: cat.nombre, orden: 1 },
+    });
+    totalCategorias += 1;
+    for (const preg of cat.preguntas) {
+      const existe = await prisma.preguntaFrecuente.findFirst({
+        where: { pregunta: preg.pregunta, categoriaId: categoria.id },
+      });
+      if (!existe) {
+        await prisma.preguntaFrecuente.create({
+          data: { ...preg, categoriaId: categoria.id },
+        });
+        totalPreguntas += 1;
+      }
+    }
+  }
+
   console.log("---");
-  console.log(`Seed completado: ${totalUsuarios} usuarios, ${totalCursos} cursos, ${totalAsignaciones} asignaciones, ${totalContenidosGuia} contenidos de guía, ${totalNoticias} noticias.`);
+  console.log(
+    `Seed completado: ${totalUsuarios} usuarios, ${totalCursos} cursos, ${totalAsignaciones} asignaciones, ${totalContenidosGuia} contenidos de guía, ${totalNoticias} noticias, sobre el centro: ${tieneSobre ? "sí" : "no"}, ${totalCategorias} categorías, ${totalPreguntas} preguntas nuevas.`
+  );
 }
 
 main()
