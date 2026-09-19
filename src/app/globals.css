@@ -940,6 +940,255 @@ a {
   cursor: default;
 }
 
+/* ── Sobre el centro (página institucional) ─────────────── */
+.sobre-section {
+  padding: 56px 0;
+}
+.sobre-mision {
+  background: var(--cfl-white);
+}
+.sobre-mision .section-head {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 14px;
+}
+.sobre-mision .section-head h2,
+.sobre-historia .section-head h2,
+.sobre-estadisticas .section-head h2,
+.sobre-galeria .section-head h2 {
+  font-size: 28px;
+  color: var(--cfl-navy);
+  margin-bottom: 8px;
+}
+.sobre-mision .section-head p,
+.sobre-historia .section-head p,
+.sobre-galeria .section-head p {
+  opacity: 0.7;
+}
+.sobre-mision-texto {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+  font-size: 17px;
+  line-height: 1.65;
+  opacity: 0.88;
+}
+.sobre-historia {
+  background: var(--cfl-blue-light);
+}
+.sobre-historia .section-head {
+  max-width: 620px;
+  margin-bottom: 10px;
+}
+.sobre-historia-texto {
+  max-width: 720px;
+  font-size: 15.5px;
+  line-height: 1.7;
+  opacity: 0.85;
+  white-space: pre-line;
+}
+.timeline {
+  list-style: none;
+  margin-top: 36px;
+  max-width: 720px;
+}
+.timeline-item {
+  position: relative;
+  display: flex;
+  gap: 20px;
+  padding: 0 0 30px 28px;
+  border-left: 2px solid var(--cfl-blue);
+}
+.timeline-item:last-child {
+  border-left-color: transparent;
+  padding-bottom: 0;
+}
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--cfl-blue);
+  border: 2px solid var(--cfl-blue-light);
+}
+.timeline-anio {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: var(--cfl-navy-2);
+  font-size: 14px;
+  min-width: 96px;
+}
+.timeline-body h3 {
+  font-size: 17px;
+  color: var(--cfl-navy);
+  margin-bottom: 6px;
+}
+.timeline-body p {
+  font-size: 14.5px;
+  opacity: 0.8;
+  line-height: 1.6;
+}
+.sobre-estadisticas {
+  background: var(--cfl-white);
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  margin-top: 10px;
+}
+.stat-card {
+  background: var(--cfl-navy-2);
+  color: var(--cfl-white);
+  border-radius: 8px;
+  padding: 26px 20px;
+  text-align: center;
+}
+.stat-card strong {
+  display: block;
+  font-size: 34px;
+  color: var(--cfl-blue-light);
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+.stat-card span {
+  font-size: 14px;
+  opacity: 0.85;
+}
+.sobre-galeria {
+  background: var(--cfl-white);
+}
+.sobre-galeria .wrap {
+  max-width: 1060px;
+}
+.galeria-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  margin-top: 10px;
+}
+.galeria-item {
+  margin: 0;
+  background: var(--cfl-white);
+  border: 1.5px solid rgba(18, 42, 69, 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.galeria-item img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+.galeria-item figcaption {
+  padding: 10px 14px;
+  font-size: 13px;
+  opacity: 0.75;
+  line-height: 1.45;
+}
+.sobre-section-vacio {
+  background: var(--cfl-white);
+}
+.sobre-section-vacio .section-head {
+  max-width: 560px;
+  margin: 0 auto;
+  text-align: center;
+}
+.sobre-section-vacio .section-head h2 {
+  font-size: 26px;
+  color: var(--cfl-navy);
+  margin-bottom: 10px;
+}
+.sobre-section-vacio .section-head p {
+  opacity: 0.75;
+  margin-bottom: 18px;
+}
+
+/* ── Preguntas frecuentes (página pública) ──────────────── */
+.faq-section {
+  padding: 56px 0;
+  background: var(--cfl-white);
+}
+.faq-wrap {
+  max-width: 780px;
+  margin: 0 auto;
+}
+.faq-categoria {
+  margin-bottom: 38px;
+}
+.faq-categoria h2 {
+  font-size: 22px;
+  color: var(--cfl-navy);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--cfl-blue);
+}
+.faq-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.faq-item {
+  border: 1.5px solid rgba(18, 42, 69, 0.12);
+  border-radius: 8px;
+  background: var(--cfl-white);
+  overflow: hidden;
+}
+.faq-pregunta {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 15.5px;
+  font-weight: 600;
+  color: var(--cfl-navy);
+  text-align: left;
+}
+.faq-pregunta:hover {
+  background: rgba(18, 42, 69, 0.03);
+}
+.faq-icon {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  border-right: 2px solid var(--cfl-blue);
+  border-bottom: 2px solid var(--cfl-blue);
+  transform: rotate(45deg);
+  transition: transform 0.2s;
+}
+.faq-pregunta[aria-expanded="false"] .faq-icon {
+  margin-bottom: 4px;
+}
+.faq-pregunta[aria-expanded="true"] .faq-icon {
+  transform: rotate(225deg);
+  margin-top: 4px;
+}
+.faq-respuesta {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+  padding: 0 18px;
+}
+.faq-respuesta.abierta {
+  max-height: 1000px;
+}
+.faq-respuesta p {
+  font-size: 14.5px;
+  line-height: 1.6;
+  opacity: 0.82;
+  padding-bottom: 16px;
+  white-space: pre-line;
+}
+
 /* ── Panel administrativo ────────────────────────────────── */
 .panel {
   min-height: 100vh;
@@ -1154,6 +1403,148 @@ a.panel-nav-item:hover {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+/* ── Utilidades ──────────────────────────────────────────── */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Panel: contenido institucional ──────────────────────── */
+.panel-box {
+  background: var(--cfl-white);
+  border: 1.5px solid rgba(18, 42, 69, 0.1);
+  border-radius: 8px;
+  padding: 22px;
+  margin-bottom: 24px;
+}
+.panel-box-head {
+  margin-bottom: 16px;
+}
+.panel-box-head h2 {
+  font-size: 17px;
+  color: var(--cfl-navy);
+  margin-bottom: 4px;
+}
+.panel-box-head p {
+  font-size: 13.5px;
+  opacity: 0.7;
+}
+.categorias-crear {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.categorias-crear input {
+  flex: 1;
+}
+.categorias-lista {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.categoria-fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border: 1px solid rgba(18, 42, 69, 0.12);
+  border-radius: 6px;
+}
+.categoria-fila > input {
+  flex: 1;
+  min-width: 200px;
+}
+.categoria-info strong {
+  font-size: 15px;
+  color: var(--cfl-navy);
+}
+.categoria-info small {
+  display: block;
+  opacity: 0.6;
+  font-size: 12.5px;
+  margin-top: 2px;
+}
+.panel-form-seccion {
+  background: var(--cfl-white);
+  border: 1.5px solid rgba(18, 42, 69, 0.1);
+  border-radius: 8px;
+  padding: 22px;
+  margin-bottom: 20px;
+}
+.panel-form-seccion-head {
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(18, 42, 69, 0.08);
+  padding-bottom: 12px;
+}
+.panel-form-seccion-head h2 {
+  font-size: 17px;
+  color: var(--cfl-navy);
+  margin-bottom: 4px;
+}
+.panel-form-seccion-head p {
+  font-size: 13.5px;
+  opacity: 0.7;
+}
+.filas-dinamicas {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.fila-dinamica {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px;
+  border: 1px solid rgba(18, 42, 69, 0.1);
+  border-radius: 6px;
+  background: #f9fbfd;
+}
+.fila-dinamica input {
+  flex: 1;
+  min-width: 120px;
+}
+.fila-hito .fila-hito-anio {
+  flex: 0 0 130px;
+}
+.galeria-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 12px;
+}
+.galeria-panel-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(18, 42, 69, 0.1);
+  border-radius: 6px;
+  background: #f9fbfd;
+}
+.galeria-panel-item img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+.faqs-panel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 /* ── Panel: cursos ───────────────────────────────────────── */
@@ -1603,6 +1994,20 @@ a.panel-nav-item:hover {
     flex-direction: column;
     align-items: flex-start;
     gap: 3px;
+  }
+  .timeline-item {
+    flex-direction: column;
+    gap: 6px;
+    padding-left: 24px;
+  }
+  .timeline-anio {
+    min-width: 0;
+  }
+  .categorias-crear {
+    flex-direction: column;
+  }
+  .categorias-crear .btn-primary {
+    text-align: center;
   }
   .detail-item dd {
     text-align: left;

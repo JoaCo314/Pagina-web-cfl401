@@ -115,6 +115,65 @@ model Noticia {
   @@map("noticias")
 }
 
+/// Contenido de la página pública "Sobre el centro". Se persiste en una única
+/// fila (el panel la edita completa). Las secciones son opcionales: si una
+/// sección no está cargada, no se muestra en la vista pública.
+/// `hitos` = [{ anio, titulo, texto }], `estadisticas` = [{ valor, etiqueta }],
+/// `galeria` = [{ url, leyenda }] (url interna `/api/imagenes/<id>`).
+model SobreElCentro {
+  id             Int      @id @default(autoincrement())
+  intro          String?
+  misionTitulo   String?
+  misionTexto    String?
+  historiaTitulo String?
+  historiaTexto  String?
+  hitos          Json?
+  estadisticasTitulo String?
+  estadisticas   Json?
+  galeriaTitulo  String?
+  galeria        Json?
+  activo         Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sobre_el_centro")
+}
+
+/// Categoría que agrupa preguntas frecuentes. Una categoría sin preguntas
+/// activas no se muestra en la vista pública.
+model CategoriaPregunta {
+  id        Int      @id @default(autoincrement())
+  nombre    String   @unique
+  orden     Int?
+  activo    Boolean  @default(true)
+  preguntas PreguntaFrecuente[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("categorias_preguntas")
+}
+
+/// Pregunta frecuente de la página pública `/preguntas-frecuentes`. `activo`
+/// controla si se muestra; las preguntas se ordenan por `orden` dentro de su
+/// categoría.
+model PreguntaFrecuente {
+  id          Int              @id @default(autoincrement())
+  pregunta    String
+  respuesta   String
+  categoriaId Int
+  categoria   CategoriaPregunta @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+  orden       Int?
+  activo      Boolean          @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoriaId])
+  @@map("preguntas_frecuentes")
+}
+
 /// Contenido textual editable de la guía general de inscripción (RF-05).
 /// Cada registro corresponde a un bloque temático (pasos, documentación,
 /// requisitos, información adicional). El contenido proviene de la BD,

@@ -22,7 +22,7 @@ export default function SiteFooter() {
                 <a href="#">Docentes</a>
               </li>
               <li>
-                <a href="#">Sobre el centro</a>
+                <Link href="/sobre-el-centro">Sobre el centro</Link>
               </li>
             </ul>
           </div>
@@ -30,7 +30,7 @@ export default function SiteFooter() {
             <h4>Ayuda</h4>
             <ul>
               <li>
-                <a href="#">Preguntas frecuentes</a>
+                <Link href="/preguntas-frecuentes">Preguntas frecuentes</Link>
               </li>
               <li>
                 <Link href="/noticias">Noticias</Link>

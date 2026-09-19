@@ -53,8 +53,8 @@ export default function Home() {
         <div className="wrap">
           <h2>¿Tenés dudas sobre un curso o tu inscripción?</h2>
           <p>Nuestro equipo te responde de lunes a viernes de 9 a 18 hs.</p>
-          <Link href="/cursos" className="btn-primary">
-            Explorar la oferta educativa
+          <Link href="/preguntas-frecuentes" className="btn-primary">
+            Ver preguntas frecuentes
           </Link>
         </div>
       </section>
