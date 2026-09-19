@@ -1185,7 +1185,7 @@ a {
   font-size: 14.5px;
   line-height: 1.6;
   opacity: 0.82;
-  padding-bottom: 16px;
+  padding: 6px 0 16px;
   white-space: pre-line;
 }
 
@@ -1477,14 +1477,19 @@ a.panel-nav-item:hover {
   margin-top: 2px;
 }
 .panel-form-seccion {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 22px;
   background: var(--cfl-white);
   border: 1.5px solid rgba(18, 42, 69, 0.1);
   border-radius: 8px;
-  padding: 22px;
+  padding: 24px;
   margin-bottom: 20px;
 }
 .panel-form-seccion-head {
-  margin-bottom: 14px;
+  grid-column: 1 / -1;
+  margin-bottom: 2px;
   border-bottom: 1px solid rgba(18, 42, 69, 0.08);
   padding-bottom: 12px;
 }
