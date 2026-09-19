@@ -25,6 +25,7 @@ export default function PanelShell({
   const router = useRouter();
   const pathname = usePathname();
   const [cerrando, setCerrando] = useState(false);
+  const [menusAbierto, setMenusAbierto] = useState(false);
 
   async function cerrarSesion() {
     setCerrando(true);
@@ -64,8 +65,21 @@ export default function PanelShell({
         </div>
       </header>
 
-      <nav className="panel-nav">
+      <nav className={`panel-nav${menusAbierto ? " abierto" : ""}`}>
         <div className="wrap panel-nav-inner">
+          <button
+            type="button"
+            className="panel-nav-burger"
+            aria-expanded={menusAbierto}
+            aria-label={menusAbierto ? "Cerrar menú" : "Abrir menú"}
+            onClick={() => setMenusAbierto((abierto) => !abierto)}
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+        <div className="panel-nav-links">
           {secciones.map((seccion) => {
             const activa =
               seccion.clave === "inicio"
@@ -75,7 +89,12 @@ export default function PanelShell({
                   : false;
             const clase = `panel-nav-item${activa ? " active" : ""}`;
             return seccion.href ? (
-              <Link key={seccion.clave} href={seccion.href} className={clase}>
+              <Link
+                key={seccion.clave}
+                href={seccion.href}
+                className={clase}
+                onClick={() => setMenusAbierto(false)}
+              >
                 {seccion.titulo}
               </Link>
             ) : (
