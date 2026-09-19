@@ -145,7 +145,7 @@ export function obtenerSeccionesPanel(
   const secciones: SeccionPanel[] = [
     {
       clave: "inicio",
-      titulo: "Inicio",
+      titulo: "Resumen",
       descripcion: "Resumen del panel y atajos.",
       href: "/panel",
     },
