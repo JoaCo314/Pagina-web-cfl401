@@ -198,6 +198,18 @@ a {
   background: var(--cfl-navy-2);
   color: var(--cfl-white);
 }
+.btn-login-solid {
+  background: var(--cfl-blue);
+  color: var(--cfl-white);
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background 0.15s ease;
+}
+.btn-login-solid:hover {
+  background: var(--cfl-blue-deep);
+}
 .nav-burger {
   display: none;
   flex-direction: column;
@@ -261,6 +273,9 @@ a {
   border-bottom: 1.5px solid var(--cfl-navy-2);
   border-radius: 4px;
   font-weight: 600;
+}
+.nav-mobile a.btn-login-solid {
+  text-align: center;
 }
 .nav-mobile-actions {
   display: flex;
