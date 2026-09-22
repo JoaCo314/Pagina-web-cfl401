@@ -135,12 +135,7 @@ a {
   justify-content: space-between;
   padding: 16px 0;
 }
-/* Costados del navbar más contenidos: margen horizontal reducido y prolijo. */
-.site-header .wrap {
-  padding-left: 16px;
-  padding-right: 16px;
-}
-/* Costados del navbar más contenidos: menos margen horizontal. */
+/* Costados del navbar más contenidos: menú más cerca de los bordes y prolijo. */
 .site-header .wrap {
   padding-left: 22px;
   padding-right: 22px;
