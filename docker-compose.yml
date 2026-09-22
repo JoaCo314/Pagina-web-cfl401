@@ -19,7 +19,7 @@ services:
 
   init:
     build:
-      context: .
+      context: ./Backend
       dockerfile: Dockerfile
       target: init-runner
     container_name: cfl401-init
@@ -31,13 +31,13 @@ services:
         condition: service_healthy
     restart: "no"
 
-  web:
+  backend:
     build:
-      context: .
+      context: ./Backend
       dockerfile: Dockerfile
-    container_name: cfl401-web
+    container_name: cfl401-backend
     ports:
-      - '4088:3000'
+      - '4089:3000'
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-cfl401}?schema=public
       AUTH_SECRET: ${AUTH_SECRET:-cfl401-dev-secret-cambiar-en-produccion}
@@ -46,6 +46,17 @@ services:
         condition: service_healthy
       init:
         condition: service_completed_successfully
-
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: cfl401-frontend
+    ports:
+      - '4088:3000'
+    environment:
+      BACKEND_URL: http://backend:3000
+    depends_on:
+      backend:
+        condition: service_started
 volumes:
   postgres_data:

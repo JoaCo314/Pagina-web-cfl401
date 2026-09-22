@@ -12,26 +12,18 @@ Sitio web del **Centro de Formación Laboral N° 401**. Plataforma para presenta
 
 ```text
 Pagina-web-cfl401/
-├── src/
-│   ├── app/
-│   │   ├── api/
-│   │   │   └── health/       # Health check del backend
-│   │   ├── layout.tsx        # Layout raíz
-│   │   ├── page.tsx          # Página principal
-│   │   └── globals.css       # Estilos globales
-│   ├── lib/
-│   │   ├── db.ts             # Health check de la base de datos
-│   │   └── prisma.ts         # Cliente Prisma (singleton)
-│   └── generated/            # Cliente Prisma generado (no se commitea)
-├── prisma/
-│   ├── schema.prisma         # Modelo de datos (entidades y relaciones)
-│   └── migrations/           # Migraciones versionadas
-├── prisma7.config.ts         # Config de Prisma 7 (DATABASE_URL)
-├── public/                   # Imágenes y recursos estáticos
-├── assets/                   # Assets originales del sitio (referencia)
-├── Dockerfile                # Build de producción (web + init)
+├── Backend/                  # API, autenticación, Prisma y panel administrativo
+│   ├── src/app/api/          # Rutas API y health check
+│   ├── src/lib/              # Lógica de negocio, permisos y acceso a datos
+│   ├── prisma/               # Esquema, migraciones y seed
+│   └── Dockerfile            # Build de producción del Backend
+├── Frontend/                 # Aplicación Next.js de visualización pública
+│   ├── src/app/              # Rutas App Router de las páginas actuales
+│   ├── src/components/       # Componentes de interfaz y comportamiento cliente
+│   ├── public/               # Recursos estáticos del sitio
+│   ├── legacy/               # HTML original preservado como referencia
+│   └── Dockerfile            # Build de producción del Frontend
 ├── docker-compose.yml        # Orquestación (web + db + init)
-├── docker-entrypoint.sh      # Arranque del contenedor: migraciones + seed + server
 ├── .env.example              # Variables de entorno de ejemplo
 └── README.md
 ```
