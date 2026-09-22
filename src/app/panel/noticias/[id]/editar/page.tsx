@@ -43,6 +43,7 @@ export default async function EditarNoticiaPage({
     titulo: noticia.titulo,
     resumen: noticia.resumen,
     contenido: noticia.contenido,
+    contenidoHtml: noticia.contenidoHtml,
     fecha: noticia.fecha.toISOString().slice(0, 10),
     imagenUrl: noticia.imagenUrl,
     activo: noticia.activo,

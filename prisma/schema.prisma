@@ -105,6 +105,10 @@ model Noticia {
   titulo    String
   resumen   String?
   contenido String
+  /// HTML ya sanitizado que produce el editor de texto enriquecido del panel.
+  /// Si viene, se renderiza en el detalle público; si no, se usa `contenido`
+  /// en texto plano (RF-17). Se guarda únicamente sanitizado en el servidor.
+  contenidoHtml String?
   fecha     DateTime
   imagenUrl String?
   activo    Boolean  @default(true)

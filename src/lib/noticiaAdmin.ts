@@ -1,3 +1,4 @@
+import sanitizeHtml from "sanitize-html";
 import { validarImagenUrl } from "@/lib/imagenes";
 
 /// Selección estándar de una noticia para respuestas de la API y del panel.
@@ -6,6 +7,7 @@ export const NOTICIA_SELECT = {
   titulo: true,
   resumen: true,
   contenido: true,
+  contenidoHtml: true,
   fecha: true,
   imagenUrl: true,
   activo: true,
@@ -13,13 +15,81 @@ export const NOTICIA_SELECT = {
   updatedAt: true,
 } as const;
 
+/// Etiquetas y atributos que el editor enriquecido puede guardar. Todo lo que
+/// no esté acá se descarta en el servidor (RF-17: sanitización server-side).
+const ETIQUETAS_HTML_PERMITIDAS = [
+  "p",
+  "br",
+  "strong",
+  "em",
+  "u",
+  "s",
+  "h2",
+  "h3",
+  "h4",
+  "ul",
+  "ol",
+  "li",
+  "blockquote",
+  "a",
+  "code",
+  "pre",
+] as const;
+
+/// Sanitiza el HTML que envía el editor del panel antes de persistir. Devuelve
+/// el HTML limpio, o `null` si el campo venía vacío/ausente.
+export function limpiarHtmlEnriquecido(
+  valor: unknown,
+  campo: string,
+  max: number
+): { error?: string; valor: string | null } {
+  if (valor === undefined || valor === null) return { valor: null };
+  if (typeof valor !== "string") {
+    return { error: `El campo ${campo} debe ser una cadena de texto.`, valor: null };
+  }
+  const texto = valor.trim();
+  if (!texto) return { valor: null };
+
+  const htmlLimpio = sanitizeHtml(texto, {
+    allowedTags: [...ETIQUETAS_HTML_PERMITIDAS],
+    allowedAttributes: {
+      a: ["href", "target", "rel"],
+      ...(["h2", "h3", "h4", "p", "ul", "ol", "li", "blockquote", "code", "pre"].reduce(
+        (acc, etiqueta) => ({ ...acc, [etiqueta]: [] }),
+        {}
+      )),
+    },
+    allowedSchemes: ["http", "https", "mailto"],
+    transformTags: {
+      a: (nombre, atributos) => ({
+        tagName: "a",
+        attribs: {
+          ...atributos,
+          rel: "noopener noreferrer",
+          ...(atributos.target === "_blank" ? {} : { target: "_blank" }),
+        },
+      }),
+    },
+  });
+
+  if (htmlLimpio.length > max) {
+    return {
+      error: `El campo ${campo} no puede superar ${max} caracteres.`,
+      valor: null,
+    };
+  }
+
+  return { valor: htmlLimpio };
+}
+
 export type NoticiaInputNormalizado = {
   titulo: string;
   resumen: string | null;
   contenido: string;
+  contenidoHtml: string | null | undefined;
   fecha: Date;
   imagenUrl: string | null;
-  activo?: boolean;
+  activo: boolean;
 };
 
 export type ResultadoNoticiaInput =
@@ -125,6 +195,16 @@ export function validarDatosNoticia(input: unknown): ResultadoNoticiaInput {
     activo = fuente.activo;
   }
 
+  /// HTML enriquecido (editor del panel). Opcional; se sanea en el servidor.
+  let contenidoHtml: string | null | undefined;
+  if (fuente.contenidoHtml !== undefined && fuente.contenidoHtml !== null) {
+    const html = limpiarHtmlEnriquecido(fuente.contenidoHtml, "contenidoHtml", 50000);
+    if (html.error) return { ok: false, error: html.error };
+    contenidoHtml = html.valor;
+  } else {
+    contenidoHtml = undefined;
+  }
+
   return {
     ok: true,
     presentes,
@@ -132,9 +212,10 @@ export function validarDatosNoticia(input: unknown): ResultadoNoticiaInput {
       titulo: titulo.valor as string,
       resumen: resumen.valor,
       contenido: contenido.valor as string,
+      contenidoHtml,
       fecha: fecha.valor as Date,
       imagenUrl: imagenUrl.valor,
-      activo,
+      activo: activo === true,
     },
   };
 }

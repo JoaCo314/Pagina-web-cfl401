@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import CampoImagen from "@/components/panel/CampoImagen";
 import type { EstadoImagen } from "@/components/panel/CampoImagen";
 import { subirImagen, validarArchivoImagen } from "@/lib/imagenesCliente";
+import EditorTextoEnriquecido from "@/components/panel/EditorTextoEnriquecido";
 
 export type NoticiaFormInicial = {
   id: number;
   titulo: string;
   resumen: string | null;
   contenido: string;
+  contenidoHtml: string | null;
   fecha: string;
   imagenUrl: string | null;
   activo: boolean;
