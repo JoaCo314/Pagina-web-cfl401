@@ -17,6 +17,10 @@ export const NOTICIA_SELECT = {
 
 /// Etiquetas y atributos que el editor enriquecido puede guardar. Todo lo que
 /// no esté acá se descarta en el servidor (RF-17: sanitización server-side).
+/// El HTML guardado es canónico: Firefox escribe `b`/`i` con `execCommand`
+/// (en vez de `strong`/`em`) y también puede emitir `span` con `style`;
+/// `transformTags` los normaliza ANTES del filtro de etiquetas permitidas,
+/// así el formato se conserva y el texto se guarda siempre con `<strong>`/`<em>`.
 const ETIQUETAS_HTML_PERMITIDAS = [
   "p",
   "br",
@@ -61,6 +65,21 @@ export function limpiarHtmlEnriquecido(
     },
     allowedSchemes: ["http", "https", "mailto"],
     transformTags: {
+      b: () => ({ tagName: "strong", attribs: {} }),
+      i: () => ({ tagName: "em", attribs: {} }),
+      // Firefox/Chrome separan párrafos con `<div>` dentro de contenteditable;
+      // se convierten a `<p>` para que el guardado sea semántico y el render
+      // público coincida con lo que se vio en el editor.
+      div: () => ({ tagName: "p", attribs: {} }),
+      span: (_nombre, atributos) => {
+        const estilo = (atributos.style || "").toLowerCase();
+        if (/\bfont-weight\b/.test(estilo)) return { tagName: "strong", attribs: {} };
+        if (/\bfont-style\b/.test(estilo)) return { tagName: "em", attribs: {} };
+        if (estilo.includes("underline")) return { tagName: "u", attribs: {} };
+        if (estilo.includes("line-through")) return { tagName: "s", attribs: {} };
+        // `span` no está permitido: se descarta conservando el texto interior.
+        return { tagName: "span", attribs: {} };
+      },
       a: (nombre, atributos) => ({
         tagName: "a",
         attribs: {

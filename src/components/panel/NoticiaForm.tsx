@@ -192,6 +192,7 @@ export default function NoticiaForm({
           etiqueta="Contenido"
           valorInicial={datos.contenidoHtml || datos.contenido}
           esObligatorio
+          minAlto={320}
           onCambio={sincronizarContenido}
         />
         <small className="form-hint">
