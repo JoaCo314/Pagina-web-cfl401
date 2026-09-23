@@ -6,6 +6,8 @@ import { useState } from "react";
 type SiteHeaderClienteProps = {
   active?: string;
   sesionIniciada: boolean;
+  logoUrl?: string;
+  logoAlt?: string;
 };
 
 const NAV_ITEMS = [
@@ -13,12 +15,14 @@ const NAV_ITEMS = [
   { label: "Sobre el centro", href: "/sobre-el-centro", key: "sobre" },
   { label: "Noticias", href: "/noticias", key: "noticias" },
   { label: "Preguntas frecuentes", href: "/preguntas-frecuentes", key: "faq" },
-  { label: "Contacto", href: "#", key: "contacto" },
+  { label: "Contacto", href: "/contacto", key: "contacto" },
 ];
 
 export default function SiteHeaderCliente({
   active,
   sesionIniciada,
+  logoUrl = "/cfl401azul_logo.jpg",
+  logoAlt = "CFL 401 Azul",
 }: SiteHeaderClienteProps) {
   const [menuAbierto, setMenuAbierto] = useState(false);
 
@@ -49,12 +53,7 @@ export default function SiteHeaderCliente({
         <nav className="wrap site-nav">
           <Link href="/" className="logo" onClick={cerrarMenu}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/cfl401azul_logo.jpg"
-              alt="CFL 401 Azul"
-              width={46}
-              height={46}
-            />
+            <img src={logoUrl} alt={logoAlt} width={46} height={46} />
             <span className="logo-text">
               <span className="name">Centro de Formación Laboral 401</span>
               <br />
