@@ -423,9 +423,39 @@ Felicitamos a todos los egresados y los invitamos a continuar su formación en l
     }
   }
 
+  // ── Configuración editable del sitio (banner, logo, footer, contactos) — sofia-athos ──
+  const siteConfig = await prisma.siteConfig.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      bannerPill: `Preinscripción ${new Date().getFullYear()} abierta`,
+      bannerTitulo: "Capacitate en un oficio, gratis y cerca de casa.",
+      bannerSubtitulo: "Cursos presenciales dictados por profesionales. Oferta abierta a la comunidad de Azul.",
+      bannerImagenUrl: null,
+      logoUrl: "/cfl401azul_logo.jpg",
+      logoAlt: "CFL 401 Azul",
+      footerCflTitulo: "CFL 401 Azul",
+      footerCflTexto: "Cursos y capacitaciones gratuitas para la comunidad de Azul.",
+      footerContactosTitulo: "Contacto",
+      footerEmail: "cfl401azul@gmail.com",
+      footerTelefono: "+54 2281 32-3444",
+      footerDireccion: "Azul, Provincia de Buenos Aires",
+      footerHorarios: "Lunes a viernes de 8:00 a 12:00 y de 14:00 a 22:00",
+      footerCopy: "© 2026 CFL 401 — Azul",
+      contactoTitulo: "Contacto",
+      contactoSubtitulo: "Escribinos y te respondemos a la brevedad.",
+      contactoEmail: "cfl401azul@gmail.com",
+      contactoTelefono: "+54 2281 32-3444",
+      contactoDireccion: "Azul, Provincia de Buenos Aires",
+      contactoHorarios: "Lunes a viernes de 8:00 a 12:00 y de 14:00 a 22:00",
+      contactoFormDestinatario: "cfl401azul@gmail.com",
+    },
+  });
+
   console.log("---");
   console.log(
-    `Seed completado: ${totalUsuarios} usuarios, ${totalCursos} cursos, ${totalAsignaciones} asignaciones, ${totalContenidosGuia} contenidos de guía, ${totalNoticias} noticias, sobre el centro: ${tieneSobre ? "sí" : "no"}, ${totalCategorias} categorías, ${totalPreguntas} preguntas nuevas.`
+    `Seed completado: ${totalUsuarios} usuarios, ${totalCursos} cursos, ${totalAsignaciones} asignaciones, ${totalContenidosGuia} contenidos de guía, ${totalNoticias} noticias, sobre el centro: ${tieneSobre ? "sí" : "no"}, ${totalCategorias} categorías, ${totalPreguntas} preguntas nuevas, siteConfig: ${siteConfig.id}.`
   );
 }
 

@@ -3,26 +3,39 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import GuiaInscripcion from "@/components/GuiaInscripcion";
 import NoticiasHome from "@/components/NoticiasHome";
+import { getSiteConfig } from "@/lib/siteConfig";
 
-export default function Home() {
+// Creado por sofia-athos: banner azul editable desde panel/configuracion
+export default async function Home() {
   const anio = new Date().getFullYear();
+  const config = await getSiteConfig().catch(() => null);
 
   return (
     <>
       <SiteHeader />
 
-      <section className="hero" id="contenido" tabIndex={-1}>
+      <section
+        className="hero"
+        id="contenido"
+        tabIndex={-1}
+        style={
+          config?.bannerImagenUrl
+            ? {
+                backgroundImage: `linear-gradient(rgba(0,61,128,0.85), rgba(0,61,128,0.85)), url(${config.bannerImagenUrl})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }
+            : undefined
+        }
+      >
         <div className="wrap">
           <div className="badge-row">
             <div className="pill">
-              <span className="dot"></span>Preinscripción {anio} abierta
+              <span className="dot"></span>{config?.bannerPill ?? `Preinscripción ${anio} abierta`}
             </div>
           </div>
-          <h1>Capacitate en un oficio, gratis y cerca de casa.</h1>
-          <p className="lead">
-            Cursos presenciales dictados por profesionales en actividad. Elegí
-            tu curso, consultá cupos y horarios, e inscribite en minutos.
-          </p>
+          <h1>{config?.bannerTitulo ?? "Capacitate en un oficio, gratis y cerca de casa."}</h1>
+          <p className="lead">{config?.bannerSubtitulo ?? "Cursos presenciales dictados por profesionales en actividad. Elegí tu curso, consultá cupos y horarios, e inscribite en minutos."}</p>
           <div className="hero-actions">
             <Link href="/cursos" className="btn-primary">
               Ver oferta de cursos
