@@ -20,6 +20,7 @@ export const PERMISOS = {
   NOTICIAS_ELIMINAR: "noticias:eliminar",
   SOBRE_EL_CENTRO_EDITAR: "sobre_el_centro:editar",
   PREGUNTAS_FAQS_EDITAR: "preguntas_faqs:editar",
+  SITE_CONFIG_EDITAR: "site_config:editar", // sofia-athos: banner, logo, footer y contactos editables
 } as const;
 
 export type Permiso = (typeof PERMISOS)[keyof typeof PERMISOS];
@@ -56,6 +57,7 @@ const PERMISOS_POR_ROL: Record<
     PERMISOS.NOTICIAS_ELIMINAR,
     PERMISOS.SOBRE_EL_CENTRO_EDITAR,
     PERMISOS.PREGUNTAS_FAQS_EDITAR,
+    PERMISOS.SITE_CONFIG_EDITAR,
   ],
   [ROLES.PRECEPTOR]: [
     PERMISOS.CURSOS_VER,
@@ -72,6 +74,7 @@ const PERMISOS_POR_ROL: Record<
     PERMISOS.NOTICIAS_ELIMINAR,
     PERMISOS.SOBRE_EL_CENTRO_EDITAR,
     PERMISOS.PREGUNTAS_FAQS_EDITAR,
+    PERMISOS.SITE_CONFIG_EDITAR,
   ],
   [ROLES.DOCENTE]: [PERMISOS.CURSOS_VER],
 };
@@ -129,7 +132,8 @@ export type SeccionPanel = {
     | "guia"
     | "noticias"
     | "sobre"
-    | "faqs";
+    | "faqs"
+    | "configuracion";
   titulo: string;
   descripcion: string;
   href?: string;
@@ -214,6 +218,15 @@ export function obtenerSeccionesPanel(
       titulo: "Preguntas frecuentes",
       descripcion: "Categorías y preguntas de la página pública.",
       href: "/panel/preguntas-frecuentes",
+    });
+  }
+
+  if (tienePermiso(usuario, PERMISOS.SITE_CONFIG_EDITAR)) {
+    secciones.push({
+      clave: "configuracion",
+      titulo: "Configuración del sitio",
+      descripcion: "Banner azul, logo, footer y sección de contacto.",
+      href: "/panel/configuracion",
     });
   }
 

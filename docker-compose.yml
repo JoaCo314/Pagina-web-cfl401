@@ -7,7 +7,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-cfl401}
     ports:
-      - '5432:5432'
+      # Solo accesible desde el host (loopback); no se expone al exterior.
+      - '127.0.0.1:5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -15,6 +16,20 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  init:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: init-runner
+    container_name: cfl401-init
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-cfl401}?schema=public
+      RUN_SEED: ${RUN_SEED:-true}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
 
   web:
     build:
@@ -29,6 +44,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      init:
+        condition: service_completed_successfully
     # Rebuild automático: con `docker compose watch` cada cambio en los archivos
     # del proyecto reconstruye la imagen y recrea el contenedor web.
     develop:

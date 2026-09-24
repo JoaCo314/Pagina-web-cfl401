@@ -1,15 +1,17 @@
 import Link from "next/link";
+import { getSiteConfig } from "@/lib/siteConfig";
 
-export default function SiteFooter() {
+// Creado por sofia-athos: footer editable desde panel/configuracion
+export default async function SiteFooter() {
+  const config = await getSiteConfig().catch(() => null);
   return (
     <footer className="site-footer">
       <div className="wrap">
         <div className="foot-grid">
           <div>
-            <h4>CFL 401 Azul</h4>
+            <h4>{config?.footerCflTitulo ?? "CFL 401 Azul"}</h4>
             <p style={{ fontSize: 14, opacity: 0.8, maxWidth: 260 }}>
-              Cursos y capacitaciones gratuitas y presenciales para fortalecer
-              las capacidades de las personas para el trabajo.
+              {config?.footerCflTexto ?? "Cursos y capacitaciones gratuitas y presenciales para fortalecer las capacidades de las personas para el trabajo."}
             </p>
           </div>
           <div>
@@ -36,21 +38,22 @@ export default function SiteFooter() {
                 <Link href="/noticias">Noticias</Link>
               </li>
               <li>
-                <a href="#">Contacto</a>
+                <Link href="/contacto">Contacto</Link>
               </li>
             </ul>
           </div>
           <div>
-            <h4>Contacto</h4>
+            <h4>{config?.footerContactosTitulo ?? "Contacto"}</h4>
             <ul>
-              <li>cfl401azul@gmail.com</li>
-              <li>+54 2281 32-3444</li>
-              <li>Lunes a viernes de 8:00 a 12:00 y de 14:00 a 22:00</li>
+              <li>{config?.footerEmail ?? "cfl401azul@gmail.com"}</li>
+              <li>{config?.footerTelefono ?? "+54 2281 32-3444"}</li>
+              {config?.footerDireccion && <li>{config.footerDireccion}</li>}
+              <li>{config?.footerHorarios ?? "Lunes a viernes de 8:00 a 12:00 y de 14:00 a 22:00"}</li>
             </ul>
           </div>
         </div>
         <div className="foot-bottom">
-          <span>© 2026 Centro de Formación Laboral 401 — Azul</span>
+          <span>{config?.footerCopy ?? "© 2026 Centro de Formación Laboral 401 — Azul"}</span>
           <span>Maqueta de referencia — no es el sitio oficial</span>
         </div>
       </div>

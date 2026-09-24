@@ -213,3 +213,44 @@ model ContenidoGuia {
 
   @@map("contenidos_guia")
 }
+
+/// Configuración editable del sitio público (banner azul, logo, footer y contactos).
+/// Fila única (id=1) editada desde el panel por ADMINISTRADOR y PRECEPTOR.
+/// Creado por sofia-athos para requerimiento Joaquín 22/9/2026: banner + logo + footer + contactos editables.
+model SiteConfig {
+  id Int @id @default(autoincrement())
+
+  // Banner azul front page
+  bannerPill      String? // ej: "Preinscripción 2026 abierta"
+  bannerTitulo    String? // ej: "Capacitate en un oficio, gratis y cerca de casa."
+  bannerSubtitulo String? // texto lead
+  bannerImagenUrl String? // url externa o /api/imagenes/<id>
+
+  // Logo
+  logoUrl String? // ej: "/cfl401azul_logo.jpg" o /api/imagenes/<id>
+  logoAlt String? // alt del logo
+
+  // Footer
+  footerCflTitulo String? // "CFL 401 Azul"
+  footerCflTexto  String? // párrafo debajo de CFL 401 Azul
+  footerContactosTitulo String? // "Contacto"
+  footerEmail     String?
+  footerTelefono  String?
+  footerDireccion String?
+  footerHorarios  String?
+  footerCopy      String? // "© 2026 CFL 401 — Azul"
+
+  // Sección Contacto (página /contacto)
+  contactoTitulo    String?
+  contactoSubtitulo String?
+  contactoEmail     String?
+  contactoTelefono  String?
+  contactoDireccion String?
+  contactoHorarios  String?
+  contactoFormDestinatario String? // email donde llegan consultas
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("site_config")
+}

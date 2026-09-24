@@ -215,45 +215,46 @@
   
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const contactForm = document.querySelector('.form-box form');
+  const contactForm = document.querySelector('.form-box form');
 
-    contactForm.addEventListener('submit', (e) => {
-      e.preventDefault();
+  contactForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-      const btnSubmit = contactForm.querySelector('.btn-submit');
-      const originalBtnText = btnSubmit.textContent;
+    const btnSubmit = contactForm.querySelector('.btn-submit');
+    const originalBtnText = btnSubmit.textContent;
 
-      // Estado de carga
-      btnSubmit.disabled = true;
-      btnSubmit.textContent = 'Enviando...';
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = 'Enviando...';
 
-      setTimeout(() => {
-        // Mensaje de éxito
+    try {
+      const response = await fetch('https://formspree.io/f/mwlewqvv', {
+        method: 'POST',
+        body: new FormData(contactForm),
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (response.ok) {
         const successNotice = document.createElement('div');
         successNotice.style.cssText = `
-          background: #D1E7DD;
-          color: #0F5132;
-          padding: 14px;
-          border-radius: 4px;
-          margin-top: 16px;
-          font-weight: 600;
-          font-size: 14px;
-          text-align: center;
+          background: #D1E7DD; color: #0F5132; padding: 14px;
+          border-radius: 4px; margin-top: 16px; font-weight: 600; text-align: center;
         `;
-        successNotice.textContent = '¡Gracias por contactarnos! Te responderemos a la brevedad.';
+        successNotice.textContent = '¡Gracias por contactarnos! Consulta enviada con éxito.';
 
         contactForm.appendChild(successNotice);
         contactForm.reset();
-
-        // Restaurar botón
-        btnSubmit.disabled = false;
-        btnSubmit.textContent = originalBtnText;
-
-        // Ocultar mensaje luego de 5 segundos
         setTimeout(() => successNotice.remove(), 5000);
-      }, 1000);
-    });
+      } else {
+        alert('Ocurrió un error al enviar el mensaje. Intentalo de nuevo.');
+      }
+    } catch (error) {
+      alert('Error de conexión. Verificá tu red e intentalo nuevamente.');
+    } finally {
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = originalBtnText;
+    }
   });
+});
 </script>
 
 </body>
