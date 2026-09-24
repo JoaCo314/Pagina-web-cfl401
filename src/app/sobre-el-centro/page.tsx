@@ -1,5 +1,6 @@
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import HtmlEnriquecido from "@/components/HtmlEnriquecido";
 import { prisma } from "@/lib/prisma";
 import {
   SOBRE_SELECT,
@@ -39,7 +40,13 @@ export default async function SobreElCentroPage() {
       <div className="page-header" id="contenido" tabIndex={-1}>
         <div className="wrap">
           <h1>Sobre el Centro</h1>
-          {sobre?.intro ? <p>{sobre.intro}</p> : null}
+          {sobre?.intro ? (
+            <HtmlEnriquecido
+              html={sobre.introHtml}
+              textoPlano={sobre.intro}
+              className="page-intro-enriquecido"
+            />
+          ) : null}
         </div>
       </div>
 
@@ -66,7 +73,11 @@ export default async function SobreElCentroPage() {
                     <h2>{sobre.misionTitulo}</h2>
                   </div>
                 ) : null}
-                <div className="sobre-mision-texto">{sobre.misionTexto}</div>
+                <HtmlEnriquecido
+                  html={sobre?.misionTextoHtml}
+                  textoPlano={sobre?.misionTexto}
+                  className="sobre-mision-texto"
+                />
               </div>
             </section>
           )}
@@ -80,9 +91,11 @@ export default async function SobreElCentroPage() {
                   </div>
                 ) : null}
                 {sobre?.historiaTexto ? (
-                  <div className="sobre-historia-texto">
-                    {sobre.historiaTexto}
-                  </div>
+                  <HtmlEnriquecido
+                    html={sobre?.historiaTextoHtml}
+                    textoPlano={sobre?.historiaTexto}
+                    className="sobre-historia-texto"
+                  />
                 ) : null}
                 {hitos ? (
                   <ol className="timeline">

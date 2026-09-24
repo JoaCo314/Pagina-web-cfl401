@@ -18,7 +18,12 @@ export default async function PreguntasFrecuentesPage() {
       nombre: true,
       preguntas: {
         where: { activo: true },
-        select: { id: true, pregunta: true, respuesta: true },
+        select: {
+        id: true,
+        pregunta: true,
+        respuesta: true,
+        respuestaHtml: true,
+      },
         orderBy: [{ orden: "asc" }, { pregunta: "asc" }],
       },
     },

@@ -25,7 +25,7 @@ export default async function GuiaPanelPage() {
 
   const contenidos = await prisma.contenidoGuia.findMany({
     where: { activo: true },
-    select: { clave: true, titulo: true, contenido: true },
+    select: { clave: true, titulo: true, contenido: true, contenidoHtml: true },
     orderBy: { orden: "asc" },
   });
 
@@ -43,6 +43,13 @@ export default async function GuiaPanelPage() {
     );
   }
 
+  const bloques = contenidos.map((c) => ({
+    clave: c.clave,
+    titulo: c.titulo,
+    contenido: c.contenido,
+    contenidoHtml: c.contenidoHtml ?? "",
+  }));
+
   return (
     <PanelShell user={user} secciones={obtenerSeccionesPanel(user)}>
       <div className="panel-head">
@@ -55,7 +62,7 @@ export default async function GuiaPanelPage() {
         </div>
       </div>
 
-      <GuiaForm bloques={contenidos} />
+      <GuiaForm bloques={bloques} />
     </PanelShell>
   );
 }

@@ -56,7 +56,13 @@ model Curso {
   sede       String?
   enlaceInscripcion String?
   programaContenidos String?
+  /// HTML ya sanitizado del editor enriquecido del panel. Si viene, se renderiza
+  /// en el detalle público; si no, se usa `programaContenidos` en texto plano.
+  programaContenidosHtml String?
   categoria String?
+  /// Emoji/ícono opcional cargado desde el panel. Si viene vacío, el sitio usa
+  /// uno automático según la categoría (iconoCurso con fallback a iconoCategoria).
+  emoji     String?
   cupos     Int?
   imagenUrl String?
   informacionAdicional String?
@@ -105,6 +111,10 @@ model Noticia {
   titulo    String
   resumen   String?
   contenido String
+  /// HTML ya sanitizado que produce el editor de texto enriquecido del panel.
+  /// Si viene, se renderiza en el detalle público; si no, se usa `contenido`
+  /// en texto plano (RF-17). Se guarda únicamente sanitizado en el servidor.
+  contenidoHtml String?
   fecha     DateTime
   imagenUrl String?
   activo    Boolean  @default(true)
@@ -123,10 +133,16 @@ model Noticia {
 model SobreElCentro {
   id             Int      @id @default(autoincrement())
   intro          String?
+  /// HTML sanitizado del editor enriquecido para `intro`.
+  introHtml      String?
   misionTitulo   String?
   misionTexto    String?
+  /// HTML sanitizado del editor enriquecido para `misionTexto`.
+  misionTextoHtml String?
   historiaTitulo String?
   historiaTexto  String?
+  /// HTML sanitizado del editor enriquecido para `historiaTexto`.
+  historiaTextoHtml String?
   hitos          Json?
   estadisticasTitulo String?
   estadisticas   Json?
@@ -162,6 +178,9 @@ model PreguntaFrecuente {
   id          Int              @id @default(autoincrement())
   pregunta    String
   respuesta   String
+  /// HTML sanitizado del editor enriquecido de la respuesta. Si viene, se
+  /// renderiza en la vista pública; si no, se usa `respuesta` en texto plano.
+  respuestaHtml String?
   categoriaId Int
   categoria   CategoriaPregunta @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
   orden       Int?
@@ -183,6 +202,9 @@ model ContenidoGuia {
   clave     String   @unique
   titulo    String
   contenido String
+  /// HTML sanitizado del editor enriquecido del bloque. Si viene, se renderiza
+  /// en la guía pública; si no, se usa `contenido` en texto plano.
+  contenidoHtml String?
   orden     Int?
   activo    Boolean  @default(true)
 

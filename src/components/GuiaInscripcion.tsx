@@ -1,8 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import HtmlEnriquecido from "@/components/HtmlEnriquecido";
 
-type Bloque = { clave: string; titulo: string; contenido: string };
+type Bloque = {
+  clave: string;
+  titulo: string;
+  contenido: string;
+  contenidoHtml: string | null;
+};
 
 const ICONOS: Record<string, string> = {
   pasos: "📋",
@@ -43,7 +49,10 @@ export default function GuiaInscripcion() {
         <article key={bloque.clave} className="guia-card">
           <div className="guia-icon">{ICONOS[bloque.clave] ?? "📘"}</div>
           <h3>{bloque.titulo}</h3>
-          <p>{bloque.contenido}</p>
+          <HtmlEnriquecido
+            html={bloque.contenidoHtml}
+            textoPlano={bloque.contenido}
+          />
         </article>
       ))}
     </div>

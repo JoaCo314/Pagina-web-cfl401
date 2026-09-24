@@ -10,6 +10,7 @@ const SELECT_CONTENIDO = {
   clave: true,
   titulo: true,
   contenido: true,
+  contenidoHtml: true,
   orden: true,
   activo: true,
 } as const;
@@ -22,6 +23,7 @@ export async function GET() {
         clave: true,
         titulo: true,
         contenido: true,
+        contenidoHtml: true,
       },
       orderBy: { orden: "asc" },
     });
@@ -82,7 +84,11 @@ export async function PUT(request: NextRequest) {
       resultado.contenidos.map((c) =>
         prisma.contenidoGuia.update({
           where: { clave: c.clave },
-          data: { titulo: c.titulo, contenido: c.contenido },
+          data: {
+            titulo: c.titulo,
+            contenido: c.contenido,
+            contenidoHtml: c.contenidoHtml ?? null,
+          },
         })
       )
     );

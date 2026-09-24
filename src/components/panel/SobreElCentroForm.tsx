@@ -2,6 +2,8 @@
 
 import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import EditorTextoEnriquecido from "@/components/panel/EditorTextoEnriquecido";
+import { extraerTextoPlano, htmlDesdeTextoPlano } from "@/lib/htmlEnriquecidoUtil";
 import { subirImagen, validarArchivoImagen } from "@/lib/imagenesCliente";
 
 export type HitoForm = { anio: string; titulo: string; texto: string };
@@ -10,10 +12,13 @@ export type FotoForm = { url: string; leyenda: string };
 
 export type SobreFormInicial = {
   intro: string;
+  introHtml: string;
   misionTitulo: string;
   misionTexto: string;
+  misionTextoHtml: string;
   historiaTitulo: string;
   historiaTexto: string;
+  historiaTextoHtml: string;
   hitos: HitoForm[];
   estadisticasTitulo: string;
   estadisticas: EstadisticaForm[];
@@ -24,10 +29,13 @@ export type SobreFormInicial = {
 
 const INICIAL: SobreFormInicial = {
   intro: "",
+  introHtml: "",
   misionTitulo: "",
   misionTexto: "",
+  misionTextoHtml: "",
   historiaTitulo: "",
   historiaTexto: "",
+  historiaTextoHtml: "",
   hitos: [],
   estadisticasTitulo: "",
   estadisticas: [],
@@ -50,6 +58,18 @@ export default function SobreElCentroForm({
 
   function setCampo(campo: keyof SobreFormInicial, valor: string) {
     setDatos((prev) => ({ ...prev, [campo]: valor }));
+  }
+
+  function sincronizarEnriquecido(
+    campoHtml: keyof SobreFormInicial,
+    campoPlano: keyof SobreFormInicial,
+    html: string
+  ) {
+    setDatos((prev) => ({
+      ...prev,
+      [campoHtml]: html,
+      [campoPlano]: extraerTextoPlano(html),
+    }));
   }
 
   function setHito(i: number, campo: keyof HitoForm, valor: string) {
@@ -146,12 +166,17 @@ export default function SobreElCentroForm({
           <p>Párrafo que aparece debajo del título de la página.</p>
         </div>
         <div className="form-field form-field-full">
-          <span>Introducción (opcional)</span>
-          <textarea
-            rows={3}
-            value={datos.intro}
-            onChange={(e) => setCampo("intro", e.target.value)}
-            placeholder="Presentación general del centro que resume su identidad."
+          <EditorTextoEnriquecido
+            id="sobre-intro"
+            etiqueta="Introducción"
+            valorInicial={
+              datos.introHtml ||
+              htmlDesdeTextoPlano(inicial?.intro ?? "")
+            }
+            minAlto={120}
+            onCambio={(html) =>
+              sincronizarEnriquecido("introHtml", "intro", html)
+            }
           />
         </div>
       </div>
@@ -174,12 +199,16 @@ export default function SobreElCentroForm({
           />
         </label>
         <div className="form-field form-field-full">
-          <span>Texto (opcional)</span>
-          <textarea
-            rows={5}
-            value={datos.misionTexto}
-            onChange={(e) => setCampo("misionTexto", e.target.value)}
-            placeholder="Misión, identidad y valores del centro."
+          <EditorTextoEnriquecido
+            id="sobre-mision-texto"
+            etiqueta="Texto de la misión"
+            valorInicial={
+              datos.misionTextoHtml ||
+              htmlDesdeTextoPlano(inicial?.misionTexto ?? "")
+            }
+            onCambio={(html) =>
+              sincronizarEnriquecido("misionTextoHtml", "misionTexto", html)
+            }
           />
         </div>
       </div>
@@ -202,12 +231,16 @@ export default function SobreElCentroForm({
           />
         </label>
         <div className="form-field form-field-full">
-          <span>Texto (opcional)</span>
-          <textarea
-            rows={5}
-            value={datos.historiaTexto}
-            onChange={(e) => setCampo("historiaTexto", e.target.value)}
-            placeholder="Narración de los orígenes del centro. Separá los párrafos con un renglón en blanco."
+          <EditorTextoEnriquecido
+            id="sobre-historia-texto"
+            etiqueta="Texto de la historia"
+            valorInicial={
+              datos.historiaTextoHtml ||
+              htmlDesdeTextoPlano(inicial?.historiaTexto ?? "")
+            }
+            onCambio={(html) =>
+              sincronizarEnriquecido("historiaTextoHtml", "historiaTexto", html)
+            }
           />
         </div>
 

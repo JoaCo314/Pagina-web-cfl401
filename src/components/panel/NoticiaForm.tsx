@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import CampoImagen from "@/components/panel/CampoImagen";
 import type { EstadoImagen } from "@/components/panel/CampoImagen";
 import { subirImagen, validarArchivoImagen } from "@/lib/imagenesCliente";
+import EditorTextoEnriquecido from "@/components/panel/EditorTextoEnriquecido";
 
 export type NoticiaFormInicial = {
   id: number;
   titulo: string;
   resumen: string | null;
   contenido: string;
+  contenidoHtml: string | null;
   fecha: string;
   imagenUrl: string | null;
   activo: boolean;
@@ -32,8 +34,25 @@ export default function NoticiaForm({
     titulo: inicial?.titulo ?? "",
     resumen: inicial?.resumen ?? "",
     contenido: inicial?.contenido ?? "",
+    contenidoHtml:
+      inicial && inicial.contenidoHtml !== null
+        ? (inicial.contenidoHtml ?? "")
+        : "",
     fecha: inicial?.fecha ?? hoyISO(),
   });
+
+  /// Versión en texto plano del último HTML del editor (para el campo
+  /// `contenido`, buscable y como fallback del render público).
+  function sincronizarContenido(html: string) {
+    const recipiente = document.createElement("div");
+    recipiente.innerHTML = html;
+    const textoPlano = recipiente.textContent ?? "";
+    setDatos((prev) => ({
+      ...prev,
+      contenidoHtml: html,
+      contenido: textoPlano.trim(),
+    }));
+  }
   const [activo, setActivo] = useState(inicial?.activo ?? true);
   const [estadoImagen, setEstadoImagen] = useState<EstadoImagen>({
     archivo: null,
@@ -168,15 +187,17 @@ export default function NoticiaForm({
         <span>
           Contenido <strong>*</strong>
         </span>
-        <textarea
-          rows={10}
-          value={datos.contenido}
-          onChange={(e) => setCampo("contenido", e.target.value)}
-          placeholder="Cuerpo de la noticia. Separá los párrafos con un renglón en blanco."
+        <EditorTextoEnriquecido
+          id="contenido-noticia"
+          etiqueta="Contenido"
+          valorInicial={datos.contenidoHtml || datos.contenido}
+          esObligatorio
+          minAlto={320}
+          onCambio={sincronizarContenido}
         />
         <small className="form-hint">
-          Admite texto plano con saltos de línea; se muestran respetando los
-          párrafos.
+          Usá la barra para dar formato (negrita, títulos, listas, enlaces).
+          El HTML se sanea en el servidor antes de publicarse.
         </small>
       </div>
 

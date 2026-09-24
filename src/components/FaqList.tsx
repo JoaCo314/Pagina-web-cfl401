@@ -1,11 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import HtmlEnriquecido from "@/components/HtmlEnriquecido";
 
 export type FaqCategoria = {
   id: number;
   nombre: string;
-  preguntas: { id: number; pregunta: string; respuesta: string }[];
+  preguntas: {
+    id: number;
+    pregunta: string;
+    respuesta: string;
+    respuestaHtml: string | null;
+  }[];
 };
 
 export default function FaqList({ categorias }: { categorias: FaqCategoria[] }) {
@@ -41,7 +47,10 @@ export default function FaqList({ categorias }: { categorias: FaqCategoria[] }) 
                     id={`faq-respuesta-${pregunta.id}`}
                     className={`faq-respuesta${abierta ? " abierta" : ""}`}
                   >
-                    <p>{pregunta.respuesta}</p>
+                    <HtmlEnriquecido
+                      html={pregunta.respuestaHtml}
+                      textoPlano={pregunta.respuesta}
+                    />
                   </div>
                 </div>
               );
