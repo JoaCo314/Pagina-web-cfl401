@@ -13,6 +13,7 @@ export const ETIQUETAS_HTML_PERMITIDAS = [
   "em",
   "u",
   "s",
+  "span",
   "h2",
   "h3",
   "h4",
@@ -43,10 +44,23 @@ export function limpiarHtmlEnriquecido(
     allowedTags: [...ETIQUETAS_HTML_PERMITIDAS],
     allowedAttributes: {
       a: ["href", "target", "rel"],
+      span: ["style"],
       ...(["h2", "h3", "h4", "p", "ul", "ol", "li", "blockquote", "code", "pre"].reduce(
         (acc, etiqueta) => ({ ...acc, [etiqueta]: [] }),
         {}
       )),
+    },
+    // Solo se permiten estas propiedades dentro de `span` (las que produce el
+    // editor): `color` para el picker y los estilos de formato que Firefox y
+    // Chrome escriben como CSS en vez de `<b>/<i>/<u>`. El resto se descarta.
+    allowedStyles: {
+      span: {
+        color: [/^#[0-9a-fA-F]{3,8}$/, /^rgb\([\d\s,]+\)$/, /^rgba\([\d\s,\.]+\)$/, /^inherit$/],
+        "font-weight": [/^bold$/],
+        "font-style": [/^italic$/],
+        "text-decoration-line": [/^underline$/, /^line-through$/],
+        "text-decoration": [/^underline$/, /^line-through$/],
+      },
     },
     allowedSchemes: ["http", "https", "mailto"],
     transformTags: {
@@ -56,13 +70,19 @@ export function limpiarHtmlEnriquecido(
       // se convierten a `<p>` para que el guardado sea semántico y el render
       // público coincida con lo que se vio en el editor.
       div: () => ({ tagName: "p", attribs: {} }),
-      span: (_nombre, atributos) => {
+      span: (_nombre, atributos): { tagName: "span"; attribs: Record<string, string> } => {
         const estilo = (atributos.style || "").toLowerCase();
-        if (/\bfont-weight\b/.test(estilo)) return { tagName: "strong", attribs: {} };
-        if (/\bfont-style\b/.test(estilo)) return { tagName: "em", attribs: {} };
-        if (estilo.includes("underline")) return { tagName: "u", attribs: {} };
-        if (estilo.includes("line-through")) return { tagName: "s", attribs: {} };
-        // `span` no está permitido: se descarta conservando el texto interior.
+        const color = /(?:^|;)\s*color\s*:\s*([^;]+)/.exec(estilo)?.[1]?.trim();
+        if (color) {
+          // Conservar el `span` con su `style` original: `allowedStyles` filtra
+          // y mantiene color + negrita/cursiva/subrayado si vienen juntos.
+          return { tagName: "span", attribs: { style: atributos.style || "" } };
+        }
+        if (/\bfont-weight\b/.test(estilo)) return { tagName: "span", attribs: { style: "font-weight: bold" } };
+        if (/\bfont-style\b/.test(estilo)) return { tagName: "span", attribs: { style: "font-style: italic" } };
+        if (estilo.includes("underline")) return { tagName: "span", attribs: { style: "text-decoration-line: underline" } };
+        if (estilo.includes("line-through")) return { tagName: "span", attribs: { style: "text-decoration-line: line-through" } };
+        // `span` sin estilo relevante: se descarta conservando el texto interior.
         return { tagName: "span", attribs: {} };
       },
       a: (nombre, atributos) => ({

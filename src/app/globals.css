@@ -144,6 +144,13 @@ a {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+.logo-text {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 .logo-text .name,
 .logo-text .name-corto {
@@ -152,6 +159,7 @@ a {
   font-weight: 700;
   color: var(--cfl-navy);
   line-height: 1.25;
+  white-space: nowrap;
 }
 .logo-text .name-corto {
   display: none;
@@ -163,6 +171,7 @@ a {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   line-height: 1.25;
+  white-space: nowrap;
 }
 .navlinks {
   display: flex;
@@ -174,6 +183,7 @@ a {
 .navlinks a {
   color: var(--cfl-ink);
   opacity: 0.8;
+  white-space: nowrap;
 }
 .navlinks a.active,
 .navlinks a:hover {
@@ -198,6 +208,10 @@ a {
 .nav-cta {
   background: var(--cfl-navy-2);
   color: var(--cfl-white);
+  transition: background 0.15s ease;
+}
+.nav-cta:hover {
+  background: var(--cfl-blue-deep);
 }
 .nav-actions {
   display: flex;
@@ -234,6 +248,14 @@ a {
   border: 1.5px solid rgba(18, 42, 69, 0.22);
   border-radius: 6px;
   cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.nav-burger:hover {
+  background: var(--cfl-blue-light);
+  border-color: rgba(18, 42, 69, 0.35);
+}
+.nav-burger:hover .burger-line {
+  background: var(--cfl-blue-deep);
 }
 .burger-line {
   display: block;
@@ -274,20 +296,34 @@ a {
   color: var(--cfl-navy-2);
   font-weight: 700;
 }
+.nav-mobile > a:hover {
+  color: var(--cfl-navy-2);
+  font-weight: 600;
+  background: var(--cfl-blue-light);
+}
 .nav-mobile a.nav-cta {
   text-align: center;
   border-bottom: none;
   margin-top: 4px;
+  color: var(--cfl-white);
 }
 .nav-mobile a.btn-login {
   text-align: center;
-  border: 1.5px solid var(--cfl-navy-2);
-  border-bottom: 1.5px solid var(--cfl-navy-2);
+  border: 1.5px solid var(--cfl-blue);
+  border-bottom: 1.5px solid var(--cfl-blue);
   border-radius: 4px;
   font-weight: 600;
+  color: var(--cfl-white);
+  background: var(--cfl-blue);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.nav-mobile a.btn-login:hover {
+  background: var(--cfl-blue-deep);
+  border-color: var(--cfl-blue-deep);
 }
 .nav-mobile a.btn-login-solid {
   text-align: center;
+  color: var(--cfl-white);
 }
 .nav-mobile-actions {
   display: flex;
@@ -1183,6 +1219,31 @@ a {
 .auth-submit:disabled {
   opacity: 0.6;
   cursor: default;
+}
+.auth-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 11px 14px;
+  border: 1px solid rgba(18, 42, 69, 0.22);
+  border-radius: 6px;
+  background: var(--cfl-white);
+  font-family: var(--font-plex), "IBM Plex Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cfl-navy-2);
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.auth-back:hover {
+  border-color: var(--cfl-blue);
+  background: var(--cfl-blue-light);
+  color: var(--cfl-blue-deep);
 }
 
 /* ── Sobre el centro (página institucional) ─────────────── */
@@ -2199,6 +2260,20 @@ a.panel-nav-item:hover {
   .logo-text .name-corto {
     display: block;
   }
+  .logo-text {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .logo-text .sub {
+    font-size: 16.5px;
+  }
+  .site-nav {
+    gap: 20px;
+  }
+  .navlinks {
+    gap: 18px;
+  }
 }
 
 /* Tablet / laptops chicos: el catálogo pasa de 3 a 2 columnas. */
@@ -2221,6 +2296,7 @@ a.panel-nav-item:hover {
   }
   .nav-burger {
     display: inline-flex;
+    margin-left: auto;
   }
   .nav-mobile {
     display: flex;
@@ -2406,6 +2482,14 @@ a.panel-nav-item:hover {
     border-radius: 8px;
     background: none;
     cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .panel-nav-burger:hover {
+    background: var(--cfl-blue-light);
+    border-color: rgba(18, 42, 69, 0.35);
+  }
+  .panel-nav-burger:hover span {
+    background: var(--cfl-blue-deep);
   }
   .panel-nav-burger span {
     display: block;
@@ -2574,9 +2658,57 @@ a.panel-nav-item:hover {
   background: #e5e7eb;
   border-color: #d1d5db;
 }
+/* Botón activo: la propiedad está aplicada al texto bajo el caret/selección.
+   Se marca con un gris más oscuro para diferenciarlo del hover. */
+.rte-toolbar button.activo,
+.rte-toolbar .rte-color.activo {
+  background: #cbd5e1;
+  border-color: #9ca3af;
+  color: #0f172a;
+}
 .rte-toolbar input[type="color"] {
   width: 40px;
   padding: 2px;
+}
+.rte-color {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: #1f2937;
+  cursor: pointer;
+}
+.rte-color:hover,
+.rte-color:focus-within {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+}
+.rte-color input[type="color"] {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  padding: 1px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+}
+/* La muestra interna del swatch también debe quedar circular (Chrome). */
+.rte-color input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.rte-color input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+/* Firefox usa otro pseudo-elemento para la muestra. */
+.rte-color input[type="color"]::-moz-color-swatch {
+  border: none;
+  border-radius: 50%;
 }
 .rte-sep {
   width: 1px;
