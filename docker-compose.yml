@@ -29,6 +29,16 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    # Rebuild automático: con `docker compose watch` cada cambio en los archivos
+    # del proyecto reconstruye la imagen y recrea el contenedor web.
+    develop:
+      watch:
+        - path: .
+          action: rebuild
+          ignore:
+            - node_modules
+            - .next
+            - .git
 
 volumes:
   postgres_data:

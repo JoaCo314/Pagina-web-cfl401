@@ -208,11 +208,6 @@ a {
 .nav-cta {
   background: var(--cfl-navy-2);
   color: var(--cfl-white);
-  transition: background 0.15s ease;
-}
-.nav-cta:hover,
-.nav-cta:active {
-  background: var(--cfl-blue-deep);
 }
 .nav-actions {
   display: flex;
@@ -249,14 +244,6 @@ a {
   border: 1.5px solid rgba(18, 42, 69, 0.22);
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-.nav-burger:hover {
-  background: var(--cfl-blue-light);
-  border-color: rgba(18, 42, 69, 0.35);
-}
-.nav-burger:hover .burger-line {
-  background: var(--cfl-blue-deep);
 }
 .burger-line {
   display: block;
@@ -297,11 +284,6 @@ a {
   color: var(--cfl-navy-2);
   font-weight: 700;
 }
-.nav-mobile > a:hover {
-  color: var(--cfl-navy-2);
-  font-weight: 600;
-  background: var(--cfl-blue-light);
-}
 .nav-mobile a.nav-cta {
   text-align: center;
   border-bottom: none;
@@ -310,16 +292,12 @@ a {
 }
 .nav-mobile a.btn-login {
   text-align: center;
-  border: 1.5px solid var(--cfl-blue);
-  border-bottom: 1.5px solid var(--cfl-blue);
+  border: 1.5px solid var(--cfl-navy-2);
+  border-bottom: 1.5px solid var(--cfl-navy-2);
   border-radius: 4px;
   font-weight: 600;
   color: var(--cfl-white);
-  background: var(--cfl-blue);
-}
-.nav-mobile a.btn-login:hover {
-  background: var(--cfl-blue-deep);
-  border-color: var(--cfl-blue-deep);
+  background: var(--cfl-navy-2);
 }
 .nav-mobile a.btn-login-solid {
   text-align: center;
@@ -1148,24 +1126,6 @@ a {
   border-radius: 50%;
   background: var(--cfl-blue);
 }
-.auth-back {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 22px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(18, 42, 69, 0.1);
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--cfl-navy-2);
-  opacity: 0.72;
-  text-decoration: none;
-  transition: opacity 0.15s ease;
-}
-.auth-back:hover {
-  opacity: 1;
-}
 .auth-card h1 {
   font-size: 26px;
   color: var(--cfl-navy);
@@ -1237,6 +1197,31 @@ a {
 .auth-submit:disabled {
   opacity: 0.6;
   cursor: default;
+}
+.auth-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 11px 14px;
+  border: 1px solid rgba(18, 42, 69, 0.22);
+  border-radius: 6px;
+  background: var(--cfl-white);
+  font-family: var(--font-plex), "IBM Plex Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cfl-navy-2);
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.auth-back:hover {
+  border-color: var(--cfl-blue);
+  background: var(--cfl-blue-light);
+  color: var(--cfl-blue-deep);
 }
 
 /* ── Sobre el centro (página institucional) ─────────────── */
@@ -2475,14 +2460,6 @@ a.panel-nav-item:hover {
     border-radius: 8px;
     background: none;
     cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease;
-  }
-  .panel-nav-burger:hover {
-    background: var(--cfl-blue-light);
-    border-color: rgba(18, 42, 69, 0.3);
-  }
-  .panel-nav-burger:hover span {
-    background: var(--cfl-blue-deep);
   }
   .panel-nav-burger span {
     display: block;
@@ -2490,7 +2467,7 @@ a.panel-nav-item:hover {
     height: 2px;
     border-radius: 2px;
     background: var(--cfl-ink);
-    transition: transform 0.2s ease, opacity 0.2s ease, background 0.15s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease;
   }
   .panel-nav.abierto .panel-nav-burger span:nth-child(1) {
     transform: translateY(7px) rotate(45deg);
@@ -2686,8 +2663,22 @@ a.panel-nav-item:hover {
   height: 26px;
   min-width: 26px;
   padding: 1px;
-  border-radius: 3px;
+  border-radius: 50%;
+  border: none;
   cursor: pointer;
+}
+/* La muestra interna del swatch también debe quedar circular (Chrome). */
+.rte-color input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.rte-color input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+/* Firefox usa otro pseudo-elemento para la muestra. */
+.rte-color input[type="color"]::-moz-color-swatch {
+  border: none;
+  border-radius: 50%;
 }
 .rte-sep {
   width: 1px;
