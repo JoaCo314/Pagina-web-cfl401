@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/session";
 import LoginForm from "@/components/auth/LoginForm";
 
@@ -26,6 +27,9 @@ export default async function PanelLoginPage() {
           Solo nuestro personal institucional necesita ingresar al sistema.
         </p>
         <LoginForm />
+        <Link href="/" className="auth-back">
+          <span aria-hidden="true">←</span> Volver al sitio público
+        </Link>
       </div>
     </main>
   );

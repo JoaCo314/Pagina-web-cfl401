@@ -60,7 +60,6 @@ export default function SiteHeaderCliente({
                 Centro de Formación Laboral 401
               </span>
               <span className="name name-corto">CFL 401</span>
-              <br />
               <span className="sub">Azul</span>
             </span>
           </Link>

@@ -144,6 +144,13 @@ a {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+.logo-text {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 .logo-text .name,
 .logo-text .name-corto {
@@ -152,6 +159,7 @@ a {
   font-weight: 700;
   color: var(--cfl-navy);
   line-height: 1.25;
+  white-space: nowrap;
 }
 .logo-text .name-corto {
   display: none;
@@ -163,6 +171,7 @@ a {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   line-height: 1.25;
+  white-space: nowrap;
 }
 .navlinks {
   display: flex;
@@ -174,6 +183,7 @@ a {
 .navlinks a {
   color: var(--cfl-ink);
   opacity: 0.8;
+  white-space: nowrap;
 }
 .navlinks a.active,
 .navlinks a:hover {
@@ -198,6 +208,11 @@ a {
 .nav-cta {
   background: var(--cfl-navy-2);
   color: var(--cfl-white);
+  transition: background 0.15s ease;
+}
+.nav-cta:hover,
+.nav-cta:active {
+  background: var(--cfl-blue-deep);
 }
 .nav-actions {
   display: flex;
@@ -234,6 +249,14 @@ a {
   border: 1.5px solid rgba(18, 42, 69, 0.22);
   border-radius: 6px;
   cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.nav-burger:hover {
+  background: var(--cfl-blue-light);
+  border-color: rgba(18, 42, 69, 0.35);
+}
+.nav-burger:hover .burger-line {
+  background: var(--cfl-blue-deep);
 }
 .burger-line {
   display: block;
@@ -274,20 +297,33 @@ a {
   color: var(--cfl-navy-2);
   font-weight: 700;
 }
+.nav-mobile > a:hover {
+  color: var(--cfl-navy-2);
+  font-weight: 600;
+  background: var(--cfl-blue-light);
+}
 .nav-mobile a.nav-cta {
   text-align: center;
   border-bottom: none;
   margin-top: 4px;
+  color: var(--cfl-white);
 }
 .nav-mobile a.btn-login {
   text-align: center;
-  border: 1.5px solid var(--cfl-navy-2);
-  border-bottom: 1.5px solid var(--cfl-navy-2);
+  border: 1.5px solid var(--cfl-blue);
+  border-bottom: 1.5px solid var(--cfl-blue);
   border-radius: 4px;
   font-weight: 600;
+  color: var(--cfl-white);
+  background: var(--cfl-blue);
+}
+.nav-mobile a.btn-login:hover {
+  background: var(--cfl-blue-deep);
+  border-color: var(--cfl-blue-deep);
 }
 .nav-mobile a.btn-login-solid {
   text-align: center;
+  color: var(--cfl-white);
 }
 .nav-mobile-actions {
   display: flex;
@@ -1111,6 +1147,24 @@ a {
   height: 10px;
   border-radius: 50%;
   background: var(--cfl-blue);
+}
+.auth-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(18, 42, 69, 0.1);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--cfl-navy-2);
+  opacity: 0.72;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+.auth-back:hover {
+  opacity: 1;
 }
 .auth-card h1 {
   font-size: 26px;
@@ -2199,6 +2253,20 @@ a.panel-nav-item:hover {
   .logo-text .name-corto {
     display: block;
   }
+  .logo-text {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .logo-text .sub {
+    font-size: 16.5px;
+  }
+  .site-nav {
+    gap: 20px;
+  }
+  .navlinks {
+    gap: 18px;
+  }
 }
 
 /* Tablet / laptops chicos: el catálogo pasa de 3 a 2 columnas. */
@@ -2221,6 +2289,7 @@ a.panel-nav-item:hover {
   }
   .nav-burger {
     display: inline-flex;
+    margin-left: auto;
   }
   .nav-mobile {
     display: flex;
@@ -2406,6 +2475,14 @@ a.panel-nav-item:hover {
     border-radius: 8px;
     background: none;
     cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .panel-nav-burger:hover {
+    background: var(--cfl-blue-light);
+    border-color: rgba(18, 42, 69, 0.3);
+  }
+  .panel-nav-burger:hover span {
+    background: var(--cfl-blue-deep);
   }
   .panel-nav-burger span {
     display: block;
@@ -2413,7 +2490,7 @@ a.panel-nav-item:hover {
     height: 2px;
     border-radius: 2px;
     background: var(--cfl-ink);
-    transition: transform 0.2s ease, opacity 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, background 0.15s ease;
   }
   .panel-nav.abierto .panel-nav-burger span:nth-child(1) {
     transform: translateY(7px) rotate(45deg);
