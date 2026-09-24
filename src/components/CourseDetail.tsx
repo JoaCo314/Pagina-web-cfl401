@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import HtmlEnriquecido from "@/components/HtmlEnriquecido";
 import {
   formatearFecha,
-  iconoCategoria,
+  iconoCurso,
   nombresDocentes,
 } from "@/lib/cursoUtils";
 
@@ -20,7 +21,9 @@ type CursoDetail = {
   sede: string | null;
   enlaceInscripcion: string | null;
   programaContenidos: string | null;
+  programaContenidosHtml: string | null;
   categoria: string | null;
+  emoji: string | null;
   cupos: number | null;
   imagenUrl: string | null;
   informacionAdicional: string | null;
@@ -131,7 +134,9 @@ export default function CourseDetail({ id }: { id: number }) {
             />
           )}
           <div className="detail-head">
-            <div className="course-icon">{iconoCategoria(curso.categoria)}</div>
+            <div className="course-icon">
+              {iconoCurso(curso.emoji, curso.categoria)}
+            </div>
             <div>
               <div className="detail-tags">
                 {curso.categoria && (
@@ -152,10 +157,14 @@ export default function CourseDetail({ id }: { id: number }) {
 
           <section className="detail-section">
             <h2>Programa y contenidos</h2>
-            <p>
-              {curso.programaContenidos ??
-                "El programa detallado estará disponible próximamente."}
-            </p>
+            {curso.programaContenidos ? (
+              <HtmlEnriquecido
+                html={curso.programaContenidosHtml}
+                textoPlano={curso.programaContenidos}
+              />
+            ) : (
+              <p>El programa detallado estará disponible próximamente.</p>
+            )}
           </section>
 
           {curso.informacionAdicional && (

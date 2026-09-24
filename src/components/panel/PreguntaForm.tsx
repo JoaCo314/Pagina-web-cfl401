@@ -2,11 +2,14 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import EditorTextoEnriquecido from "@/components/panel/EditorTextoEnriquecido";
+import { extraerTextoPlano, valorInicialEditor } from "@/lib/htmlEnriquecidoUtil";
 
 export type PreguntaFormInicial = {
   id: number;
   pregunta: string;
   respuesta: string;
+  respuestaHtml: string | null;
   categoriaId: number;
   orden: number | null;
   activo: boolean;
@@ -26,6 +29,9 @@ export default function PreguntaForm({
 
   const [pregunta, setPregunta] = useState(inicial?.pregunta ?? "");
   const [respuesta, setRespuesta] = useState(inicial?.respuesta ?? "");
+  const [respuestaHtml, setRespuestaHtml] = useState<string>(
+    valorInicialEditor(inicial?.respuestaHtml, inicial?.respuesta)
+  );
   const [categoriaId, setCategoriaId] = useState<number>(
     inicial?.categoriaId ?? categorias[0]?.id ?? 0
   );
@@ -37,6 +43,11 @@ export default function PreguntaForm({
   const [activo, setActivo] = useState(inicial?.activo ?? true);
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+
+  function sincronizarRespuesta(html: string) {
+    setRespuestaHtml(html);
+    setRespuesta(extraerTextoPlano(html));
+  }
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -64,6 +75,7 @@ export default function PreguntaForm({
       const body = {
         pregunta: pregunta.trim(),
         respuesta: respuesta.trim(),
+        respuestaHtml: respuestaHtml.trim() || null,
         categoriaId,
         orden: orden ? Number(orden) : null,
         activo,
@@ -111,14 +123,12 @@ export default function PreguntaForm({
         </div>
 
         <div className="form-field form-field-full">
-          <span>
-            Respuesta <strong>*</strong>
-          </span>
-          <textarea
-            rows={5}
-            value={respuesta}
-            onChange={(e) => setRespuesta(e.target.value)}
-            placeholder="Respuesta clara y breve. Separá los párrafos con un renglón en blanco."
+          <EditorTextoEnriquecido
+            id="pregunta-respuesta"
+            etiqueta="Respuesta"
+            esObligatorio
+            valorInicial={respuestaHtml}
+            onCambio={sincronizarRespuesta}
           />
         </div>
 

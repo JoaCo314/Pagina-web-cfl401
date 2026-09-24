@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import DOMPurify from "dompurify";
 import { useEffect, useState } from "react";
 import {
   dividirParrafos,
@@ -96,6 +97,9 @@ export default function NoticiaDetail({ id }: { id: number }) {
 
   const { noticia } = estado;
   const parrafos = dividirParrafos(noticia.contenido);
+  const cuerpoHtml = noticia.contenidoHtml
+    ? DOMPurify.sanitize(noticia.contenidoHtml)
+    : null;
 
   return (
     <section className="wrap detail-body" id="contenido" tabIndex={-1}>
@@ -115,11 +119,20 @@ export default function NoticiaDetail({ id }: { id: number }) {
             alt={noticia.titulo}
           />
         )}
-        <div className="noticia-cuerpo">
-          {parrafos.map((parrafo, indice) => (
-            <p key={indice}>{parrafo}</p>
-          ))}
-        </div>
+        {cuerpoHtml ? (
+          <div
+            className="noticia-cuerpo"
+            // El HTML ya se sanéa en el servidor (sanitize-html) al guardar y
+            // se vuelve a sanear acá con DOMPurify antes de renderizarse.
+            dangerouslySetInnerHTML={{ __html: cuerpoHtml }}
+          />
+        ) : (
+          <div className="noticia-cuerpo">
+            {parrafos.map((parrafo, indice) => (
+              <p key={indice}>{parrafo}</p>
+            ))}
+          </div>
+        )}
       </article>
     </section>
   );

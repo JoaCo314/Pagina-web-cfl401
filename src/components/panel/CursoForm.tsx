@@ -3,6 +3,8 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { DocenteActivo } from "@/lib/cursoAdmin";
+import EditorTextoEnriquecido from "@/components/panel/EditorTextoEnriquecido";
+import { extraerTextoPlano, valorInicialEditor } from "@/lib/htmlEnriquecidoUtil";
 import CampoImagen from "@/components/panel/CampoImagen";
 import type { EstadoImagen } from "@/components/panel/CampoImagen";
 import { subirImagen, validarArchivoImagen } from "@/lib/imagenesCliente";
@@ -19,7 +21,9 @@ export type CursoFormInicial = {
   sede: string | null;
   enlaceInscripcion: string | null;
   programaContenidos: string | null;
+  programaContenidosHtml: string | null;
   categoria: string | null;
+  emoji: string | null;
   cupos: number | null;
   imagenUrl: string | null;
   informacionAdicional: string | null;
@@ -50,7 +54,12 @@ export default function CursoForm({
     sede: inicial?.sede ?? "",
     enlaceInscripcion: inicial?.enlaceInscripcion ?? "",
     programaContenidos: inicial?.programaContenidos ?? "",
+    programaContenidosHtml: valorInicialEditor(
+      inicial?.programaContenidosHtml,
+      inicial?.programaContenidos
+    ),
     categoria: inicial?.categoria ?? "",
+    emoji: inicial?.emoji ?? "",
     cupos: inicial?.cupos != null ? String(inicial.cupos) : "",
     informacionAdicional: inicial?.informacionAdicional ?? "",
   });
@@ -68,6 +77,14 @@ export default function CursoForm({
 
   function setCampo(campo: string, valor: string) {
     setDatos((prev) => ({ ...prev, [campo]: valor }));
+  }
+
+  function sincronizarProgramaContenidos(html: string) {
+    setDatos((prev) => ({
+      ...prev,
+      programaContenidosHtml: html,
+      programaContenidos: extraerTextoPlano(html),
+    }));
   }
 
   function alternarDocente(id: number) {
@@ -238,6 +255,20 @@ export default function CursoForm({
       </label>
 
       <label className="form-field">
+        <span>Emoji / ícono del curso (opcional)</span>
+        <input
+          type="text"
+          value={datos.emoji}
+          onChange={(e) => setCampo("emoji", e.target.value)}
+          placeholder="Ej: 🤖"
+        />
+        <small className="form-hint">
+          Se muestra junto al curso en el catálogo y en el detalle. Si lo dejás
+          vacío, se usa un emoji automático según la categoría.
+        </small>
+      </label>
+
+      <label className="form-field">
         <span>Modalidad</span>
         <input
           type="text"
@@ -337,12 +368,12 @@ export default function CursoForm({
       </div>
 
       <div className="form-field form-field-full">
-        <span>Programa / contenidos</span>
-        <textarea
-          rows={4}
-          value={datos.programaContenidos}
-          onChange={(e) => setCampo("programaContenidos", e.target.value)}
-          placeholder="Contenidos, habilidades y temas del curso"
+        <EditorTextoEnriquecido
+          id="curso-programa-contenidos"
+          etiqueta="Programa y contenidos"
+          valorInicial={datos.programaContenidosHtml}
+          minAlto={200}
+          onCambio={sincronizarProgramaContenidos}
         />
       </div>
 

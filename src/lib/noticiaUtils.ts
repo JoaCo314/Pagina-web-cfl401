@@ -3,6 +3,7 @@ export type Noticia = {
   titulo: string;
   resumen: string | null;
   contenido: string;
+  contenidoHtml: string | null;
   fecha: string;
   imagenUrl: string | null;
   activo: boolean;

@@ -21,7 +21,7 @@ export async function GET() {
         nombre: true,
         preguntas: {
           where: { activo: true },
-          select: { id: true, pregunta: true, respuesta: true },
+          select: { id: true, pregunta: true, respuesta: true, respuestaHtml: true },
           orderBy: [{ orden: "asc" }, { pregunta: "asc" }],
         },
       },
@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
       data: {
         pregunta: resultado.datos.pregunta,
         respuesta: resultado.datos.respuesta,
+        respuestaHtml: resultado.datos.respuestaHtml ?? null,
         categoriaId: resultado.datos.categoriaId,
         orden: resultado.datos.orden,
         ...(resultado.datos.activo !== undefined

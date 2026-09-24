@@ -2,15 +2,17 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import EditorTextoEnriquecido from "@/components/panel/EditorTextoEnriquecido";
+import { extraerTextoPlano, htmlDesdeTextoPlano } from "@/lib/htmlEnriquecidoUtil";
 
 export type BloqueGuia = {
   clave: string;
   titulo: string;
   contenido: string;
+  contenidoHtml: string;
 };
 
 const MAX_TITULO = 200;
-const MAX_CONTENIDO = 10000;
 
 export default function GuiaForm({ bloques }: { bloques: BloqueGuia[] }) {
   const router = useRouter();
@@ -19,9 +21,24 @@ export default function GuiaForm({ bloques }: { bloques: BloqueGuia[] }) {
   const [guardado, setGuardado] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
-  function setCampo(clave: string, campo: "titulo" | "contenido", valor: string) {
+  function setCampo(
+    clave: string,
+    campo: "titulo" | "contenido" | "contenidoHtml",
+    valor: string
+  ) {
     setDatos((prev) =>
       prev.map((b) => (b.clave === clave ? { ...b, [campo]: valor } : b))
+    );
+    setGuardado(false);
+  }
+
+  function sincronizarContenido(clave: string, html: string) {
+    setDatos((prev) =>
+      prev.map((b) =>
+        b.clave === clave
+          ? { ...b, contenidoHtml: html, contenido: extraerTextoPlano(html) }
+          : b
+      )
     );
     setGuardado(false);
   }
@@ -58,11 +75,23 @@ export default function GuiaForm({ bloques }: { bloques: BloqueGuia[] }) {
       }
 
       const data = (await res.json()) as {
-        contenidos?: { clave: string; titulo: string; contenido: string }[];
+        contenidos?: {
+          clave: string;
+          titulo: string;
+          contenido: string;
+          contenidoHtml: string | null;
+        }[];
       };
 
       if (Array.isArray(data.contenidos)) {
-        setDatos(data.contenidos);
+        setDatos(
+          data.contenidos.map((c) => ({
+            clave: c.clave,
+            titulo: c.titulo,
+            contenido: c.contenido,
+            contenidoHtml: c.contenidoHtml ?? "",
+          }))
+        );
       }
 
       setGuardado(true);
@@ -103,20 +132,17 @@ export default function GuiaForm({ bloques }: { bloques: BloqueGuia[] }) {
               </small>
             </label>
 
-            <label className="form-field">
-              <span>Contenido</span>
-              <textarea
-                rows={6}
-                maxLength={MAX_CONTENIDO}
-                value={bloque.contenido}
-                onChange={(e) =>
-                  setCampo(bloque.clave, "contenido", e.target.value)
+            <div className="form-field">
+              <EditorTextoEnriquecido
+                id={`guia-contenido-${bloque.clave}`}
+                etiqueta="Contenido"
+                valorInicial={
+                  bloque.contenidoHtml ||
+                  htmlDesdeTextoPlano(bloque.contenido)
                 }
+                onCambio={(html) => sincronizarContenido(bloque.clave, html)}
               />
-              <small className="guia-contador">
-                {bloque.contenido.length}/{MAX_CONTENIDO}
-              </small>
-            </label>
+            </div>
           </fieldset>
         ))}
 

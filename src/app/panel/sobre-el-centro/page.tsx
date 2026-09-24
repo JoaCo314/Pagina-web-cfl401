@@ -47,10 +47,13 @@ export default async function SobreElCentroPanelPage() {
       <SobreElCentroForm
         inicial={{
           intro: sobre?.intro ?? "",
+          introHtml: sobre?.introHtml ?? "",
           misionTitulo: sobre?.misionTitulo ?? "",
           misionTexto: sobre?.misionTexto ?? "",
+          misionTextoHtml: sobre?.misionTextoHtml ?? "",
           historiaTitulo: sobre?.historiaTitulo ?? "",
           historiaTexto: sobre?.historiaTexto ?? "",
+          historiaTextoHtml: sobre?.historiaTextoHtml ?? "",
           hitos: leerHitos(sobre?.hitos ?? null) ?? [],
           estadisticasTitulo: sobre?.estadisticasTitulo ?? "",
           estadisticas: leerEstadisticas(sobre?.estadisticas ?? null) ?? [],

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
   formatearFecha,
-  iconoCategoria,
+  iconoCurso,
   nombresDocentes,
 } from "@/lib/cursoUtils";
 
@@ -15,6 +15,7 @@ type Curso = {
   nombre: string;
   descripcion: string | null;
   categoria: string | null;
+  emoji: string | null;
   cupos: number | null;
   modalidad: string | null;
   horarios: string | null;
@@ -37,7 +38,9 @@ function CourseCard({ curso }: { curso: Curso }) {
         <img className="course-img" src={curso.imagenUrl} alt={curso.nombre} />
       )}
       <div className="course-top">
-        <div className="course-icon">{iconoCategoria(curso.categoria)}</div>
+        <div className="course-icon">
+          {iconoCurso(curso.emoji, curso.categoria)}
+        </div>
         {curso.cupos !== null && (
           <span className={`cupos${cuposBajos ? " pocos" : ""}`}>
             {curso.cupos} cupos

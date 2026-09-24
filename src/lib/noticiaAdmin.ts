@@ -1,3 +1,5 @@
+import { limpiarHtmlEnriquecido } from "@/lib/htmlEnriquecido";
+export { limpiarHtmlEnriquecido };
 import { validarImagenUrl } from "@/lib/imagenes";
 
 /// Selección estándar de una noticia para respuestas de la API y del panel.
@@ -6,6 +8,7 @@ export const NOTICIA_SELECT = {
   titulo: true,
   resumen: true,
   contenido: true,
+  contenidoHtml: true,
   fecha: true,
   imagenUrl: true,
   activo: true,
@@ -17,9 +20,10 @@ export type NoticiaInputNormalizado = {
   titulo: string;
   resumen: string | null;
   contenido: string;
+  contenidoHtml: string | null | undefined;
   fecha: Date;
   imagenUrl: string | null;
-  activo?: boolean;
+  activo: boolean;
 };
 
 export type ResultadoNoticiaInput =
@@ -125,6 +129,16 @@ export function validarDatosNoticia(input: unknown): ResultadoNoticiaInput {
     activo = fuente.activo;
   }
 
+  /// HTML enriquecido (editor del panel). Opcional; se sanea en el servidor.
+  let contenidoHtml: string | null | undefined;
+  if (fuente.contenidoHtml !== undefined && fuente.contenidoHtml !== null) {
+    const html = limpiarHtmlEnriquecido(fuente.contenidoHtml, "contenidoHtml", 50000);
+    if (html.error) return { ok: false, error: html.error };
+    contenidoHtml = html.valor;
+  } else {
+    contenidoHtml = undefined;
+  }
+
   return {
     ok: true,
     presentes,
@@ -132,9 +146,10 @@ export function validarDatosNoticia(input: unknown): ResultadoNoticiaInput {
       titulo: titulo.valor as string,
       resumen: resumen.valor,
       contenido: contenido.valor as string,
+      contenidoHtml,
       fecha: fecha.valor as Date,
       imagenUrl: imagenUrl.valor,
-      activo,
+      activo: activo === true,
     },
   };
 }

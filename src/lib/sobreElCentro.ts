@@ -1,13 +1,17 @@
+import { limpiarHtmlEnriquecido } from "@/lib/htmlEnriquecido";
 import { validarImagenUrl } from "@/lib/imagenes";
 
 /// Selección estándar del contenido de "Sobre el centro".
 export const SOBRE_SELECT = {
   id: true,
   intro: true,
+  introHtml: true,
   misionTitulo: true,
   misionTexto: true,
+  misionTextoHtml: true,
   historiaTitulo: true,
   historiaTexto: true,
+  historiaTextoHtml: true,
   hitos: true,
   estadisticasTitulo: true,
   estadisticas: true,
@@ -23,10 +27,13 @@ export type FotoGaleria = { url: string; leyenda: string };
 
 export type SobreElCentroDatos = {
   intro: string | null;
+  introHtml: string | null;
   misionTitulo: string | null;
   misionTexto: string | null;
+  misionTextoHtml: string | null;
   historiaTitulo: string | null;
   historiaTexto: string | null;
+  historiaTextoHtml: string | null;
   hitos: Hito[] | null;
   estadisticasTitulo: string | null;
   estadisticas: Estadistica[] | null;
@@ -103,10 +110,26 @@ export function validarSobreElCentro(input: unknown): ResultadoSobreElCentro {
   }
 
   const intro = limpiar("intro", 1000);
+  const introHtml = limpiarHtmlEnriquecido(fuente.introHtml, "introHtml", 4000);
+  if (introHtml.error) return { ok: false, error: introHtml.error };
   const misionTitulo = limpiar("misionTitulo", MAX_TITULO);
   const misionTexto = limpiar("misionTexto", MAX_TEXTO);
+  const misionTextoHtml = limpiarHtmlEnriquecido(
+    fuente.misionTextoHtml,
+    "misionTextoHtml",
+    20000
+  );
+  if (misionTextoHtml.error) return { ok: false, error: misionTextoHtml.error };
   const historiaTitulo = limpiar("historiaTitulo", MAX_TITULO);
   const historiaTexto = limpiar("historiaTexto", MAX_TEXTO);
+  const historiaTextoHtml = limpiarHtmlEnriquecido(
+    fuente.historiaTextoHtml,
+    "historiaTextoHtml",
+    20000
+  );
+  if (historiaTextoHtml.error) {
+    return { ok: false, error: historiaTextoHtml.error };
+  }
   const estadisticasTitulo = limpiar("estadisticasTitulo", MAX_TITULO);
   const galeriaTitulo = limpiar("galeriaTitulo", MAX_TITULO);
 
@@ -129,10 +152,13 @@ export function validarSobreElCentro(input: unknown): ResultadoSobreElCentro {
     ok: true,
     datos: {
       intro,
+      introHtml: introHtml.valor,
       misionTitulo,
       misionTexto,
+      misionTextoHtml: misionTextoHtml.valor,
       historiaTitulo,
       historiaTexto,
+      historiaTextoHtml: historiaTextoHtml.valor,
       hitos: hitos.valor,
       estadisticasTitulo,
       estadisticas: estadisticas.valor,
