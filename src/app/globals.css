@@ -2651,9 +2651,43 @@ a.panel-nav-item:hover {
   background: #e5e7eb;
   border-color: #d1d5db;
 }
+/* Botón activo: la propiedad está aplicada al texto bajo el caret/selección.
+   Se marca con un gris más oscuro para diferenciarlo del hover. */
+.rte-toolbar button.activo,
+.rte-toolbar .rte-color.activo {
+  background: #cbd5e1;
+  border-color: #9ca3af;
+  color: #0f172a;
+}
 .rte-toolbar input[type="color"] {
   width: 40px;
   padding: 2px;
+}
+.rte-color {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: #1f2937;
+  cursor: pointer;
+}
+.rte-color:hover,
+.rte-color:focus-within {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+}
+.rte-color input[type="color"] {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  padding: 1px;
+  border-radius: 3px;
+  cursor: pointer;
 }
 .rte-sep {
   width: 1px;
