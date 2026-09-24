@@ -1,3 +1,4 @@
+import { limpiarHtmlEnriquecido } from "@/lib/htmlEnriquecido";
 import { prisma } from "@/lib/prisma";
 
 /// Selección estándar de una pregunta frecuente para el panel y el sitio.
@@ -5,6 +6,7 @@ export const PREGUNTA_SELECT = {
   id: true,
   pregunta: true,
   respuesta: true,
+  respuestaHtml: true,
   categoriaId: true,
   orden: true,
   activo: true,
@@ -22,6 +24,7 @@ export const CATEGORIA_SELECT = {
 export type PreguntaFrecuenteInput = {
   pregunta: string;
   respuesta: string;
+  respuestaHtml: string | null | undefined;
   categoriaId: number;
   orden: number | null;
   activo?: boolean;
@@ -89,6 +92,16 @@ export async function validarPreguntaFrecuente(
   const respuesta = limpiarTexto(fuente.respuesta, "respuesta", 5000, true);
   if (respuesta.error) return { ok: false, error: respuesta.error };
 
+  /// HTML enriquecido (editor del panel). Opcional; se sanea en el servidor.
+  let respuestaHtml: string | null | undefined;
+  if (fuente.respuestaHtml !== undefined && fuente.respuestaHtml !== null) {
+    const html = limpiarHtmlEnriquecido(fuente.respuestaHtml, "respuestaHtml", 20000);
+    if (html.error) return { ok: false, error: html.error };
+    respuestaHtml = html.valor;
+  } else {
+    respuestaHtml = undefined;
+  }
+
   let categoriaId: number | undefined;
   if (fuente.categoriaId !== undefined && fuente.categoriaId !== null && fuente.categoriaId !== "") {
     const id = Number(fuente.categoriaId);
@@ -131,6 +144,7 @@ export async function validarPreguntaFrecuente(
     datos: {
       pregunta: pregunta.valor as string,
       respuesta: respuesta.valor as string,
+      respuestaHtml,
       categoriaId: categoriaId as number,
       orden: orden.valor,
       activo,

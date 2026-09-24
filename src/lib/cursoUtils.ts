@@ -1,5 +1,13 @@
 export type Docente = { id: number; nombre: string; apellido: string };
 
+/// Ícono de un curso: usa el emoji cargado desde el panel si existe; si no,
+/// deriva uno automático según la categoría.
+export function iconoCurso(emoji: string | null | undefined, categoria: string | null | undefined): string {
+  const propio = (emoji ?? "").trim();
+  if (propio) return propio;
+  return iconoCategoria(categoria ?? null);
+}
+
 export function iconoCategoria(categoria: string | null): string {
   const texto = (categoria ?? "").toLowerCase();
   if (/(inform|tecnolog|robot|comput)/.test(texto)) return "🤖";

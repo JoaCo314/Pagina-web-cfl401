@@ -1,3 +1,5 @@
+import { limpiarHtmlEnriquecido } from "@/lib/htmlEnriquecido";
+
 /// Claves de los 4 bloques de contenido de la guía de inscripción (RF-05).
 /// Deben coincidir con las que siembra prisma/seed.ts.
 export const CLAVES_CONTENIDO_GUIA = [
@@ -13,6 +15,7 @@ export type ContenidoGuiaInput = {
   clave: ClaveContenidoGuia;
   titulo: string;
   contenido: string;
+  contenidoHtml: string | null;
 };
 
 export type ResultadoContenidosGuia =
@@ -80,7 +83,21 @@ export function validarContenidosGuia(
       };
     }
 
-    contenidos.push({ clave, titulo, contenido });
+    /// HTML enriquecido del bloque (editor del panel). Opcional; si viene se
+    /// sanea en el servidor y se renderiza en la guía pública.
+    const contenidoHtml = limpiarHtmlEnriquecido(
+      bloque.contenidoHtml,
+      "contenidoHtml",
+      30000
+    );
+    if (contenidoHtml.error) return { ok: false, error: contenidoHtml.error };
+
+    contenidos.push({
+      clave,
+      titulo,
+      contenido,
+      contenidoHtml: contenidoHtml.valor,
+    });
   }
 
   return { ok: true, contenidos };

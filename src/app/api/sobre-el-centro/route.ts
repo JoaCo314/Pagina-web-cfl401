@@ -66,10 +66,13 @@ export async function PUT(request: NextRequest) {
   const datos = resultado.datos;
   const data = {
     intro: datos.intro ?? null,
+    introHtml: datos.introHtml ?? null,
     misionTitulo: datos.misionTitulo ?? null,
     misionTexto: datos.misionTexto ?? null,
+    misionTextoHtml: datos.misionTextoHtml ?? null,
     historiaTitulo: datos.historiaTitulo ?? null,
     historiaTexto: datos.historiaTexto ?? null,
+    historiaTextoHtml: datos.historiaTextoHtml ?? null,
     hitos: datos.hitos ?? Prisma.DbNull,
     estadisticasTitulo: datos.estadisticasTitulo ?? null,
     estadisticas: datos.estadisticas ?? Prisma.DbNull,

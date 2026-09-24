@@ -56,7 +56,10 @@ export default function SiteHeaderCliente({
               height={46}
             />
             <span className="logo-text">
-              <span className="name">Centro de Formación Laboral 401</span>
+              <span className="name name-full">
+                Centro de Formación Laboral 401
+              </span>
+              <span className="name name-corto">CFL 401</span>
               <br />
               <span className="sub">Azul</span>
             </span>

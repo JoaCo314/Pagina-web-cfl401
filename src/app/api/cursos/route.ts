@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
         nombre: true,
         descripcion: true,
         categoria: true,
+        emoji: true,
         cupos: true,
         modalidad: true,
         horarios: true,

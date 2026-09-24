@@ -71,6 +71,7 @@ export async function PUT(
   const sinActivo = {
     pregunta: resultado.datos.pregunta,
     respuesta: resultado.datos.respuesta,
+    respuestaHtml: resultado.datos.respuestaHtml ?? null,
     categoriaId: resultado.datos.categoriaId,
     orden: resultado.datos.orden ?? null,
   };

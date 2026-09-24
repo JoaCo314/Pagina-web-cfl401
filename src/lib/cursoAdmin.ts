@@ -1,3 +1,4 @@
+import { limpiarHtmlEnriquecido } from "@/lib/htmlEnriquecido";
 import { prisma } from "@/lib/prisma";
 import { validarImagenUrl } from "@/lib/imagenes";
 
@@ -14,7 +15,9 @@ export const CURSO_SELECT = {
   sede: true,
   enlaceInscripcion: true,
   programaContenidos: true,
+  programaContenidosHtml: true,
   categoria: true,
+  emoji: true,
   cupos: true,
   imagenUrl: true,
   informacionAdicional: true,
@@ -39,7 +42,9 @@ export type CursoInputNormalizado = {
   sede: string | null;
   enlaceInscripcion: string | null;
   programaContenidos: string | null;
+  programaContenidosHtml: string | null | undefined;
   categoria: string | null;
+  emoji: string | null;
   cupos: number | null;
   imagenUrl: string | null;
   informacionAdicional: string | null;
@@ -129,6 +134,23 @@ function parsearCupos(
   return { valor: numero };
 }
 
+/// Emoji/ícono opcional del curso. Se guarda tal cual si viene; si está vacío,
+/// el sitio usa el ícono automático según la categoría (fallback).
+function parsearEmoji(
+  valor: unknown
+): { error?: string; valor: string | null } {
+  if (valor === undefined || valor === null) return { valor: null };
+  if (typeof valor !== "string") {
+    return { error: "El ícono debe ser un texto.", valor: null };
+  }
+  const texto = valor.trim();
+  if (!texto) return { valor: null };
+  if (texto.length > 16) {
+    return { error: "El ícono no puede superar 16 caracteres.", valor: null };
+  }
+  return { valor: texto };
+}
+
 export type ResultadoListaDocentes =
   | { ok: true; ids: number[] }
   | { ok: false; error: string };
@@ -192,7 +214,24 @@ export async function validarDatosCurso(
   const horarios = limpiarTexto(fuente.horarios);
   const mesesCursada = limpiarTexto(fuente.mesesCursada);
   const programaContenidos = limpiarTexto(fuente.programaContenidos);
+  /// HTML enriquecido (editor del panel). Opcional; se sanea en el servidor.
+  let programaContenidosHtml: string | null | undefined;
+  if (
+    fuente.programaContenidosHtml !== undefined &&
+    fuente.programaContenidosHtml !== null
+  ) {
+    const html = limpiarHtmlEnriquecido(
+      fuente.programaContenidosHtml,
+      "programaContenidosHtml",
+      4000
+    );
+    if (html.error) return { ok: false, error: html.error };
+    programaContenidosHtml = html.valor;
+  } else {
+    programaContenidosHtml = undefined;
+  }
   const categoria = limpiarTexto(fuente.categoria);
+  const emoji = parsearEmoji(fuente.emoji);
   const imagenUrl = validarImagenUrl(fuente.imagenUrl);
   const informacionAdicional = limpiarTexto(fuente.informacionAdicional);
   const sede = limpiarTexto(fuente.sede);
@@ -204,6 +243,7 @@ export async function validarDatosCurso(
     ["mesesCursada", mesesCursada],
     ["programaContenidos", programaContenidos],
     ["categoria", categoria],
+    ["emoji", emoji],
     ["imagenUrl", imagenUrl],
     ["informacionAdicional", informacionAdicional],
     ["sede", sede],
@@ -259,7 +299,9 @@ export async function validarDatosCurso(
       sede: sede.valor,
       enlaceInscripcion: enlaceInscripcion.valor,
       programaContenidos: programaContenidos.valor,
+      programaContenidosHtml,
       categoria: categoria.valor,
+      emoji: emoji.valor,
       cupos: cupos.valor,
       imagenUrl: imagenUrl.valor,
       informacionAdicional: informacionAdicional.valor,
