@@ -208,6 +208,10 @@ a {
 .nav-cta {
   background: var(--cfl-navy-2);
   color: var(--cfl-white);
+  transition: background 0.15s ease;
+}
+.nav-cta:hover {
+  background: var(--cfl-blue-deep);
 }
 .nav-actions {
   display: flex;
@@ -244,6 +248,14 @@ a {
   border: 1.5px solid rgba(18, 42, 69, 0.22);
   border-radius: 6px;
   cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.nav-burger:hover {
+  background: var(--cfl-blue-light);
+  border-color: rgba(18, 42, 69, 0.35);
+}
+.nav-burger:hover .burger-line {
+  background: var(--cfl-blue-deep);
 }
 .burger-line {
   display: block;
@@ -284,6 +296,11 @@ a {
   color: var(--cfl-navy-2);
   font-weight: 700;
 }
+.nav-mobile > a:hover {
+  color: var(--cfl-navy-2);
+  font-weight: 600;
+  background: var(--cfl-blue-light);
+}
 .nav-mobile a.nav-cta {
   text-align: center;
   border-bottom: none;
@@ -292,12 +309,17 @@ a {
 }
 .nav-mobile a.btn-login {
   text-align: center;
-  border: 1.5px solid var(--cfl-navy-2);
-  border-bottom: 1.5px solid var(--cfl-navy-2);
+  border: 1.5px solid var(--cfl-blue);
+  border-bottom: 1.5px solid var(--cfl-blue);
   border-radius: 4px;
   font-weight: 600;
   color: var(--cfl-white);
-  background: var(--cfl-navy-2);
+  background: var(--cfl-blue);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.nav-mobile a.btn-login:hover {
+  background: var(--cfl-blue-deep);
+  border-color: var(--cfl-blue-deep);
 }
 .nav-mobile a.btn-login-solid {
   text-align: center;
@@ -2460,6 +2482,14 @@ a.panel-nav-item:hover {
     border-radius: 8px;
     background: none;
     cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .panel-nav-burger:hover {
+    background: var(--cfl-blue-light);
+    border-color: rgba(18, 42, 69, 0.35);
+  }
+  .panel-nav-burger:hover span {
+    background: var(--cfl-blue-deep);
   }
   .panel-nav-burger span {
     display: block;
