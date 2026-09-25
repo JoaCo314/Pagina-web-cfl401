@@ -467,6 +467,56 @@ a {
   margin-bottom: 24px;
 }
 
+/* ── Mapa (ubicación en la portada) ─────────────────────── */
+.mapa-section {
+  padding: 56px 0;
+}
+.mapa-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 24px;
+  max-width: 920px;
+  margin: 0 auto 26px;
+}
+.mapa-head .section-head {
+  max-width: 620px;
+  margin-bottom: 0;
+}
+.mapa-head .section-head h2 {
+  font-size: 26px;
+  color: var(--cfl-navy);
+  margin-bottom: 8px;
+}
+.mapa-head .section-head p {
+  opacity: 0.7;
+}
+.mapa-frame {
+  position: relative;
+  width: 100%;
+  max-width: 920px;
+  height: 380px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1.5px solid rgba(18, 42, 69, 0.12);
+  box-shadow: 0 4px 16px rgba(18, 42, 69, 0.08);
+  background: var(--cfl-blue-light);
+}
+.mapa-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+@media (max-width: 720px) {
+  .mapa-frame {
+    height: 300px;
+  }
+}
+
 /* ── Page header ─────────────────────────────────────────── */
 .page-header {
   background: var(--cfl-navy-2);
@@ -2192,9 +2242,42 @@ a.panel-nav-item:hover {
   align-items: center;
   gap: 14px;
 }
-.imagen-controles input[type="file"] {
+.imagen-subir {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1.5px dashed var(--cfl-blue);
+  border-radius: 6px;
+  background: var(--cfl-blue-light);
+  color: var(--cfl-blue-deep);
   font-size: 13.5px;
-  max-width: 100%;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+.imagen-subir:hover {
+  background: #dcecfa;
+  border-color: var(--cfl-blue-deep);
+}
+.imagen-subir input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  opacity: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.imagen-subir-icono {
+  flex: none;
 }
 .form-error {
   grid-column: 1 / -1;
@@ -2219,6 +2302,35 @@ a.panel-nav-item:hover {
   flex-direction: column;
   gap: 18px;
   max-width: 900px;
+}
+
+/* ── Contacto (página pública, sofia-athos) ─────────────── */
+.contacto-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  align-items: start;
+  gap: 32px;
+  margin-top: 8px;
+}
+.info-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.info-list li {
+  font-size: 15px;
+  line-height: 1.5;
+}
+.info-list strong {
+  color: var(--cfl-navy-2);
+}
+@media (max-width: 900px) {
+  .contacto-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .guia-bloque {
   border: 1.5px solid rgba(18, 42, 69, 0.12);

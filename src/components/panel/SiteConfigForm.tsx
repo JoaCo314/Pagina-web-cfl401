@@ -3,6 +3,10 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { SiteConfigData } from "@/lib/siteConfig";
+import CampoImagen from "@/components/panel/CampoImagen";
+import type { EstadoImagen } from "@/components/panel/CampoImagen";
+import { subirImagen, validarArchivoImagen } from "@/lib/imagenesCliente";
+import { extraerUrlIframe } from "@/lib/embed";
 
 type Props = { inicial: SiteConfigData };
 
@@ -12,6 +16,16 @@ export default function SiteConfigForm({ inicial }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [guardado, setGuardado] = useState(false);
   const [enviando, setEnviando] = useState(false);
+  const [estadoBanner, setEstadoBanner] = useState<EstadoImagen>({
+    archivo: null,
+    quitar: false,
+  });
+  const [estadoLogo, setEstadoLogo] = useState<EstadoImagen>({
+    archivo: null,
+    quitar: false,
+  });
+  const bannerActual = inicial.bannerImagenUrl ?? null;
+  const logoActual = inicial.logoUrl ?? null;
 
   function setCampo<K extends keyof SiteConfigData>(key: K, val: string) {
     setDatos((prev) => ({ ...prev, [key]: val }));
@@ -23,10 +37,48 @@ export default function SiteConfigForm({ inicial }: Props) {
     setError(null);
     setEnviando(true);
     try {
+      let bannerImagenUrl: string | null = bannerActual;
+      if (estadoBanner.quitar) {
+        bannerImagenUrl = null;
+      } else if (estadoBanner.archivo) {
+        const errorBanner = validarArchivoImagen(estadoBanner.archivo);
+        if (errorBanner) {
+          setError(errorBanner);
+          return;
+        }
+        const subidaBanner = await subirImagen(estadoBanner.archivo);
+        if (!subidaBanner.ok) {
+          setError(subidaBanner.error);
+          return;
+        }
+        bannerImagenUrl = subidaBanner.url;
+      }
+
+      let logoUrl: string | null = logoActual;
+      if (estadoLogo.quitar) {
+        logoUrl = null;
+      } else if (estadoLogo.archivo) {
+        const errorLogo = validarArchivoImagen(estadoLogo.archivo);
+        if (errorLogo) {
+          setError(errorLogo);
+          return;
+        }
+        const subidaLogo = await subirImagen(estadoLogo.archivo);
+        if (!subidaLogo.ok) {
+          setError(subidaLogo.error);
+          return;
+        }
+        logoUrl = subidaLogo.url;
+      }
+
       const res = await fetch("/api/site-config", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(datos),
+        body: JSON.stringify({
+          ...datos,
+          bannerImagenUrl: bannerImagenUrl ?? "",
+          logoUrl: logoUrl ?? "",
+        }),
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => null)) as { error?: string } | null;
@@ -51,12 +103,20 @@ export default function SiteConfigForm({ inicial }: Props) {
           <label className="form-field"><span>Píldora (ej: Preinscripción 2026 abierta)</span><input type="text" value={datos.bannerPill ?? ""} onChange={(e) => setCampo("bannerPill", e.target.value)} /></label>
           <label className="form-field"><span>Título</span><input type="text" value={datos.bannerTitulo ?? ""} onChange={(e) => setCampo("bannerTitulo", e.target.value)} /></label>
           <label className="form-field"><span>Subtítulo</span><textarea rows={3} value={datos.bannerSubtitulo ?? ""} onChange={(e) => setCampo("bannerSubtitulo", e.target.value)} /></label>
-          <label className="form-field"><span>Imagen URL (opcional, externa o /api/imagenes/&lt;id&gt;)</span><input type="text" value={datos.bannerImagenUrl ?? ""} onChange={(e) => setCampo("bannerImagenUrl", e.target.value)} placeholder="https://... o /api/imagenes/123" /></label>
+          <CampoImagen
+            valorActual={bannerActual}
+            onChange={setEstadoBanner}
+            etiqueta="Imagen del banner (opcional)"
+          />
         </fieldset>
 
         <fieldset className="guia-bloque">
           <legend>Logo</legend>
-          <label className="form-field"><span>Logo URL</span><input type="text" value={datos.logoUrl ?? ""} onChange={(e) => setCampo("logoUrl", e.target.value)} placeholder="/cfl401azul_logo.jpg" /></label>
+          <CampoImagen
+            valorActual={logoActual}
+            onChange={setEstadoLogo}
+            etiqueta="Logo (imagen)"
+          />
           <label className="form-field"><span>Alt del logo</span><input type="text" value={datos.logoAlt ?? ""} onChange={(e) => setCampo("logoAlt", e.target.value)} /></label>
         </fieldset>
 
@@ -80,6 +140,14 @@ export default function SiteConfigForm({ inicial }: Props) {
           <label className="form-field"><span>Dirección</span><input type="text" value={datos.contactoDireccion ?? ""} onChange={(e) => setCampo("contactoDireccion", e.target.value)} /></label>
           <label className="form-field"><span>Horarios</span><input type="text" value={datos.contactoHorarios ?? ""} onChange={(e) => setCampo("contactoHorarios", e.target.value)} /></label>
           <label className="form-field"><span>Email destinatario del formulario</span><input type="text" value={datos.contactoFormDestinatario ?? ""} onChange={(e) => setCampo("contactoFormDestinatario", e.target.value)} /></label>
+        </fieldset>
+
+        <fieldset className="guia-bloque">
+          <legend>Ubicación (mapa en la portada)</legend>
+          <label className="form-field form-field-full"><span>Mapa (pegá el iframe completo de Google Maps o solo la URL)</span><input type="text" inputMode="url" value={datos.mapaUrl ?? ""} onChange={(e) => setCampo("mapaUrl", extraerUrlIframe(e.target.value))} placeholder="https://www.google.com/maps/embed?pb=... o <iframe src=&quot;...&quot;>" /></label>
+          <small className="form-hint">
+            En Google Maps: buscá la dirección → Compartir → Insertar un mapa → copiá el código y pegalo acá (se guarda solo la URL). Si lo dejás vacío, el bloque no se muestra en la portada. El botón &quot;Cómo llegar&quot; usa la dirección del bloque Contacto.
+          </small>
         </fieldset>
 
         {error && <p className="form-error">{error}</p>}

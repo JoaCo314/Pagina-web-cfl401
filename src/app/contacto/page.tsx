@@ -14,7 +14,7 @@ export default async function ContactoPage() {
       <main className="wrap" style={{ padding: "32px 0" }}>
         <h1>{config?.contactoTitulo ?? "Contacto"}</h1>
         <p className="panel-lead">{config?.contactoSubtitulo ?? "Escribinos y te respondemos a la brevedad."}</p>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1.2fr", gap: 32, marginTop: 24 }}>
+        <div className="contacto-grid">
           <div>
             <ul className="info-list">
               <li><strong>Dirección:</strong> {config?.contactoDireccion ?? "Azul, Provincia de Buenos Aires"}</li>

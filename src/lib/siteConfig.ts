@@ -1,5 +1,6 @@
 // Creado por sofia-athos - Configuración editable del sitio (banner, logo, footer, contactos)
 import { prisma } from "@/lib/prisma";
+import { extraerUrlIframe } from "@/lib/embed";
 
 export type SiteConfigData = {
   id: number;
@@ -24,6 +25,7 @@ export type SiteConfigData = {
   contactoDireccion: string | null;
   contactoHorarios: string | null;
   contactoFormDestinatario: string | null;
+  mapaUrl: string | null;
 };
 
 const DEFAULTS: Omit<SiteConfigData, "id"> = {
@@ -48,19 +50,27 @@ const DEFAULTS: Omit<SiteConfigData, "id"> = {
   contactoDireccion: "Azul, Provincia de Buenos Aires",
   contactoHorarios: "Lunes a viernes de 8:00 a 12:00 y de 14:00 a 22:00",
   contactoFormDestinatario: "cfl401azul@gmail.com",
+  mapaUrl: null,
 };
 
 export async function getSiteConfig(): Promise<SiteConfigData> {
   const config = await prisma.siteConfig.findUnique({ where: { id: 1 } });
   if (!config) return { id: 1, ...DEFAULTS } as SiteConfigData;
-  return config as SiteConfigData;
+  return {
+    ...(config as SiteConfigData),
+    mapaUrl: config.mapaUrl ? extraerUrlIframe(config.mapaUrl) : null,
+  };
 }
 
 export async function upsertSiteConfig(data: Partial<Omit<SiteConfigData, "id">>): Promise<SiteConfigData> {
+  const entrada = { ...data };
+  if (entrada.mapaUrl) {
+    entrada.mapaUrl = extraerUrlIframe(entrada.mapaUrl);
+  }
   const config = await prisma.siteConfig.upsert({
     where: { id: 1 },
-    update: { ...data },
-    create: { id: 1, ...DEFAULTS, ...data },
+    update: { ...entrada },
+    create: { id: 1, ...DEFAULTS, ...entrada },
   });
   return config as SiteConfigData;
 }
