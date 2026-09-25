@@ -20,29 +20,12 @@ const PASO_ZOOM = 0.25;
 
 type Rect = { x: number; y: number; w: number; h: number };
 
-function recorteDesdeEscenario(
-  escala: number,
-  tx: number,
-  ty: number,
-  ancho: number,
-  alto: number,
-  imgW: number,
-  imgH: number
-): Rect {
-  const cubrir = Math.max(ancho / imgW, alto / imgH);
-  const s = cubrir * escala;
-  const srcW = ancho / s;
-  const srcH = alto / s;
-  let x = imgW / 2 - tx / s - srcW / 2;
-  let y = imgH / 2 - ty / s - srcH / 2;
-  x = Math.min(Math.max(x, 0), Math.max(imgW - srcW, 0));
-  y = Math.min(Math.max(y, 0), Math.max(imgH - srcH, 0));
-  return { x, y, w: srcW, h: srcH };
-}
-
-function clampa(tx: number, anchoImg: number, anchoVista: number): number {
-  const margen = Math.max((anchoImg - anchoVista) / 2, 0);
-  return Math.min(Math.max(tx, -margen), margen);
+/// La imagen se pinta desde su esquina superior izquierda (translate + scale
+/// con origen 0,0). El recorte visible es la ventana [tx, tx+ancho]/s en
+/// píxeles originales de la foto.
+function clampa(tx: number, tamañoImg: number, tamañoVista: number): number {
+  const min = tamañoVista - tamañoImg;
+  return Math.min(Math.max(tx, min), 0);
 }
 
 function dimensionesSalida(aspecto: { w: number; h: number }) {
@@ -58,7 +41,8 @@ function dimensionesSalida(aspecto: { w: number; h: number }) {
   };
 }
 
-/// Panel de recorte: grilla, zoom, arrastre y preview del resultado final.
+/// Panel de recorte: grilla, zoom y arrastre sobre el estadio, con preview
+/// del resultado final.
 function EditorRecorte({
   src,
   contexto,
@@ -85,6 +69,8 @@ function EditorRecorte({
   const [escala, setEscala] = useState(1);
   const [tx, setTx] = useState(0);
   const [ty, setTy] = useState(0);
+  // Hasta que el usuario mueve o hace zoom, la imagen parte centrada.
+  const [ajustado, setAjustado] = useState(false);
   const arrastre = useRef<{ px: number; py: number; tx0: number; ty0: number } | null>(null);
 
   useLayoutEffect(() => {
@@ -113,18 +99,50 @@ function EditorRecorte({
   }, [imgNat, medidas]);
 
   const s = cubrir * escala;
-  const txn = clampa(tx, imgNat.w * s, medidas.w);
-  const tyn = clampa(ty, imgNat.h * s, medidas.h);
+  const baseX = ajustado ? tx : (medidas.w - imgNat.w * cubrir) / 2;
+  const baseY = ajustado ? ty : (medidas.h - imgNat.h * cubrir) / 2;
+  const txn = clampa(baseX, imgNat.w * s, medidas.w);
+  const tyn = clampa(baseY, imgNat.h * s, medidas.h);
 
-  const rect = useMemo(
-    () =>
-      imgNat.w && imgNat.h
-        ? recorteDesdeEscenario(escala, txn, tyn, medidas.w, medidas.h, imgNat.w, imgNat.h)
-        : { x: 0, y: 0, w: 1, h: 1 },
-    [escala, txn, tyn, medidas, imgNat]
-  );
+  const rect = useMemo<Rect>(() => {
+    if (!imgNat.w || !imgNat.h) return { x: 0, y: 0, w: 1, h: 1 };
+    const w = medidas.w / s;
+    const h = medidas.h / s;
+    return { x: -txn / s, y: -tyn / s, w, h };
+  }, [imgNat, medidas, s, txn, tyn]);
 
-  // Preview en vivo: dibuja el mismo rect del export en el lienzo pequeño.
+  // Zoom con la rueda apuntando al cursor (non-passive para frenar el scroll).
+  const paramsRef = useRef({ escala, txn, tyn, imgNat });
+  useEffect(() => {
+    paramsRef.current = { escala, txn, tyn, imgNat };
+  });
+  useEffect(() => {
+    const el = escenarioRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const p = paramsRef.current;
+      if (!p.imgNat.w) return;
+      const b = el.getBoundingClientRect();
+      const px = e.clientX - b.left;
+      const py = e.clientY - b.top;
+      const delta = e.deltaY < 0 ? PASO_ZOOM : -PASO_ZOOM;
+      const nueva = Math.min(
+        Math.max(Math.round((p.escala + delta) * 100) / 100, ZOOM_MIN),
+        ZOOM_MAX
+      );
+      if (nueva === p.escala) return;
+      const k = nueva / p.escala;
+      setEscala(nueva);
+      setTx(px + (p.txn - px) * k);
+      setTy(py + (p.tyn - py) * k);
+      setAjustado(true);
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
+  // Preview en vivo: dibuja exactamente el rect del export.
   useEffect(() => {
     const lienzo = previewLienzoRef.current;
     const img = imgElRef.current;
@@ -154,6 +172,7 @@ function EditorRecorte({
     if (!a || !imgNat.w || !imgNat.h) return;
     setTx(a.tx0 + (e.clientX - a.px));
     setTy(a.ty0 + (e.clientY - a.py));
+    setAjustado(true);
   }
 
   function enPunteroUp(e: React.PointerEvent<HTMLDivElement>) {
@@ -161,10 +180,16 @@ function EditorRecorte({
     arrastre.current = null;
   }
 
-  function aplicarZoom(delta: number) {
+  function ajustarZoom(delta: number) {
     setEscala((prev) =>
       Math.min(Math.max(Math.round((prev + delta) * 100) / 100, ZOOM_MIN), ZOOM_MAX)
     );
+    setAjustado(true);
+  }
+
+  function restablecer() {
+    setEscala(1);
+    setAjustado(false);
   }
 
   function exportar() {
@@ -200,7 +225,8 @@ function EditorRecorte({
   return (
     <div className="imagen-editor" role="dialog" aria-modal="true" aria-label="Ajustar imagen">
       <p className="imagen-editor-titulo">
-        Ajustá la imagen: arrastrá sobre la grilla para moverla y usá el zoom.
+        Arrastrá la imagen dentro de la grilla para moverla libremente. Ajustá el
+        zoom con los botones o con la rueda del mouse sobre la imagen.
       </p>
       <div className="imagen-editor-columnas">
         <div className="imagen-editor-ajuste">
@@ -229,22 +255,18 @@ function EditorRecorte({
               />
             )}
             <div className="imagen-grid" aria-hidden="true" />
-          </div>
-          <div className="imagen-zoom">
-            <button type="button" onClick={() => aplicarZoom(-PASO_ZOOM)} aria-label="Disminuir zoom">−</button>
-            <span className="imagen-zoom-valor">{(escala * 100).toFixed(0)}%</span>
-            <button type="button" onClick={() => aplicarZoom(PASO_ZOOM)} aria-label="Aumentar zoom">+</button>
-            <button
-              type="button"
-              className="imagen-zoom-restablecer"
-              onClick={() => {
-                setEscala(1);
-                setTx(0);
-                setTy(0);
-              }}
+            <div
+              className="imagen-zoom"
+              onPointerDown={(e) => e.stopPropagation()}
+              onPointerMove={(e) => e.stopPropagation()}
             >
-              Restablecer
-            </button>
+              <button type="button" onClick={() => ajustarZoom(-PASO_ZOOM)} aria-label="Disminuir zoom">−</button>
+              <span className="imagen-zoom-valor">{(escala * 100).toFixed(0)}%</span>
+              <button type="button" onClick={() => ajustarZoom(PASO_ZOOM)} aria-label="Aumentar zoom">+</button>
+              <button type="button" className="imagen-zoom-restablecer" onClick={restablecer}>
+                Restablecer
+              </button>
+            </div>
           </div>
         </div>
 
@@ -272,7 +294,7 @@ function EditorRecorte({
             </div>
           )}
           <span className="imagen-preview-final-nota">
-            El recorte se aplica al tamaño final de la sección.
+            El recorte se aplica al tamaño final de cada sección.
           </span>
         </div>
       </div>
@@ -336,7 +358,6 @@ export default function CampoImagen({
 
   function cancelar() {
     if (aplicado) {
-      // Se estaba re-encuadrando: se conserva el recorte ya aplicado.
       setEditando(false);
       return;
     }

@@ -2332,12 +2332,13 @@ a.panel-nav-item:hover {
 }
 .imagen-estadio-img {
   position: absolute;
-  left: 50%;
-  top: 50%;
+  top: 0;
+  left: 0;
   max-width: none;
-  transform-origin: center;
+  transform-origin: 0 0;
   user-select: none;
   -webkit-user-drag: none;
+  will-change: transform;
 }
 .imagen-grid {
   position: absolute;
@@ -2352,38 +2353,47 @@ a.panel-nav-item:hover {
   background-position: 33.333% 0, 66.666% 0, 0 33.333%, 0 66.666%;
 }
 .imagen-zoom {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 12px;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 999px;
+  background: rgba(18, 42, 69, 0.6);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 14px -6px rgba(18, 42, 69, 0.6);
 }
 .imagen-zoom button {
-  width: 34px;
-  height: 34px;
-  border: 1.5px solid rgba(18, 42, 69, 0.25);
-  border-radius: 6px;
-  background: var(--cfl-white);
-  color: var(--cfl-navy-2);
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
   font-size: 16px;
   line-height: 1;
   cursor: pointer;
 }
 .imagen-zoom button:hover {
-  border-color: var(--cfl-blue);
-  color: var(--cfl-blue-deep);
+  background: rgba(255, 255, 255, 0.45);
 }
 .imagen-zoom-valor {
-  min-width: 52px;
+  min-width: 48px;
   text-align: center;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
-  color: var(--cfl-navy-2);
+  color: #fff;
 }
 .imagen-zoom-restablecer {
   width: auto !important;
   padding: 0 12px;
-  font-size: 13px !important;
+  border-radius: 999px !important;
+  font-size: 12.5px !important;
   font-weight: 600;
+  background: rgba(255, 255, 255, 0.25) !important;
 }
 .imagen-preview-final-titulo {
   display: block;
