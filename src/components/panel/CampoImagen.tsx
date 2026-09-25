@@ -64,13 +64,32 @@ export default function CampoImagen({
       )}
 
       <div className="imagen-controles">
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          onChange={onFile}
-          aria-label={etiqueta}
-        />
+        <label className="imagen-subir">
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            onChange={onFile}
+            aria-label={etiqueta}
+          />
+          <svg
+            className="imagen-subir-icono"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+          <span>Subir imagen</span>
+        </label>
         {mostrar && (
           <button
             type="button"
