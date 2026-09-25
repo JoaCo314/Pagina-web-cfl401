@@ -451,6 +451,8 @@ Felicitamos a todos los egresados y los invitamos a continuar su formación en l
       contactoHorarios: "Lunes a viernes de 8:00 a 12:00 y de 14:00 a 22:00",
       contactoFormDestinatario: "cfl401azul@gmail.com",
       mapaUrl: null,
+      mapaTitulo: "¿Dónde estamos?",
+      mapaSubtitulo: "Azul, Provincia de Buenos Aires · Lunes a viernes de 8:00 a 12:00 y de 14:00 a 22:00",
     },
   });
 

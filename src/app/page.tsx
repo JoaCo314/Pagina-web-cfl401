@@ -67,11 +67,8 @@ export default async function Home() {
           <div className="wrap">
             <div className="mapa-head">
               <div className="section-head">
-                <h2>¿Dónde estamos?</h2>
-                <p>
-                  {config?.contactoDireccion ?? "Azul, Provincia de Buenos Aires"}
-                  {config?.contactoHorarios ? ` · ${config.contactoHorarios}` : ""}
-                </p>
+                <h2>{config?.mapaTitulo || "¿Dónde estamos?"}</h2>
+                {config?.mapaSubtitulo && <p>{config.mapaSubtitulo}</p>}
               </div>
               <a
                 href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(config?.contactoDireccion ?? "Azul, Provincia de Buenos Aires")}`}

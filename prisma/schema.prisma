@@ -251,6 +251,8 @@ model SiteConfig {
 
   // Ubicación (mapa de Google en la portada)
   mapaUrl String? // src del iframe embed de Google Maps ("Compartir → Insertar un mapa")
+  mapaTitulo String? // título del bloque, ej: "¿Dónde estamos?"
+  mapaSubtitulo String? // texto bajo el título (dirección/sede, etc.)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
