@@ -6,6 +6,7 @@ import type { SiteConfigData } from "@/lib/siteConfig";
 import CampoImagen from "@/components/panel/CampoImagen";
 import type { EstadoImagen } from "@/components/panel/CampoImagen";
 import { subirImagen, validarArchivoImagen } from "@/lib/imagenesCliente";
+import { extraerUrlIframe } from "@/lib/embed";
 
 type Props = { inicial: SiteConfigData };
 
@@ -143,9 +144,9 @@ export default function SiteConfigForm({ inicial }: Props) {
 
         <fieldset className="guia-bloque">
           <legend>Ubicación (mapa en la portada)</legend>
-          <label className="form-field form-field-full"><span>URL del mapa (embed de Google Maps)</span><input type="url" value={datos.mapaUrl ?? ""} onChange={(e) => setCampo("mapaUrl", e.target.value)} placeholder="https://www.google.com/maps?q=...&amp;output=embed" /></label>
+          <label className="form-field form-field-full"><span>Mapa (pegá el iframe completo de Google Maps o solo la URL)</span><input type="text" inputMode="url" value={datos.mapaUrl ?? ""} onChange={(e) => setCampo("mapaUrl", extraerUrlIframe(e.target.value))} placeholder="https://www.google.com/maps/embed?pb=... o <iframe src=&quot;...&quot;>" /></label>
           <small className="form-hint">
-            En Google Maps: buscá la dirección → Compartir → Insertar un mapa → copiá la URL del src (por ejemplo https://www.google.com/maps?q=...&amp;output=embed). Si lo dejás vacío, el bloque no se muestra en la portada. El botón &quot;Cómo llegar&quot; usa la dirección del bloque Contacto.
+            En Google Maps: buscá la dirección → Compartir → Insertar un mapa → copiá el código y pegalo acá (se guarda solo la URL). Si lo dejás vacío, el bloque no se muestra en la portada. El botón &quot;Cómo llegar&quot; usa la dirección del bloque Contacto.
           </small>
         </fieldset>
 

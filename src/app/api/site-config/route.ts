@@ -28,6 +28,7 @@ const CAMPOS_PERMITIDOS = [
   "contactoDireccion",
   "contactoHorarios",
   "contactoFormDestinatario",
+  "mapaUrl",
 ] as const;
 
 export async function GET() {
