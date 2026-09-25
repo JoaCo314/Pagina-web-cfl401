@@ -26,6 +26,8 @@ export type SiteConfigData = {
   contactoHorarios: string | null;
   contactoFormDestinatario: string | null;
   mapaUrl: string | null;
+  mapaTitulo: string | null;
+  mapaSubtitulo: string | null;
 };
 
 const DEFAULTS: Omit<SiteConfigData, "id"> = {
@@ -51,6 +53,8 @@ const DEFAULTS: Omit<SiteConfigData, "id"> = {
   contactoHorarios: "Lunes a viernes de 8:00 a 12:00 y de 14:00 a 22:00",
   contactoFormDestinatario: "cfl401azul@gmail.com",
   mapaUrl: null,
+  mapaTitulo: "¿Dónde estamos?",
+  mapaSubtitulo: "Azul, Provincia de Buenos Aires · Lunes a viernes de 8:00 a 12:00 y de 14:00 a 22:00",
 };
 
 export async function getSiteConfig(): Promise<SiteConfigData> {

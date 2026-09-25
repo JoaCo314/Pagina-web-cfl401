@@ -71,11 +71,15 @@ export default function SiteConfigForm({ inicial }: Props) {
         logoUrl = subidaLogo.url;
       }
 
+      const sinContacto = Object.fromEntries(
+        Object.entries(datos).filter(([clave]) => !clave.startsWith("contacto"))
+      );
+
       const res = await fetch("/api/site-config", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...datos,
+          ...sinContacto,
           bannerImagenUrl: bannerImagenUrl ?? "",
           logoUrl: logoUrl ?? "",
         }),
@@ -106,6 +110,7 @@ export default function SiteConfigForm({ inicial }: Props) {
           <CampoImagen
             valorActual={bannerActual}
             onChange={setEstadoBanner}
+            contexto="banner"
             etiqueta="Imagen del banner (opcional)"
           />
         </fieldset>
@@ -115,6 +120,7 @@ export default function SiteConfigForm({ inicial }: Props) {
           <CampoImagen
             valorActual={logoActual}
             onChange={setEstadoLogo}
+            contexto="logo"
             etiqueta="Logo (imagen)"
           />
           <label className="form-field"><span>Alt del logo</span><input type="text" value={datos.logoAlt ?? ""} onChange={(e) => setCampo("logoAlt", e.target.value)} /></label>
@@ -132,21 +138,12 @@ export default function SiteConfigForm({ inicial }: Props) {
         </fieldset>
 
         <fieldset className="guia-bloque">
-          <legend>Sección Contacto (/contacto)</legend>
-          <label className="form-field"><span>Título</span><input type="text" value={datos.contactoTitulo ?? ""} onChange={(e) => setCampo("contactoTitulo", e.target.value)} /></label>
-          <label className="form-field"><span>Subtítulo</span><input type="text" value={datos.contactoSubtitulo ?? ""} onChange={(e) => setCampo("contactoSubtitulo", e.target.value)} /></label>
-          <label className="form-field"><span>Email</span><input type="text" value={datos.contactoEmail ?? ""} onChange={(e) => setCampo("contactoEmail", e.target.value)} /></label>
-          <label className="form-field"><span>Teléfono</span><input type="text" value={datos.contactoTelefono ?? ""} onChange={(e) => setCampo("contactoTelefono", e.target.value)} /></label>
-          <label className="form-field"><span>Dirección</span><input type="text" value={datos.contactoDireccion ?? ""} onChange={(e) => setCampo("contactoDireccion", e.target.value)} /></label>
-          <label className="form-field"><span>Horarios</span><input type="text" value={datos.contactoHorarios ?? ""} onChange={(e) => setCampo("contactoHorarios", e.target.value)} /></label>
-          <label className="form-field"><span>Email destinatario del formulario</span><input type="text" value={datos.contactoFormDestinatario ?? ""} onChange={(e) => setCampo("contactoFormDestinatario", e.target.value)} /></label>
-        </fieldset>
-
-        <fieldset className="guia-bloque">
           <legend>Ubicación (mapa en la portada)</legend>
+          <label className="form-field"><span>Título del bloque</span><input type="text" value={datos.mapaTitulo ?? ""} onChange={(e) => setCampo("mapaTitulo", e.target.value)} placeholder="¿Dónde estamos?" /></label>
+          <label className="form-field form-field-full"><span>Subtítulo (dirección, sede, horarios…)</span><input type="text" value={datos.mapaSubtitulo ?? ""} onChange={(e) => setCampo("mapaSubtitulo", e.target.value)} placeholder="Azul, Provincia de Buenos Aires · Lunes a viernes de 8:00 a 12:00…" /></label>
           <label className="form-field form-field-full"><span>Mapa (pegá el iframe completo de Google Maps o solo la URL)</span><input type="text" inputMode="url" value={datos.mapaUrl ?? ""} onChange={(e) => setCampo("mapaUrl", extraerUrlIframe(e.target.value))} placeholder="https://www.google.com/maps/embed?pb=... o <iframe src=&quot;...&quot;>" /></label>
           <small className="form-hint">
-            En Google Maps: buscá la dirección → Compartir → Insertar un mapa → copiá el código y pegalo acá (se guarda solo la URL). Si lo dejás vacío, el bloque no se muestra en la portada. El botón &quot;Cómo llegar&quot; usa la dirección del bloque Contacto.
+            En Google Maps: buscá la dirección → Compartir → Insertar un mapa → copiá el código y pegalo en el campo &quot;Mapa&quot;. Si lo dejás vacío, el bloque no se muestra en la portada. El botón &quot;Cómo llegar&quot; usa la dirección del bloque Contacto.
           </small>
         </fieldset>
 
