@@ -65,12 +65,22 @@ export default async function Home() {
       {config?.mapaUrl && (
         <section className="mapa-section" id="ubicacion">
           <div className="wrap">
-            <div className="section-head">
-              <h2>¿Dónde estamos?</h2>
-              <p>
-                {config?.contactoDireccion ?? "Azul, Provincia de Buenos Aires"}
-                {config?.contactoHorarios ? ` · ${config.contactoHorarios}` : ""}
-              </p>
+            <div className="mapa-head">
+              <div className="section-head">
+                <h2>¿Dónde estamos?</h2>
+                <p>
+                  {config?.contactoDireccion ?? "Azul, Provincia de Buenos Aires"}
+                  {config?.contactoHorarios ? ` · ${config.contactoHorarios}` : ""}
+                </p>
+              </div>
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(config?.contactoDireccion ?? "Azul, Provincia de Buenos Aires")}`}
+                className="btn-ghost-dark btn-sm"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Cómo llegar
+              </a>
             </div>
             <div className="mapa-frame">
               <iframe
@@ -80,16 +90,6 @@ export default async function Home() {
                 allowFullScreen
                 referrerPolicy="no-referrer-when-downgrade"
               />
-            </div>
-            <div className="mapa-actions">
-              <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(config?.contactoDireccion ?? "Azul, Provincia de Buenos Aires")}`}
-                className="btn-ghost"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Cómo llegar
-              </a>
             </div>
           </div>
         </section>

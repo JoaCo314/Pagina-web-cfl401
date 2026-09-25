@@ -469,26 +469,36 @@ a {
 
 /* ── Mapa (ubicación en la portada) ─────────────────────── */
 .mapa-section {
-  padding: 64px 0;
+  padding: 56px 0;
 }
-.mapa-section .section-head {
+.mapa-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 24px;
+  max-width: 920px;
+  margin: 0 auto 26px;
+}
+.mapa-head .section-head {
   max-width: 620px;
-  margin-bottom: 30px;
+  margin-bottom: 0;
 }
-.mapa-section .section-head h2 {
-  font-size: 28px;
+.mapa-head .section-head h2 {
+  font-size: 26px;
   color: var(--cfl-navy);
   margin-bottom: 8px;
 }
-.mapa-section .section-head p {
+.mapa-head .section-head p {
   opacity: 0.7;
 }
 .mapa-frame {
   position: relative;
   width: 100%;
-  aspect-ratio: 21 / 9;
-  min-height: 340px;
-  border-radius: 10px;
+  max-width: 920px;
+  height: 380px;
+  margin: 0 auto;
+  border-radius: 12px;
   overflow: hidden;
   border: 1.5px solid rgba(18, 42, 69, 0.12);
   box-shadow: 0 4px 16px rgba(18, 42, 69, 0.08);
@@ -501,13 +511,9 @@ a {
   height: 100%;
   border: 0;
 }
-.mapa-actions {
-  margin-top: 20px;
-  text-align: center;
-}
 @media (max-width: 720px) {
   .mapa-frame {
-    aspect-ratio: 16 / 10;
+    height: 300px;
   }
 }
 
