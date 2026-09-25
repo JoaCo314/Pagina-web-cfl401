@@ -110,6 +110,7 @@ export default function SiteConfigForm({ inicial }: Props) {
           <CampoImagen
             valorActual={bannerActual}
             onChange={setEstadoBanner}
+            contexto="banner"
             etiqueta="Imagen del banner (opcional)"
           />
         </fieldset>
@@ -119,6 +120,7 @@ export default function SiteConfigForm({ inicial }: Props) {
           <CampoImagen
             valorActual={logoActual}
             onChange={setEstadoLogo}
+            contexto="logo"
             etiqueta="Logo (imagen)"
           />
           <label className="form-field"><span>Alt del logo</span><input type="text" value={datos.logoAlt ?? ""} onChange={(e) => setCampo("logoAlt", e.target.value)} /></label>
