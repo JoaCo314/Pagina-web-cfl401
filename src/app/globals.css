@@ -2279,6 +2279,43 @@ a.panel-nav-item:hover {
 .imagen-subir-icono {
   flex: none;
 }
+.imagen-accion {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1.5px solid rgba(18, 42, 69, 0.3);
+  border-radius: 6px;
+  background: var(--cfl-white);
+  color: var(--cfl-navy-2);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+.imagen-accion:hover {
+  border-color: var(--cfl-blue-deep);
+  color: var(--cfl-blue-deep);
+  background: var(--cfl-blue-light);
+}
+.imagen-accion-peligro {
+  border-color: rgba(180, 40, 40, 0.35);
+  color: #a12828;
+}
+.imagen-accion-peligro:hover {
+  border-color: #b03030;
+  color: #a12828;
+  background: #fdf3f3;
+}
+.imagen-accion:disabled,
+.imagen-subir:has(input:disabled) {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 
 /* ── Editor de recorte de imagen ────────────────────────── */
 .imagen-visual {

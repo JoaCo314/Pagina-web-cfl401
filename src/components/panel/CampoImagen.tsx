@@ -362,7 +362,7 @@ export default function CampoImagen({
   }
 
   function reencuadrar() {
-    const url = aplicado?.url;
+    const url = aplicado?.url ?? valorActual;
     if (!url) return;
     precargar(url, (img) => {
       setDraft({ url, img });
@@ -402,7 +402,7 @@ export default function CampoImagen({
     onChange({ archivo: null, quitar: false });
   }
 
-  const mostrar = quitar ? null : aplicado?.url ?? valorActual;
+  const mostrar = quitar ? null : aplicado?.url ?? draft?.url ?? valorActual;
 
   return (
     <div className="form-field form-field-full">
@@ -412,15 +412,6 @@ export default function CampoImagen({
         <div className="imagen-visual">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="imagen-preview" src={mostrar} alt="Vista previa" />
-          {aplicado && (
-            <button
-              type="button"
-              className="link-accion"
-              onClick={reencuadrar}
-            >
-              Re-encuadrar
-            </button>
-          )}
         </div>
       ) : (
         <p className="form-aviso">Sin imagen cargada.</p>
@@ -456,15 +447,68 @@ export default function CampoImagen({
         {mostrar && (
           <button
             type="button"
-            className="link-accion link-eliminar"
-            onClick={quitarImagen}
+            className="imagen-accion"
+            onClick={reencuadrar}
+            disabled={editando}
           >
-            Quitar imagen
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 2v14a2 2 0 0 0 2 2h14" />
+              <path d="M18 22V8a2 2 0 0 0-2-2H2" />
+            </svg>
+            <span>Re-encuadrar</span>
+          </button>
+        )}
+        {mostrar && (
+          <button
+            type="button"
+            className="imagen-accion imagen-accion-peligro"
+            onClick={quitarImagen}
+            disabled={editando}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg>
+            <span>Quitar imagen</span>
           </button>
         )}
         {quitar && (aplicado || valorActual) && (
-          <button type="button" className="link-accion" onClick={deshacer}>
-            Deshacer
+          <button type="button" className="imagen-accion" onClick={deshacer}>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="1 4 1 10 7 10" />
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+            </svg>
+            <span>Deshacer</span>
           </button>
         )}
       </div>
