@@ -133,6 +133,7 @@ export type SeccionPanel = {
     | "noticias"
     | "sobre"
     | "faqs"
+    | "contacto"
     | "configuracion";
   titulo: string;
   descripcion: string;
@@ -223,9 +224,18 @@ export function obtenerSeccionesPanel(
 
   if (tienePermiso(usuario, PERMISOS.SITE_CONFIG_EDITAR)) {
     secciones.push({
+      clave: "contacto",
+      titulo: "Contacto",
+      descripcion: "Datos de la sección de contacto (/contacto) y de la dirección que usa el botón 'Cómo llegar' del mapa.",
+      href: "/panel/contacto",
+    });
+  }
+
+  if (tienePermiso(usuario, PERMISOS.SITE_CONFIG_EDITAR)) {
+    secciones.push({
       clave: "configuracion",
       titulo: "Configuración del sitio",
-      descripcion: "Banner azul, logo, footer y sección de contacto.",
+      descripcion: "Banner azul, logo, footer, mapa de ubicación y demás textos del sitio.",
       href: "/panel/configuracion",
     });
   }

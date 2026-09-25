@@ -1,14 +1,17 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/session";
-import { PERMISOS, obtenerSeccionesPanel, tienePermiso } from "@/lib/auth/autorizacion";
+import {
+  PERMISOS,
+  obtenerSeccionesPanel,
+  tienePermiso,
+} from "@/lib/auth/autorizacion";
 import { getSiteConfig } from "@/lib/siteConfig";
 import PanelShell from "@/components/auth/PanelShell";
-import SiteConfigForm from "@/components/panel/SiteConfigForm";
+import ContactoForm from "@/components/panel/ContactoForm";
 
 export const dynamic = "force-dynamic";
 
-// Creado por sofia-athos - Panel editable para banner azul, logo, footer y contactos
-export default async function ConfiguracionPanelPage() {
+export default async function ContactoPanelPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/panel/login");
   if (!tienePermiso(user, PERMISOS.SITE_CONFIG_EDITAR)) redirect("/panel");
@@ -19,11 +22,15 @@ export default async function ConfiguracionPanelPage() {
     <PanelShell user={user} secciones={obtenerSeccionesPanel(user)}>
       <div className="panel-head">
         <div>
-          <h1 className="panel-title">Configuración del sitio</h1>
-          <p className="panel-lead">Editá el banner azul de la front page, el logo, el pie de página y el mapa de ubicación. Los datos de la página /contacto se editan en la sección Contacto.</p>
+          <h1 className="panel-title">Contacto</h1>
+          <p className="panel-lead">
+            Datos que se muestran en la página /contacto. La dirección también
+            es el destino del botón &quot;Cómo llegar&quot; del mapa de la
+            portada.
+          </p>
         </div>
       </div>
-      <SiteConfigForm inicial={config} />
+      <ContactoForm inicial={config} />
     </PanelShell>
   );
 }
