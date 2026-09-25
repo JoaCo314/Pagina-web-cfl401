@@ -18,8 +18,6 @@ const ZOOM_MIN = 1;
 const ZOOM_MAX = 5;
 const PASO_ZOOM = 0.25;
 
-type Rect = { x: number; y: number; w: number; h: number };
-
 /// La imagen se pinta desde su esquina superior izquierda (translate + scale
 /// con origen 0,0). El recorte visible es la ventana [tx, tx+ancho]/s en
 /// píxeles originales de la foto.
@@ -42,15 +40,22 @@ function dimensionesSalida(aspecto: { w: number; h: number }) {
 }
 
 /// Panel de recorte: grilla, zoom y arrastre sobre el estadio, con preview
-/// del resultado final.
+/// del resultado final. `origen` es la imagen ya decodificada (new Image)
+/// que se usa como fuente de verdad para preview y export.
 function EditorRecorte({
   src,
+  origen,
+  ancho,
+  alto,
   contexto,
   nombreBase,
   onAplicar,
   onCancelar,
 }: {
   src: string;
+  origen: HTMLImageElement;
+  ancho: number;
+  alto: number;
   contexto: Contexto;
   nombreBase: string;
   onAplicar: (file: File) => void;
@@ -58,14 +63,12 @@ function EditorRecorte({
 }) {
   const { aspecto, formato } = CONTEXTOS[contexto];
   const escenarioRef = useRef<HTMLDivElement>(null);
-  const imgElRef = useRef<HTMLImageElement>(null);
   const lienzoRef = useRef<HTMLCanvasElement>(null);
   const previewBoxRef = useRef<HTMLDivElement>(null);
   const previewLienzoRef = useRef<HTMLCanvasElement>(null);
 
   const [medidas, setMedidas] = useState({ w: 320, h: 180 });
   const [previewTamaño, setPreviewTamaño] = useState({ w: 1, h: 1 });
-  const [imgNat, setImgNat] = useState({ w: 0, h: 0 });
   const [escala, setEscala] = useState(1);
   const [tx, setTx] = useState(0);
   const [ty, setTy] = useState(0);
@@ -93,28 +96,31 @@ function EditorRecorte({
     return () => ro.disconnect();
   }, []);
 
-  const cubrir = useMemo(() => {
-    if (!imgNat.w || !imgNat.h) return 1;
-    return Math.max(medidas.w / imgNat.w, medidas.h / imgNat.h);
-  }, [imgNat, medidas]);
-
+  const cubrir =
+    ancho && alto ? Math.max(medidas.w / ancho, medidas.h / alto) : 1;
   const s = cubrir * escala;
-  const baseX = ajustado ? tx : (medidas.w - imgNat.w * cubrir) / 2;
-  const baseY = ajustado ? ty : (medidas.h - imgNat.h * cubrir) / 2;
-  const txn = clampa(baseX, imgNat.w * s, medidas.w);
-  const tyn = clampa(baseY, imgNat.h * s, medidas.h);
+  const baseX = ajustado ? tx : (medidas.w - ancho * cubrir) / 2;
+  const baseY = ajustado ? ty : (medidas.h - alto * cubrir) / 2;
+  const txn = clampa(baseX, ancho * s, medidas.w);
+  const tyn = clampa(baseY, alto * s, medidas.h);
 
-  const rect = useMemo<Rect>(() => {
-    if (!imgNat.w || !imgNat.h) return { x: 0, y: 0, w: 1, h: 1 };
-    const w = medidas.w / s;
-    const h = medidas.h / s;
-    return { x: -txn / s, y: -tyn / s, w, h };
-  }, [imgNat, medidas, s, txn, tyn]);
+  const rect = useMemo(
+    () =>
+      ancho && alto && s > 0
+        ? {
+            x: -txn / s,
+            y: -tyn / s,
+            w: medidas.w / s,
+            h: medidas.h / s,
+          }
+        : { x: 0, y: 0, w: 1, h: 1 },
+    [txn, tyn, s, medidas, ancho, alto]
+  );
 
   // Zoom con la rueda apuntando al cursor (non-passive para frenar el scroll).
-  const paramsRef = useRef({ escala, txn, tyn, imgNat });
+  const paramsRef = useRef({ escala, txn, tyn });
   useEffect(() => {
-    paramsRef.current = { escala, txn, tyn, imgNat };
+    paramsRef.current = { escala, txn, tyn };
   });
   useEffect(() => {
     const el = escenarioRef.current;
@@ -122,7 +128,6 @@ function EditorRecorte({
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const p = paramsRef.current;
-      if (!p.imgNat.w) return;
       const b = el.getBoundingClientRect();
       const px = e.clientX - b.left;
       const py = e.clientY - b.top;
@@ -145,8 +150,7 @@ function EditorRecorte({
   // Preview en vivo: dibuja exactamente el rect del export.
   useEffect(() => {
     const lienzo = previewLienzoRef.current;
-    const img = imgElRef.current;
-    if (!lienzo || !img || !imgNat.w || rect.w <= 0) return;
+    if (!lienzo || rect.w <= 0) return;
     lienzo.width = previewTamaño.w;
     lienzo.height = previewTamaño.h;
     const ctx = lienzo.getContext("2d");
@@ -154,8 +158,8 @@ function EditorRecorte({
     ctx.clearRect(0, 0, lienzo.width, lienzo.height);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(img, rect.x, rect.y, rect.w, rect.h, 0, 0, lienzo.width, lienzo.height);
-  }, [rect, previewTamaño, imgNat]);
+    ctx.drawImage(origen, rect.x, rect.y, rect.w, rect.h, 0, 0, lienzo.width, lienzo.height);
+  }, [rect, previewTamaño, origen]);
 
   function enPunteroDown(e: React.PointerEvent<HTMLDivElement>) {
     arrastre.current = {
@@ -169,7 +173,7 @@ function EditorRecorte({
 
   function enPunteroMove(e: React.PointerEvent<HTMLDivElement>) {
     const a = arrastre.current;
-    if (!a || !imgNat.w || !imgNat.h) return;
+    if (!a) return;
     setTx(a.tx0 + (e.clientX - a.px));
     setTy(a.ty0 + (e.clientY - a.py));
     setAjustado(true);
@@ -193,13 +197,11 @@ function EditorRecorte({
   }
 
   function exportar() {
-    const img = imgElRef.current;
-    const lienzo = lienzoRef.current;
-    if (!img || !lienzo || rect.w <= 0 || rect.h <= 0) return;
+    if (!lienzoRef.current || rect.w <= 0 || rect.h <= 0) return;
     const out = dimensionesSalida(aspecto);
-    lienzo.width = out.w;
-    lienzo.height = out.h;
-    const ctx = lienzo.getContext("2d");
+    lienzoRef.current.width = out.w;
+    lienzoRef.current.height = out.h;
+    const ctx = lienzoRef.current.getContext("2d");
     if (!ctx) return;
     if (formato === "image/jpeg") {
       ctx.fillStyle = "#ffffff";
@@ -207,8 +209,8 @@ function EditorRecorte({
     }
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(img, rect.x, rect.y, rect.w, rect.h, 0, 0, out.w, out.h);
-    lienzo.toBlob(
+    ctx.drawImage(origen, rect.x, rect.y, rect.w, rect.h, 0, 0, out.w, out.h);
+    lienzoRef.current.toBlob(
       (blob) => {
         if (!blob) return;
         const ext = formato === "image/png" ? "png" : "jpg";
@@ -219,7 +221,6 @@ function EditorRecorte({
     );
   }
 
-  const mostrarStage = imgNat.w > 0 && imgNat.h > 0;
   const estiloImagen = { transform: `translate(${txn}px, ${tyn}px) scale(${s})` };
 
   return (
@@ -239,21 +240,14 @@ function EditorRecorte({
             onPointerUp={enPunteroUp}
             onPointerCancel={enPunteroUp}
           >
-            {mostrarStage && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                ref={imgElRef}
-                src={src}
-                alt="Imagen a ajustar"
-                className="imagen-estadio-img"
-                draggable={false}
-                style={estiloImagen}
-                onLoad={(e) => {
-                  const el = e.currentTarget;
-                  if (el.naturalWidth) setImgNat({ w: el.naturalWidth, h: el.naturalHeight });
-                }}
-              />
-            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={src}
+              alt=""
+              className="imagen-estadio-img"
+              draggable={false}
+              style={estiloImagen}
+            />
             <div className="imagen-grid" aria-hidden="true" />
             <div
               className="imagen-zoom"
@@ -312,6 +306,8 @@ function EditorRecorte({
   );
 }
 
+type DraftRecorte = { url: string; img: HTMLImageElement };
+
 /// Campo reutilizable para subir una imagen desde el panel. Al elegir un
 /// archivo se abre el editor de recorte; el archivo recortado se sube cuando
 /// se guarda el formulario.
@@ -327,7 +323,7 @@ export default function CampoImagen({
   contexto?: Contexto;
 }) {
   const [editando, setEditando] = useState(false);
-  const [draft, setDraft] = useState<{ file: File; url: string } | null>(null);
+  const [draft, setDraft] = useState<DraftRecorte | null>(null);
   const [aplicado, setAplicado] = useState<{ file: File; url: string } | null>(null);
   const [quitar, setQuitar] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -336,24 +332,42 @@ export default function CampoImagen({
     if (url) URL.revokeObjectURL(url);
   }
 
+  function precargar(url: string, ok: (img: HTMLImageElement) => void) {
+    const img = new Image();
+    img.onload = () => ok(img);
+    img.src = url;
+  }
+
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] ?? null;
     if (!file) return;
     const url = URL.createObjectURL(file);
-    setDraft({ file, url });
-    setAplicado(null);
-    setQuitar(false);
-    setEditando(true);
-    onChange({ archivo: null, quitar: false });
+    // Solo se abre el editor cuando la imagen ya está decodificada.
+    precargar(url, (img) => {
+      setDraft({ url, img });
+      setAplicado(null);
+      setQuitar(false);
+      setEditando(true);
+      onChange({ archivo: null, quitar: false });
+    });
   }
 
   function aplicar(file: File) {
+    if (aplicado) limpiarUrl(aplicado.url);
     const url = URL.createObjectURL(file);
     setAplicado({ file, url });
-    if (draft) limpiarUrl(draft.url);
     setDraft(null);
     setEditando(false);
     onChange({ archivo: file, quitar: false });
+  }
+
+  function reencuadrar() {
+    const url = aplicado?.url;
+    if (!url) return;
+    precargar(url, (img) => {
+      setDraft({ url, img });
+      setEditando(true);
+    });
   }
 
   function cancelar() {
@@ -373,6 +387,7 @@ export default function CampoImagen({
     if (draft) limpiarUrl(draft.url);
     setDraft(null);
     setQuitar(true);
+    setEditando(false);
     onChange({ archivo: null, quitar: true });
   }
 
@@ -383,6 +398,7 @@ export default function CampoImagen({
     if (draft) limpiarUrl(draft.url);
     setDraft(null);
     setQuitar(false);
+    setEditando(false);
     onChange({ archivo: null, quitar: false });
   }
 
@@ -400,7 +416,7 @@ export default function CampoImagen({
             <button
               type="button"
               className="link-accion"
-              onClick={() => setEditando(true)}
+              onClick={reencuadrar}
             >
               Re-encuadrar
             </button>
@@ -459,9 +475,12 @@ export default function CampoImagen({
         reemplaza a la anterior al guardar.
       </small>
 
-      {editando && draft?.url && (
+      {editando && draft && (
         <EditorRecorte
           src={draft.url}
+          origen={draft.img}
+          ancho={draft.img.naturalWidth}
+          alto={draft.img.naturalHeight}
           contexto={contexto}
           nombreBase="imagen-cfl"
           onAplicar={aplicar}
