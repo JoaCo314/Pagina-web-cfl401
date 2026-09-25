@@ -62,6 +62,39 @@ export default async function Home() {
 
       <NoticiasHome />
 
+      {config?.mapaUrl && (
+        <section className="mapa-section" id="ubicacion">
+          <div className="wrap">
+            <div className="section-head">
+              <h2>¿Dónde estamos?</h2>
+              <p>
+                {config?.contactoDireccion ?? "Azul, Provincia de Buenos Aires"}
+                {config?.contactoHorarios ? ` · ${config.contactoHorarios}` : ""}
+              </p>
+            </div>
+            <div className="mapa-frame">
+              <iframe
+                src={config.mapaUrl}
+                title="Ubicación del CFL 401"
+                loading="lazy"
+                allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+            <div className="mapa-actions">
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(config?.contactoDireccion ?? "Azul, Provincia de Buenos Aires")}`}
+                className="btn-ghost"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Cómo llegar
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="cta-band" id="oferta">
         <div className="wrap">
           <h2>¿Tenés dudas sobre un curso o tu inscripción?</h2>

@@ -249,6 +249,9 @@ model SiteConfig {
   contactoHorarios  String?
   contactoFormDestinatario String? // email donde llegan consultas
 
+  // Ubicación (mapa de Google en la portada)
+  mapaUrl String? // src del iframe embed de Google Maps ("Compartir → Insertar un mapa")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

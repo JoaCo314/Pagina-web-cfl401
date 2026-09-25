@@ -141,6 +141,14 @@ export default function SiteConfigForm({ inicial }: Props) {
           <label className="form-field"><span>Email destinatario del formulario</span><input type="text" value={datos.contactoFormDestinatario ?? ""} onChange={(e) => setCampo("contactoFormDestinatario", e.target.value)} /></label>
         </fieldset>
 
+        <fieldset className="guia-bloque">
+          <legend>Ubicación (mapa en la portada)</legend>
+          <label className="form-field form-field-full"><span>URL del mapa (embed de Google Maps)</span><input type="url" value={datos.mapaUrl ?? ""} onChange={(e) => setCampo("mapaUrl", e.target.value)} placeholder="https://www.google.com/maps?q=...&amp;output=embed" /></label>
+          <small className="form-hint">
+            En Google Maps: buscá la dirección → Compartir → Insertar un mapa → copiá la URL del src (por ejemplo https://www.google.com/maps?q=...&amp;output=embed). Si lo dejás vacío, el bloque no se muestra en la portada. El botón &quot;Cómo llegar&quot; usa la dirección del bloque Contacto.
+          </small>
+        </fieldset>
+
         {error && <p className="form-error">{error}</p>}
         <div className="form-actions">
           <button type="submit" className="btn-primary btn-sm" disabled={enviando}>{enviando ? "Guardando…" : "Guardar configuración"}</button>
