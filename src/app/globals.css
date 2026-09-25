@@ -2220,6 +2220,47 @@ a.panel-nav-item:hover {
   gap: 18px;
   max-width: 900px;
 }
+
+/* ── Contacto (página pública, sofia-athos) ─────────────── */
+.contacto-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  align-items: start;
+  gap: 32px;
+  margin-top: 8px;
+}
+.info-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.info-list li {
+  font-size: 15px;
+  line-height: 1.5;
+  padding-left: 18px;
+  position: relative;
+}
+.info-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cfl-blue);
+}
+.info-list strong {
+  color: var(--cfl-navy-2);
+}
+@media (max-width: 900px) {
+  .contacto-grid {
+    grid-template-columns: 1fr;
+  }
+}
 .guia-bloque {
   border: 1.5px solid rgba(18, 42, 69, 0.12);
   border-radius: 8px;
