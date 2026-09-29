@@ -21,28 +21,60 @@ const USUARIO_SELECT = {
   rol: { select: { nombre: true, nivel: true } },
 } as const;
 
-/// Control básico de intentos fallidos por cuenta (anti fuerza bruta).
-/// Estado en memoria del proceso: suficiente para el despliegue de una sola
-/// instancia; al reiniciar se reinicia el contador.
+/// Control básico de intentos fallidos (anti fuerza bruta). Hay dos contadores
+/// independientes: por cuenta (email) y por IP de origen (anti password
+/// spraying). Estado en memoria del proceso: suficiente para el despliegue de
+/// una sola instancia; al reiniciar se reinicia el contador.
 const MAX_INTENTOS_FALLIDOS = 5;
+const MAX_INTENTOS_POR_IP = 20;
 const BLOQUEO_MS = 15 * 60 * 1000;
 const intentosPorEmail = new Map<
   string,
   { fallidos: number; bloqueadoHasta: number | null }
 >();
+const intentosPorIp = new Map<
+  string,
+  { fallidos: number; bloqueadoHasta: number | null }
+>();
 
-function estadoIntentos(email: string): {
-  fallidos: number;
-  bloqueadoHasta: number | null;
-} {
-  const clave = email.toLowerCase();
-  const registro = intentosPorEmail.get(clave);
-  if (!registro) return { fallidos: 0, bloqueadoHasta: null };
-  if (registro.bloqueadoHasta && Date.now() >= registro.bloqueadoHasta) {
-    intentosPorEmail.delete(clave);
+type RegistroIntentos = { fallidos: number; bloqueadoHasta: number | null };
+
+function leerRegistro(
+  map: Map<string, RegistroIntentos>,
+  clave: string
+): RegistroIntentos {
+  const reg = map.get(clave);
+  if (!reg) return { fallidos: 0, bloqueadoHasta: null };
+  if (reg.bloqueadoHasta && Date.now() >= reg.bloqueadoHasta) {
+    map.delete(clave);
     return { fallidos: 0, bloqueadoHasta: null };
   }
-  return registro;
+  return reg;
+}
+
+function estaBloqueado(reg: RegistroIntentos): boolean {
+  return reg.bloqueadoHasta !== null && Date.now() < reg.bloqueadoHasta;
+}
+
+function registrarFallo(
+  map: Map<string, RegistroIntentos>,
+  clave: string,
+  max: number
+): void {
+  const actual = leerRegistro(map, clave);
+  const fallidos = actual.fallidos + 1;
+  map.set(clave, {
+    fallidos: fallidos >= max ? 0 : fallidos,
+    bloqueadoHasta: fallidos >= max ? Date.now() + BLOQUEO_MS : null,
+  });
+}
+
+function ipCliente(request: NextRequest): string {
+  const forward = request.headers.get("x-forwarded-for");
+  if (forward) return forward.split(",")[0]?.trim() || "sin-proxy";
+  const real = request.headers.get("x-real-ip");
+  if (real) return real.trim() || "sin-proxy";
+  return "sin-proxy";
 }
 
 export async function POST(request: NextRequest) {
@@ -69,8 +101,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const estado = estadoIntentos(email);
-  if (estado.bloqueadoHasta && Date.now() < estado.bloqueadoHasta) {
+  const ip = ipCliente(request);
+  const registroEmail = leerRegistro(intentosPorEmail, email.toLowerCase());
+  const registroIp = leerRegistro(intentosPorIp, ip);
+  if (estaBloqueado(registroEmail) || estaBloqueado(registroIp)) {
     return NextResponse.json(
       { error: "Demasiados intentos fallidos. Probá de nuevo más tarde." },
       { status: 429 }
@@ -88,17 +122,8 @@ export async function POST(request: NextRequest) {
     verificarPassword(password, usuario.passwordHash);
 
   if (!usuario || !credencialesValidas) {
-    const clave = email.toLowerCase();
-    const actual = estadoIntentos(email);
-    const fallidos = actual.fallidos + 1;
-    if (fallidos >= MAX_INTENTOS_FALLIDOS) {
-      intentosPorEmail.set(clave, {
-        fallidos: 0,
-        bloqueadoHasta: Date.now() + BLOQUEO_MS,
-      });
-    } else {
-      intentosPorEmail.set(clave, { fallidos, bloqueadoHasta: null });
-    }
+    registrarFallo(intentosPorEmail, email.toLowerCase(), MAX_INTENTOS_FALLIDOS);
+    registrarFallo(intentosPorIp, ip, MAX_INTENTOS_POR_IP);
     return NextResponse.json(
       { error: "Credenciales inválidas. Verificá los datos ingresados." },
       { status: 401 }
@@ -106,6 +131,7 @@ export async function POST(request: NextRequest) {
   }
 
   intentosPorEmail.delete(email.toLowerCase());
+  intentosPorIp.delete(ip);
 
   const token = await crearTokenSesion(usuario.id);
   const cookieStore = await cookies();

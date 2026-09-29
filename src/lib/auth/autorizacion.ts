@@ -131,6 +131,7 @@ export type SeccionPanel = {
     | "usuarios"
     | "guia"
     | "noticias"
+    | "imagenes"
     | "sobre"
     | "faqs"
     | "contacto"
@@ -201,6 +202,18 @@ export function obtenerSeccionesPanel(
       titulo: "Noticias",
       descripcion: "Publicación y edición de las noticias del sitio.",
       href: "/panel/noticias",
+    });
+  }
+
+  if (
+    tienePermiso(usuario, PERMISOS.CURSOS_CREAR) ||
+    tienePermiso(usuario, PERMISOS.NOTICIAS_CREAR)
+  ) {
+    secciones.push({
+      clave: "imagenes",
+      titulo: "Imágenes",
+      descripcion: "Imágenes subidas al sitio y limpieza de las que quedaron sin usar.",
+      href: "/panel/imagenes",
     });
   }
 

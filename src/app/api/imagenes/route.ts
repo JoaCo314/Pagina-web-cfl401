@@ -10,6 +10,56 @@ import {
 
 export const dynamic = "force-dynamic";
 
+/// Quienes pueden subir y administrar imágenes (cursos/noticias) sin datos:
+/// Administrador y Preceptor.
+async function puedeAdministrarImagenes(): Promise<boolean> {
+  const user = await getCurrentUser();
+  if (!user) return false;
+  return (
+    tienePermiso(user, PERMISOS.CURSOS_CREAR) ||
+    tienePermiso(user, PERMISOS.NOTICIAS_CREAR)
+  );
+}
+
+/// Listado de imágenes subidas (para administrarlas desde el panel, sin los
+/// bytes). El Admin/Preceptor puede ver las que se subieron y eliminar las
+/// que ya no se usan. Exclusivo para quienes pueden subir imágenes.
+export async function GET() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  }
+
+  if (!(await puedeAdministrarImagenes())) {
+    return NextResponse.json(
+      { error: "No tenés permiso para realizar esta acción." },
+      { status: 403 }
+    );
+  }
+
+  try {
+    const imagenes = await prisma.imagen.findMany({
+      select: { id: true, nombre: true, mimeType: true, tamano: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return NextResponse.json({
+      imagenes: imagenes.map((img) => ({
+        ...img,
+        url: urlImagenInterna(img.id),
+      })),
+      total: imagenes.length,
+    });
+  } catch (err) {
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
+  }
+}
+
 /// Subida de una imagen desde el panel (cursos y noticias). Recibe
 /// `multipart/form-data` con el campo `archivo` y devuelve la URL interna con
 /// la que se referencia la imagen. Administrador y Preceptor.
@@ -20,10 +70,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No autorizado." }, { status: 401 });
   }
 
-  const puedeSubir =
-    tienePermiso(user, PERMISOS.CURSOS_CREAR) ||
-    tienePermiso(user, PERMISOS.NOTICIAS_CREAR);
-  if (!puedeSubir) {
+  if (!(await puedeAdministrarImagenes())) {
     return NextResponse.json(
       { error: "No tenés permiso para realizar esta acción." },
       { status: 403 }

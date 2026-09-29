@@ -38,6 +38,32 @@ const CAMPOS_PERMITIDOS = [
   "mapaSubtitulo",
 ] as const;
 
+/// Límite máximo de caracteres por campo de texto (evita payloads gigantes y
+/// textos que rompan el layout). Banner/logo e imágenes se validan aparte.
+const LIMITES_CAMPO: Record<string, number> = {
+  bannerPill: 80,
+  bannerTitulo: 200,
+  bannerSubtitulo: 300,
+  logoAlt: 200,
+  footerCflTitulo: 100,
+  footerCflTexto: 600,
+  footerContactosTitulo: 100,
+  footerEmail: 200,
+  footerTelefono: 60,
+  footerDireccion: 200,
+  footerHorarios: 300,
+  footerCopy: 200,
+  contactoTitulo: 200,
+  contactoSubtitulo: 300,
+  contactoEmail: 200,
+  contactoTelefono: 60,
+  contactoDireccion: 200,
+  contactoHorarios: 300,
+  contactoFormDestinatario: 200,
+  mapaTitulo: 200,
+  mapaSubtitulo: 300,
+};
+
 export async function GET() {
   try {
     const config = await getSiteConfig();
@@ -77,6 +103,13 @@ export async function PUT(request: NextRequest) {
       const val = (body as Record<string, unknown>)[key];
       if (val !== null && typeof val !== "string") {
         return NextResponse.json({ error: `Campo ${key} debe ser texto o null.` }, { status: 400 });
+      }
+      const limite = LIMITES_CAMPO[key];
+      if (typeof val === "string" && limite !== undefined && val.length > limite) {
+        return NextResponse.json(
+          { error: `El campo ${key} no puede superar ${limite} caracteres.` },
+          { status: 400 }
+        );
       }
       data[key] = val === "" ? null : val;
     }
