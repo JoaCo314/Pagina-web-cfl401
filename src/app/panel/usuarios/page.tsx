@@ -5,6 +5,7 @@ import { PERMISOS, obtenerSeccionesPanel, tienePermiso } from "@/lib/auth/autori
 import { prisma } from "@/lib/prisma";
 import PanelShell from "@/components/auth/PanelShell";
 import ToggleUsuario from "@/components/panel/ToggleUsuario";
+import CambiarContrasenaUsuario from "@/components/panel/CambiarContrasenaUsuario";
 
 export const dynamic = "force-dynamic";
 
@@ -42,8 +43,9 @@ export default async function UsuariosPanelPage() {
           <h1 className="panel-title">Usuarios</h1>
           <p className="panel-lead">
             Listado completo de las cuentas del CFL 401. Podés dar de alta,
-            desactivar o reactivar usuarios. Un usuario desactivado pierde el
-            acceso al panel inmediatamente.
+            desactivar o reactivar usuarios y resetear la contraseña de cada
+            cuenta. Un usuario desactivado pierde el acceso al panel
+            inmediatamente.
           </p>
         </div>
         <Link href="/panel/usuarios/nuevo" className="btn-primary btn-sm">
@@ -91,6 +93,10 @@ export default async function UsuariosPanelPage() {
                       nombre={`${u.nombre} ${u.apellido}`}
                       activo={u.activo}
                       esPropio={u.id === user.id}
+                    />
+                    <CambiarContrasenaUsuario
+                      usuarioId={u.id}
+                      nombre={`${u.nombre} ${u.apellido}`}
                     />
                   </td>
                 </tr>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { hashSync } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
@@ -6,9 +7,10 @@ import { USUARIO_SELECT } from "@/lib/usuariosAdmin";
 
 export const dynamic = "force-dynamic";
 
-/// Edición básica de usuario (RF-15): desactivar o reactivar una cuenta.
-/// Exclusivo de Administrador. La desactivación impide iniciar sesión y
-/// revoca las sesiones activas (getCurrentUser filtra por `activo`).
+/// Edición básica de usuario (RF-15): desactivar o reactivar una cuenta y
+/// resetear la contraseña desde el panel. Exclusivo de Administrador. La
+/// desactivación impide iniciar sesión y revoca las sesiones activas
+/// (getCurrentUser filtra por `activo`).
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -47,13 +49,6 @@ export async function PATCH(
     );
   }
 
-  if (usuarioId === user.id) {
-    return NextResponse.json(
-      { error: "No podés desactivar tu propia cuenta." },
-      { status: 400 }
-    );
-  }
-
   let body: unknown;
   try {
     body = await request.json();
@@ -64,10 +59,44 @@ export async function PATCH(
     );
   }
 
-  const { activo } = (body ?? {}) as Record<string, unknown>;
-  if (typeof activo !== "boolean") {
+  const fuente = (body ?? {}) as Record<string, unknown>;
+  const cambios: Record<string, unknown> = {};
+
+  if (fuente.activo !== undefined) {
+    if (typeof fuente.activo !== "boolean") {
+      return NextResponse.json(
+        { error: "El campo activo debe ser un valor booleano." },
+        { status: 400 }
+      );
+    }
+    if (usuarioId === user.id) {
+      return NextResponse.json(
+        { error: "No podés desactivar tu propia cuenta." },
+        { status: 400 }
+      );
+    }
+    cambios.activo = fuente.activo;
+  }
+
+  if (fuente.password !== undefined) {
+    if (typeof fuente.password !== "string" || !fuente.password.trim()) {
+      return NextResponse.json(
+        { error: "La contraseña no puede estar vacía." },
+        { status: 400 }
+      );
+    }
+    if (fuente.password.length < 8) {
+      return NextResponse.json(
+        { error: "La contraseña debe tener al menos 8 caracteres." },
+        { status: 400 }
+      );
+    }
+    cambios.passwordHash = hashSync(fuente.password, 10);
+  }
+
+  if (Object.keys(cambios).length === 0) {
     return NextResponse.json(
-      { error: "El campo activo debe ser un valor booleano." },
+      { error: "No se enviaron campos para actualizar." },
       { status: 400 }
     );
   }
@@ -75,7 +104,7 @@ export async function PATCH(
   try {
     const usuario = await prisma.usuario.update({
       where: { id: usuarioId },
-      data: { activo },
+      data: cambios,
       select: USUARIO_SELECT,
     });
 
