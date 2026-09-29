@@ -7,7 +7,6 @@ import { getSiteConfig } from "@/lib/siteConfig";
 
 // Creado por sofia-athos: banner azul editable desde panel/configuracion
 export default async function Home() {
-  const anio = new Date().getFullYear();
   const config = await getSiteConfig().catch(() => null);
 
   return (
@@ -30,12 +29,16 @@ export default async function Home() {
       >
         <div className="wrap">
           <div className="badge-row">
-            <div className="pill">
-              <span className="dot"></span>{config?.bannerPill ?? `Preinscripción ${anio} abierta`}
-            </div>
+            {config?.bannerPill ? (
+              <div className="pill">
+                <span className="dot"></span>{config.bannerPill}
+              </div>
+            ) : null}
           </div>
-          <h1>{config?.bannerTitulo ?? "Capacitate en un oficio, gratis y cerca de casa."}</h1>
-          <p className="lead">{config?.bannerSubtitulo ?? "Cursos presenciales dictados por profesionales en actividad. Elegí tu curso, consultá cupos y horarios, e inscribite en minutos."}</p>
+          {config?.bannerTitulo ? <h1>{config.bannerTitulo}</h1> : null}
+          {config?.bannerSubtitulo ? (
+            <p className="lead">{config.bannerSubtitulo}</p>
+          ) : null}
           <div className="hero-actions">
             <Link href="/cursos" className="btn-primary">
               Ver oferta de cursos
@@ -67,17 +70,19 @@ export default async function Home() {
           <div className="wrap">
             <div className="mapa-head">
               <div className="section-head">
-                <h2>{config?.mapaTitulo || "¿Dónde estamos?"}</h2>
+                {config?.mapaTitulo && <h2>{config.mapaTitulo}</h2>}
                 {config?.mapaSubtitulo && <p>{config.mapaSubtitulo}</p>}
               </div>
+              {config?.contactoDireccion && (
               <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(config?.contactoDireccion ?? "Azul, Provincia de Buenos Aires")}`}
+                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(config.contactoDireccion)}`}
                 className="btn-ghost-dark btn-sm"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 Cómo llegar
               </a>
+              )}
             </div>
             <div className="mapa-frame">
               <iframe

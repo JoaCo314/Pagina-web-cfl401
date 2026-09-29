@@ -37,8 +37,11 @@ export async function GET(
 
     return NextResponse.json({ noticia });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }
 
@@ -126,8 +129,11 @@ export async function PUT(
 
     return NextResponse.json({ noticia });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }
 
@@ -180,7 +186,10 @@ export async function DELETE(
 
     return NextResponse.json({ eliminado: true, noticia: noticiaEliminada });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }

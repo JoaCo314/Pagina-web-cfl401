@@ -125,7 +125,10 @@ export async function PUT(
 
     return NextResponse.json({ curso });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }

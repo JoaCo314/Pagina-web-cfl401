@@ -66,6 +66,31 @@ export async function getSiteConfig(): Promise<SiteConfigData> {
   };
 }
 
+/// Normaliza y valida el mapa de la portada. Acepta un iframe de Google Maps
+/// completo o una URL http(s) absoluta; vacío lo deja sin definir. Cualquier
+/// otro esquema (javascript:, data:, etc.) se rechaza en el servidor.
+export function normalizarUrlMapa(
+  valor: unknown
+): { error?: string; valor: string | null } {
+  if (valor === undefined || valor === null) return { valor: null };
+  if (typeof valor !== "string") {
+    return { error: "mapaUrl debe ser texto.", valor: null };
+  }
+  const extraido = extraerUrlIframe(valor.trim());
+  if (!extraido) return { valor: null };
+  if (extraido.length > 2000) {
+    return { error: "La URL del mapa es demasiado larga.", valor: null };
+  }
+  if (!/^https?:\/\/\S+$/i.test(extraido)) {
+    return {
+      error:
+        "El mapa debe ser un iframe de Google Maps o una URL que empiece con http:// o https://.",
+      valor: null,
+    };
+  }
+  return { valor: extraido };
+}
+
 export async function upsertSiteConfig(data: Partial<Omit<SiteConfigData, "id">>): Promise<SiteConfigData> {
   const entrada = { ...data };
   if (entrada.mapaUrl) {

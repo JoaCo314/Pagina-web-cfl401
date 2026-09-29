@@ -25,8 +25,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ noticias, total: noticias.length });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }
 
@@ -73,7 +76,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ noticia }, { status: 201 });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }

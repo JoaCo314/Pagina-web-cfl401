@@ -75,6 +75,16 @@ export default function SiteConfigForm({ inicial }: Props) {
         Object.entries(datos).filter(([clave]) => !clave.startsWith("contacto"))
       );
 
+      if (
+        datos.mapaUrl &&
+        !/^https?:\/\/\S+$/i.test(datos.mapaUrl.trim())
+      ) {
+        setError(
+          "El mapa debe ser un iframe de Google Maps o una URL que empiece con http:// o https://."
+        );
+        return;
+      }
+
       const res = await fetch("/api/site-config", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -130,6 +140,7 @@ export default function SiteConfigForm({ inicial }: Props) {
           <legend>Footer</legend>
           <label className="form-field"><span>Título CFL 401</span><input type="text" value={datos.footerCflTitulo ?? ""} onChange={(e) => setCampo("footerCflTitulo", e.target.value)} /></label>
           <label className="form-field"><span>Texto debajo de CFL 401</span><textarea rows={2} value={datos.footerCflTexto ?? ""} onChange={(e) => setCampo("footerCflTexto", e.target.value)} /></label>
+          <label className="form-field"><span>Título de la columna de contacto</span><input type="text" value={datos.footerContactosTitulo ?? ""} onChange={(e) => setCampo("footerContactosTitulo", e.target.value)} /></label>
           <label className="form-field"><span>Email footer</span><input type="text" value={datos.footerEmail ?? ""} onChange={(e) => setCampo("footerEmail", e.target.value)} /></label>
           <label className="form-field"><span>Teléfono footer</span><input type="text" value={datos.footerTelefono ?? ""} onChange={(e) => setCampo("footerTelefono", e.target.value)} /></label>
           <label className="form-field"><span>Dirección footer</span><input type="text" value={datos.footerDireccion ?? ""} onChange={(e) => setCampo("footerDireccion", e.target.value)} /></label>

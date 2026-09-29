@@ -160,10 +160,15 @@ export default function CursoForm({
       }
 
       if (esEdicion) {
+        const bodyCurso = {
+          ...datos,
+          imagenUrl: imagenUrl ?? "",
+          ...(puedeAsignarDocentes ? { activo } : {}),
+        };
         const resCurso = await fetch(`/api/cursos/${inicial!.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...datos, imagenUrl: imagenUrl ?? "", activo }),
+          body: JSON.stringify(bodyCurso),
         });
 
         if (!resCurso.ok) {
@@ -423,7 +428,7 @@ export default function CursoForm({
         </div>
       )}
 
-      {esEdicion && (
+      {esEdicion && puedeAsignarDocentes && (
         <label className="form-field form-field-full form-toggle">
           <input
             type="checkbox"

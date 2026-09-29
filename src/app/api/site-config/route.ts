@@ -2,7 +2,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/session";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
-import { getSiteConfig, upsertSiteConfig } from "@/lib/siteConfig";
+import {
+  getSiteConfig,
+  normalizarUrlMapa,
+  upsertSiteConfig,
+} from "@/lib/siteConfig";
+import { borrarImagenPorUrl, validarImagenUrl } from "@/lib/imagenes";
 
 export const dynamic = "force-dynamic";
 
@@ -38,8 +43,11 @@ export async function GET() {
     const config = await getSiteConfig();
     return NextResponse.json({ config });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }
 
@@ -78,11 +86,45 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "No se enviaron campos para actualizar." }, { status: 400 });
   }
 
+  // El mapa de la portada debe ser un iframe o una URL http(s) (nunca
+  // javascript:, data:, etc.), porque se inyecta como atributo src de un iframe.
+  if ("mapaUrl" in data) {
+    const mapa = normalizarUrlMapa(data.mapaUrl);
+    if (mapa.error) {
+      return NextResponse.json({ error: mapa.error }, { status: 400 });
+    }
+    data["mapaUrl"] = mapa.valor;
+  }
+
+  // El banner y el logo se inyectan como background-image / <img src>, así que
+  // solo se aceptan imágenes administradas o URLs http(s), nunca otros esquemas.
+  for (const campo of ["bannerImagenUrl", "logoUrl"]) {
+    if (campo in data) {
+      const imagen = validarImagenUrl(data[campo]);
+      if (imagen.error) {
+        return NextResponse.json({ error: imagen.error }, { status: 400 });
+      }
+      data[campo] = imagen.valor;
+    }
+  }
+
   try {
+    const antes = await getSiteConfig();
     const config = await upsertSiteConfig(data);
+    // Limpieza de mejor esfuerzo: si el banner o el logo apuntaban a una imagen
+    // administrada y se reemplazaron (o quitaron), se borra la fila anterior.
+    if (config.bannerImagenUrl !== antes.bannerImagenUrl) {
+      await borrarImagenPorUrl(antes.bannerImagenUrl);
+    }
+    if (config.logoUrl !== antes.logoUrl) {
+      await borrarImagenPorUrl(antes.logoUrl);
+    }
     return NextResponse.json({ config });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }

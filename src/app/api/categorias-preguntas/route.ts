@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
@@ -23,8 +24,11 @@ export async function GET() {
 
     return NextResponse.json({ categorias });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }
 
@@ -69,15 +73,19 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ categoria }, { status: 201 });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    const duplicada =
-      message.includes("Unique constraint") || message.includes("unique");
-    if (duplicada) {
+    console.error("[API] Error interno:", err);
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
       return NextResponse.json(
         { error: "Ya existe una categoría con ese nombre." },
         { status: 409 }
       );
     }
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }

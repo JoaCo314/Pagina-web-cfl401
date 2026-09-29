@@ -65,8 +65,11 @@ export async function GET(
 
     return NextResponse.json({ curso });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }
 
@@ -144,6 +147,18 @@ export async function PUT(
     );
   }
 
+  // RF-16: el Docente modifica los datos del curso asignado, pero la
+  // publicación/despublicación (activo) es una decisión de Administrador o
+  // Preceptor. Un Docente no puede cambiar la visibilidad pública del curso.
+  if (!esGestorGlobal && presentes.has("activo")) {
+    return NextResponse.json(
+      {
+        error: "Solo un Administrador o Preceptor puede publicar o despublicar un curso.",
+      },
+      { status: 403 }
+    );
+  }
+
   const data: Record<string, unknown> = {};
   for (const clave of Object.keys(campos)) {
     if (presentes.has(clave)) {
@@ -189,8 +204,11 @@ export async function PUT(
 
     return NextResponse.json({ curso });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }
 
@@ -247,7 +265,10 @@ export async function DELETE(
 
     return NextResponse.json({ eliminado: true, curso: cursoEliminado });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }
