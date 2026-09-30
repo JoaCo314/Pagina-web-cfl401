@@ -2137,6 +2137,48 @@ a.panel-nav-item:hover {
   background: #f6ecec;
   color: #a03c3c;
 }
+.badge-estado.pendiente {
+  background: #fdf3e0;
+  color: #8a5a12;
+  margin-left: 6px;
+}
+.acciones-usuario {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.panel-nota-ok {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  background: #eef7f1;
+  border: 1px solid #bfe0cb;
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  max-width: 620px;
+}
+.panel-nota-ok p {
+  margin: 0;
+}
+.panel-nota-ok h2 {
+  margin: 0;
+}
+/* Los avisos que explican la contraseña temporal no se pueden seleccionar: al
+   apretar Ctrl+C con el foco en un campo de contraseña el navegador no copia el
+   contenido del input y, sin esto, terminaba copiando el texto del aviso. */
+.sin-seleccion,
+.sin-seleccion * {
+  -webkit-user-select: none;
+  user-select: none;
+}
+.form-note {
+  font-size: 13px;
+  color: var(--cfl-navy-1);
+  opacity: 0.75;
+}
 .link-accion {
   color: var(--cfl-navy-2);
   font-weight: 600;

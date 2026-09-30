@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { SeccionPanel } from "@/lib/auth/autorizacion";
@@ -10,6 +10,7 @@ type UsuarioSesion = {
   nombre: string;
   apellido: string;
   email: string;
+  debeCambiarContrasena: boolean;
   rol: { nombre: string; nivel: number };
 };
 
@@ -26,6 +27,15 @@ export default function PanelShell({
   const pathname = usePathname();
   const [cerrando, setCerrando] = useState(false);
   const [menusAbierto, setMenusAbierto] = useState(false);
+  const bloqueado = user.debeCambiarContrasena;
+
+  // Con contraseña temporal no se puede operar el panel: se manda al cambio
+  // obligatorio y el shell no renderiza nada del contenido.
+  useEffect(() => {
+    if (bloqueado) {
+      router.replace("/panel/cambiar-mi-contrasena");
+    }
+  }, [bloqueado, router]);
 
   async function cerrarSesion() {
     setCerrando(true);
@@ -36,6 +46,21 @@ export default function PanelShell({
     }
     router.replace("/panel/login");
     router.refresh();
+  }
+
+  if (bloqueado) {
+    return (
+      <div className="panel">
+        <main className="wrap panel-main">
+          <p className="form-error">
+            Tu contraseña es temporal. Necesás cambiarla antes de seguir.
+          </p>
+          <Link href="/panel/cambiar-mi-contrasena" className="btn-primary btn-sm">
+            Cambiar mi contraseña
+          </Link>
+        </main>
+      </div>
+    );
   }
 
   return (

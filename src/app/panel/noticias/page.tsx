@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth/session";
+import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
 import { PERMISOS, obtenerSeccionesPanel, tienePermiso } from "@/lib/auth/autorizacion";
 import { prisma } from "@/lib/prisma";
 import { NOTICIA_SELECT } from "@/lib/noticiaAdmin";
@@ -16,6 +16,8 @@ export default async function NoticiasPanelPage() {
   if (!user) {
     redirect("/panel/login");
   }
+
+  exigirContrasenaActualizada(user);
   if (!tienePermiso(user, PERMISOS.NOTICIAS_CREAR)) {
     redirect("/panel");
   }

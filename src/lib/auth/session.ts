@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { SignJWT, jwtVerify } from "jose";
 import { prisma } from "@/lib/prisma";
 
@@ -10,6 +11,7 @@ export type UsuarioSesion = {
   nombre: string;
   apellido: string;
   email: string;
+  debeCambiarContrasena: boolean;
   rol: { nombre: string; nivel: number };
 };
 
@@ -48,6 +50,7 @@ function seleccionUsuario() {
     apellido: true,
     email: true,
     activo: true,
+    debeCambiarContrasena: true,
     rol: { select: { nombre: true, nivel: true } },
   } as const;
 }
@@ -59,6 +62,7 @@ export function publicarUsuario(
     apellido: string;
     email: string;
     activo: boolean;
+    debeCambiarContrasena: boolean;
     rol: { nombre: string; nivel: number };
   }
 ): UsuarioSesion {
@@ -67,6 +71,7 @@ export function publicarUsuario(
     nombre: usuario.nombre,
     apellido: usuario.apellido,
     email: usuario.email,
+    debeCambiarContrasena: usuario.debeCambiarContrasena,
     rol: usuario.rol,
   };
 }
@@ -86,4 +91,14 @@ export async function getCurrentUser(): Promise<UsuarioSesion | null> {
   if (!usuario || !usuario.activo) return null;
 
   return publicarUsuario(usuario);
+}
+
+/// Cortocircuito de servidor para las páginas del panel: mientras la contraseña
+/// sea temporal (cuenta blanqueada o recién creada) no se puede operar nada y
+/// todo va al cambio obligatorio. Se aplica en cada página del panel, así el
+/// bloqueo no depende de que el navegador haya descargado el JavaScript.
+export function exigirContrasenaActualizada(user: UsuarioSesion): void {
+  if (user.debeCambiarContrasena) {
+    redirect("/panel/cambiar-mi-contrasena");
+  }
 }

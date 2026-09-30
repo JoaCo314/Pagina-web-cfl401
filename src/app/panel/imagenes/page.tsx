@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth/session";
+import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
 import { PERMISOS, obtenerSeccionesPanel, tienePermiso } from "@/lib/auth/autorizacion";
 import { prisma } from "@/lib/prisma";
 import { urlImagenInterna } from "@/lib/imagenes";
@@ -16,6 +16,8 @@ export default async function ImagenesPanelPage() {
   if (!user) {
     redirect("/panel/login");
   }
+
+  exigirContrasenaActualizada(user);
   const puedeAdministrar =
     tienePermiso(user, PERMISOS.CURSOS_CREAR) ||
     tienePermiso(user, PERMISOS.NOTICIAS_CREAR);

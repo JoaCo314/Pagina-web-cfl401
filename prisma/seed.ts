@@ -87,28 +87,33 @@ async function main() {
   }
 
   // Los usuarios de prueba usan contraseñas reales hasheadas con bcrypt (constante PASSWORDS).
+  // Los DNI son ficticios (rango 30xxxxxx) y no corresponden a personas reales.
   const usuarios = [
     {
       nombre: "María",
       apellido: "González",
+      dni: "30000001",
       email: "admin@cfl401.edu.ar",
       rol: "Administrador",
     },
     {
       nombre: "Juan",
       apellido: "Pérez",
+      dni: "30000002",
       email: "preceptor@cfl401.edu.ar",
       rol: "Preceptor",
     },
     {
       nombre: "Lucía",
       apellido: "Fernández",
+      dni: "30000003",
       email: "docente1@cfl401.edu.ar",
       rol: "Docente",
     },
     {
       nombre: "Carlos",
       apellido: "Rodríguez",
+      dni: "30000004",
       email: "docente2@cfl401.edu.ar",
       rol: "Docente",
     },
@@ -121,14 +126,18 @@ async function main() {
       update: {
         nombre: u.nombre,
         apellido: u.apellido,
+        dni: u.dni,
         rolId: roleIds[u.rol],
         passwordHash: hashSync(PASSWORDS[u.email] ?? "Cambiar-123!", 10),
+        debeCambiarContrasena: false,
       },
       create: {
         nombre: u.nombre,
         apellido: u.apellido,
+        dni: u.dni,
         email: u.email,
         passwordHash: hashSync(PASSWORDS[u.email] ?? "Cambiar-123!", 10),
+        debeCambiarContrasena: false,
         activo: true,
         rolId: roleIds[u.rol],
       },

@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth/session";
+import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
 import {
   PERMISOS,
   obtenerSeccionesPanel,
@@ -30,6 +30,8 @@ export default async function EditarCursoPage({
   if (!user) {
     redirect("/panel/login");
   }
+
+  exigirContrasenaActualizada(user);
 
   const [curso, docentes] = await Promise.all([
     prisma.curso.findUnique({

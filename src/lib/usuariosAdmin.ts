@@ -27,18 +27,23 @@ export const USUARIO_SELECT = {
   id: true,
   nombre: true,
   apellido: true,
+  dni: true,
   email: true,
   activo: true,
+  debeCambiarContrasena: true,
   rol: { select: { nombre: true, nivel: true } },
   createdAt: true,
   updatedAt: true,
 } as const;
 
+/// Formato de DNI argentino: 7 u 8 dígitos, sin letras ni signos.
+const REGEX_DNI = /^\d{7,8}$/;
+
 export type UsuarioInputNormalizado = {
   nombre: string;
   apellido: string;
+  dni: string;
   email: string;
-  password: string;
   rol: string;
   activo: boolean | undefined;
 };
@@ -79,20 +84,17 @@ export async function validarDatosUsuario(
   const apellido = limpiarObligatorio(fuente.apellido, "El apellido", 100);
   if (apellido.error) return { ok: false, error: apellido.error };
 
+  const dni = limpiarObligatorio(fuente.dni, "El DNI", 8);
+  if (dni.error) return { ok: false, error: dni.error };
+  if (!REGEX_DNI.test(dni.valor)) {
+    return { ok: false, error: "El DNI debe tener 7 u 8 dígitos." };
+  }
+
   const email = limpiarObligatorio(fuente.email, "El email", 200);
   if (email.error) return { ok: false, error: email.error };
   const emailNormalizado = email.valor.toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNormalizado)) {
     return { ok: false, error: "El email no tiene un formato válido." };
-  }
-
-  const password = limpiarObligatorio(fuente.password, "La contraseña", 100);
-  if (password.error) return { ok: false, error: password.error };
-  if (password.valor.length < 8) {
-    return {
-      ok: false,
-      error: "La contraseña debe tener al menos 8 caracteres.",
-    };
   }
 
   const rol = limpiarObligatorio(fuente.rol, "El rol", 50);
@@ -111,8 +113,8 @@ export async function validarDatosUsuario(
     datos: {
       nombre: nombre.valor,
       apellido: apellido.valor,
+      dni: dni.valor,
       email: emailNormalizado,
-      password: password.valor,
       rol: rol.valor,
       activo,
     },

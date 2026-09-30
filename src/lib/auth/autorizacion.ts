@@ -9,6 +9,7 @@ export const PERMISOS = {
   CURSOS_ASIGNAR_DOCENTES: "cursos:asignar_docentes",
   USUARIOS_VER: "usuarios:ver",
   USUARIOS_VER_TODOS: "usuarios:ver_todos",
+  USUARIOS_GESTIONAR_DOCENTES: "usuarios:gestionar_docentes",
   USUARIOS_CREAR: "usuarios:crear",
   USUARIOS_CREAR_ADMIN: "usuarios:crear_admin",
   USUARIOS_CREAR_PRECEPTOR: "usuarios:crear_preceptor",
@@ -29,6 +30,12 @@ export type Permiso = (typeof PERMISOS)[keyof typeof PERMISOS];
 /// Reglas de creación de usuarios (RF-13/RF-14):
 ///   - Administrador: crea administradores, preceptores y docentes.
 ///   - Preceptor: crea SOLO docentes (no administradores ni preceptores).
+/// Reglas de gestión de cuentas (RF-15):
+///   - Administrador: ve y gestiona TODAS las cuentas.
+///   - Preceptor: ve y gestiona SOLO las cuentas con rol Docente (puede blanquear
+///     su contraseña, corregir su DNI y activar/desactivar la cuenta). Nunca ve
+///     ni opera sobre administradores ni preceptores.
+///   - Docente: sin acceso al área de usuarios.
 /// Reglas de cursos (RF-11/RF-16):
 ///   - Docente: gestiona UNICAMENTE los cursos que le fueron asignados
 ///     (CursoDocente). No crea ni elimina cursos, no se asigna cursos,
@@ -68,6 +75,7 @@ const PERMISOS_POR_ROL: Record<
     PERMISOS.USUARIOS_VER,
     PERMISOS.USUARIOS_CREAR,
     PERMISOS.USUARIOS_CREAR_DOCENTE,
+    PERMISOS.USUARIOS_GESTIONAR_DOCENTES,
     PERMISOS.GUIA_EDITAR,
     PERMISOS.NOTICIAS_CREAR,
     PERMISOS.NOTICIAS_EDITAR,
@@ -123,11 +131,50 @@ export function puedeGestionarCurso(
   );
 }
 
+export type AlcanceUsuarios = "todos" | "docentes" | "ninguno";
+
+/// Alcance que tiene un rol sobre el área de usuarios (RF-15). El
+/// Administrador opera sobre todas las cuentas y el Preceptor solamente sobre
+/// las de rol Docente, de modo que nunca reacha cuentas de administrators o
+/// preceptores aunque conozca el ID.
+export function alcanceUsuarios(
+  usuario: UsuarioSesion | null | undefined
+): AlcanceUsuarios {
+  if (!usuario) return "ninguno";
+  if (tienePermiso(usuario, PERMISOS.USUARIOS_VER_TODOS)) return "todos";
+  if (tienePermiso(usuario, PERMISOS.USUARIOS_GESTIONAR_DOCENTES)) {
+    return "docentes";
+  }
+  return "ninguno";
+}
+
+/// Filtro de Prisma para acotar el listado de cuentas según el alcance del
+/// usuario que consulta. Devuelve `{}` para el Administrador.
+export function filtroUsuariosVisibles(
+  usuario: UsuarioSesion | null | undefined
+): { rol?: { nombre: (typeof ROLES)[keyof typeof ROLES] } } {
+  return alcanceUsuarios(usuario) === "docentes"
+    ? { rol: { nombre: ROLES.DOCENTE } }
+    : {};
+}
+
+/// ¿Puede el usuario operar sobre esa cuenta concreta? Es la verificación que
+/// aplican los endpoints de edición para impedir, por ejemplo, que un
+/// Preceptor blanquee la contraseña de un Administrador pasando su ID a mano.
+export function puedeGestionarUsuario(
+  usuario: UsuarioSesion | null | undefined,
+  objetivo: { id: number; rol: { nombre: string } }
+): boolean {
+  const alcance = alcanceUsuarios(usuario);
+  if (alcance === "todos") return true;
+  if (alcance === "docentes") return objetivo.rol.nombre === ROLES.DOCENTE;
+  return false;
+}
+
 export type SeccionPanel = {
   clave:
     | "inicio"
     | "cursos"
-    | "mis_cursos"
     | "usuarios"
     | "guia"
     | "noticias"
@@ -158,14 +205,10 @@ export function obtenerSeccionesPanel(
   ];
 
   if (tienePermiso(usuario, PERMISOS.CURSOS_VER)) {
-    if (esRol(usuario, ROLES.DOCENTE)) {
-      secciones.push({
-        clave: "mis_cursos",
-        titulo: "Mis cursos",
-        descripcion: "Gestión de los cursos que te fueron asignados.",
-        href: "/panel",
-      });
-    } else {
+    // El Docente no tiene sección propia: sus cursos asignados ya se listan en
+    // el resumen de `/panel`, así que una entrada "Mis cursos" apuntando al
+    // mismo lugar solo duplicaba el enlace.
+    if (!esRol(usuario, ROLES.DOCENTE)) {
       secciones.push({
         clave: "cursos",
         titulo: "Cursos",
@@ -176,14 +219,14 @@ export function obtenerSeccionesPanel(
   }
 
   if (tienePermiso(usuario, PERMISOS.USUARIOS_VER)) {
-    const esAdministrador = esRol(usuario, ROLES.ADMINISTRADOR);
+    const esAdministrador = alcanceUsuarios(usuario) === "todos";
     secciones.push({
       clave: "usuarios",
-      titulo: "Usuarios",
+      titulo: esAdministrador ? "Usuarios" : "Docentes",
       descripcion: esAdministrador
         ? "Listado completo, alta y baja de cuentas del equipo."
-        : "Alta de cuentas de docentes.",
-      href: esAdministrador ? "/panel/usuarios" : "/panel/usuarios/nuevo",
+        : "Listado de docentes y alta de cuentas.",
+      href: "/panel/usuarios",
     });
   }
 

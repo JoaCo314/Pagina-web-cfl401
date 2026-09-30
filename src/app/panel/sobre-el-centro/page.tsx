@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth/session";
+import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
 import {
   PERMISOS,
   obtenerSeccionesPanel,
@@ -23,6 +23,8 @@ export default async function SobreElCentroPanelPage() {
   if (!user) {
     redirect("/panel/login");
   }
+
+  exigirContrasenaActualizada(user);
   if (!tienePermiso(user, PERMISOS.SOBRE_EL_CENTRO_EDITAR)) {
     redirect("/panel");
   }

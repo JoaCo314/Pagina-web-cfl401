@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth/session";
+import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
 import { PERMISOS, obtenerSeccionesPanel, tienePermiso } from "@/lib/auth/autorizacion";
 import { obtenerDocentesActivos } from "@/lib/cursoAdmin";
 import PanelShell from "@/components/auth/PanelShell";
@@ -13,6 +13,8 @@ export default async function NuevoCursoPage() {
   if (!user) {
     redirect("/panel/login");
   }
+
+  exigirContrasenaActualizada(user);
   if (!tienePermiso(user, PERMISOS.CURSOS_CREAR)) {
     redirect("/panel");
   }

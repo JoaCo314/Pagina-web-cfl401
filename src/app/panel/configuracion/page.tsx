@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth/session";
+import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
 import { PERMISOS, obtenerSeccionesPanel, tienePermiso } from "@/lib/auth/autorizacion";
 import { getSiteConfig } from "@/lib/siteConfig";
 import PanelShell from "@/components/auth/PanelShell";
@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function ConfiguracionPanelPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/panel/login");
+  exigirContrasenaActualizada(user);
   if (!tienePermiso(user, PERMISOS.SITE_CONFIG_EDITAR)) redirect("/panel");
 
   const config = await getSiteConfig();

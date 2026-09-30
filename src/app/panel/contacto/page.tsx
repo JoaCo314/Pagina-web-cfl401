@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth/session";
+import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
 import {
   PERMISOS,
   obtenerSeccionesPanel,
@@ -14,6 +14,7 @@ export const dynamic = "force-dynamic";
 export default async function ContactoPanelPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/panel/login");
+  exigirContrasenaActualizada(user);
   if (!tienePermiso(user, PERMISOS.SITE_CONFIG_EDITAR)) redirect("/panel");
 
   const config = await getSiteConfig();

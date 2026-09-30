@@ -18,6 +18,7 @@ const USUARIO_SELECT = {
   email: true,
   passwordHash: true,
   activo: true,
+  debeCambiarContrasena: true,
   rol: { select: { nombre: true, nivel: true } },
 } as const;
 

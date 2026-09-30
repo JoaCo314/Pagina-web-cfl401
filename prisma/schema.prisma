@@ -27,8 +27,14 @@ model Usuario {
   id        Int      @id @default(autoincrement())
   nombre    String
   apellido  String
+  /// Documento Nacional de Identidad: obligatorio y único. Es la fuente de la
+  /// contraseña temporal al blanquear una cuenta (últimos 4 dígitos).
+  dni       String   @unique
   email     String   @unique
   passwordHash String
+  /// Marca que la contraseña actual es temporal (blanqueada o inicial) y que el
+  /// usuario debe definir una nueva antes de seguir usando el panel.
+  debeCambiarContrasena Boolean @default(false)
   activo    Boolean  @default(true)
   rolId     Int
   rol       Rol      @relation(fields: [rolId], references: [id])

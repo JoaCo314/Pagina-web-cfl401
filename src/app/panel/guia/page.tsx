@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth/session";
+import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
 import {
   PERMISOS,
   obtenerSeccionesPanel,
@@ -17,6 +17,8 @@ export default async function GuiaPanelPage() {
   if (!user) {
     redirect("/panel/login");
   }
+
+  exigirContrasenaActualizada(user);
   // RF-05: solo quienes tengan el permiso GUIA_EDITAR (Administrador y
   // Preceptor, según la matriz RNF-04) pueden editar la guía.
   if (!tienePermiso(user, PERMISOS.GUIA_EDITAR)) {

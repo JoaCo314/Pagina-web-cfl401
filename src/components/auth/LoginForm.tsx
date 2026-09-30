@@ -23,7 +23,14 @@ export default function LoginForm() {
       });
 
       if (res.ok) {
-        router.replace("/panel");
+        const data = (await res.json().catch(() => null)) as {
+          user?: { debeCambiarContrasena?: boolean };
+        } | null;
+        router.replace(
+          data?.user?.debeCambiarContrasena
+            ? "/panel/cambiar-mi-contrasena"
+            : "/panel"
+        );
         router.refresh();
         return;
       }

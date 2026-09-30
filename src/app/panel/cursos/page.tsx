@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth/session";
+import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
 import { PERMISOS, obtenerSeccionesPanel, tienePermiso } from "@/lib/auth/autorizacion";
 import { prisma } from "@/lib/prisma";
 import { CURSO_SELECT } from "@/lib/cursoAdmin";
@@ -15,6 +15,8 @@ export default async function CursosPanelPage() {
   if (!user) {
     redirect("/panel/login");
   }
+
+  exigirContrasenaActualizada(user);
   if (!tienePermiso(user, PERMISOS.CURSOS_CREAR)) {
     redirect("/panel");
   }

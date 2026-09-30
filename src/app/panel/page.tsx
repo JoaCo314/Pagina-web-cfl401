@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getCurrentUser } from "@/lib/auth/session";
+import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
 import {
+  alcanceUsuarios as alcanceUsuariosDe,
+  filtroUsuariosVisibles,
   obtenerSeccionesPanel,
-  tienePermiso,
   PERMISOS,
+  tienePermiso,
 } from "@/lib/auth/autorizacion";
 import { ROLES } from "@/lib/auth/roles";
 import { prisma } from "@/lib/prisma";
@@ -20,6 +22,8 @@ export default async function PanelPage() {
   if (!user) {
     redirect("/panel/login");
   }
+
+  exigirContrasenaActualizada(user);
 
   const secciones = obtenerSeccionesPanel(user);
   const estadisticas: Stat[] = [];
@@ -49,10 +53,15 @@ export default async function PanelPage() {
     });
   }
 
-  if (tienePermiso(user, PERMISOS.USUARIOS_VER_TODOS)) {
+  const alcanceUsuarios = alcanceUsuariosDe(user);
+  if (alcanceUsuarios !== "ninguno") {
     estadisticas.push({
-      etiqueta: "Usuarios activos",
-      valor: String(await prisma.usuario.count({ where: { activo: true } })),
+      etiqueta: alcanceUsuarios === "docentes" ? "Docentes activos" : "Usuarios activos",
+      valor: String(
+        await prisma.usuario.count({
+          where: { ...filtroUsuariosVisibles(user), activo: true },
+        })
+      ),
     });
   }
 
