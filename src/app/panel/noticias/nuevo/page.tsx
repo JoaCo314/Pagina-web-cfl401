@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth/session";
+import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
 import { PERMISOS, obtenerSeccionesPanel, tienePermiso } from "@/lib/auth/autorizacion";
 import PanelShell from "@/components/auth/PanelShell";
 import NoticiaForm from "@/components/panel/NoticiaForm";
@@ -12,6 +12,8 @@ export default async function NuevaNoticiaPage() {
   if (!user) {
     redirect("/panel/login");
   }
+
+  exigirContrasenaActualizada(user);
   if (!tienePermiso(user, PERMISOS.NOTICIAS_CREAR)) {
     redirect("/panel");
   }

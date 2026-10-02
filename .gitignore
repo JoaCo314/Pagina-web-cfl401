@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+/cfl 401 azul (email de prueba).txt
 
 # debug
 npm-debug.log*

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
+import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import {
   PERMISOS,
   tienePermiso,
@@ -65,8 +66,11 @@ export async function GET(
 
     return NextResponse.json({ curso });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }
 
@@ -115,6 +119,9 @@ export async function PUT(
     );
   }
 
+  const bloqueado = respuestaSiContrasenaTemporal(user);
+  if (bloqueado) return bloqueado;
+
   let body: unknown;
   try {
     body = await request.json();
@@ -139,6 +146,18 @@ export async function PUT(
     return NextResponse.json(
       {
         error: "El Docente no puede modificar la asignación de docentes del curso.",
+      },
+      { status: 403 }
+    );
+  }
+
+  // RF-16: el Docente modifica los datos del curso asignado, pero la
+  // publicación/despublicación (activo) es una decisión de Administrador o
+  // Preceptor. Un Docente no puede cambiar la visibilidad pública del curso.
+  if (!esGestorGlobal && presentes.has("activo")) {
+    return NextResponse.json(
+      {
+        error: "Solo un Administrador o Preceptor puede publicar o despublicar un curso.",
       },
       { status: 403 }
     );
@@ -189,8 +208,11 @@ export async function PUT(
 
     return NextResponse.json({ curso });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }
 
@@ -224,6 +246,9 @@ export async function DELETE(
       { status: 403 }
     );
   }
+  const bloqueado = respuestaSiContrasenaTemporal(user);
+  if (bloqueado) return bloqueado;
+
 
   const existente = await prisma.curso.findUnique({
     where: { id: cursoId },
@@ -247,7 +272,10 @@ export async function DELETE(
 
     return NextResponse.json({ eliminado: true, curso: cursoEliminado });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }

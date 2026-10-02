@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth/session";
+import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
 import {
   PERMISOS,
   obtenerSeccionesPanel,
@@ -17,6 +17,8 @@ export default async function NuevaPreguntaPage() {
   if (!user) {
     redirect("/panel/login");
   }
+
+  exigirContrasenaActualizada(user);
   if (!tienePermiso(user, PERMISOS.PREGUNTAS_FAQS_EDITAR)) {
     redirect("/panel");
   }

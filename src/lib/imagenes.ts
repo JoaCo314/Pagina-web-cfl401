@@ -43,16 +43,79 @@ export function validarImagenUrl(
   };
 }
 
-/// Borra una imagen administrada a partir de su URL interna. Es una limpieza de
-/// mejor esfuerzo: si la URL es externa o la imagen ya no existe, no hace nada.
+/// Lista los lugares del sitio que siguen apuntando a una imagen administra.
+/// Devuelve descripciones legibles para poder armar el mensaje de error.
+///
+/// Considera cursos, noticias, el banner y el logo de la configuración y la
+/// galería de "Sobre el centro". La galería viene guardada como JSON, así que no
+/// se puede filtrar en SQL: se lee y se busca.
+export async function referenciasImagen(id: number): Promise<string[]> {
+  const url = urlImagenInterna(id);
+
+  const [curso, noticia, banner, logo, sobreElCentro] = await Promise.all([
+    prisma.curso.findFirst({ where: { imagenUrl: url }, select: { id: true } }),
+    prisma.noticia.findFirst({ where: { imagenUrl: url }, select: { id: true } }),
+    prisma.siteConfig.findFirst({
+      where: { bannerImagenUrl: url },
+      select: { id: true },
+    }),
+    prisma.siteConfig.findFirst({
+      where: { logoUrl: url },
+      select: { id: true },
+    }),
+    prisma.sobreElCentro.findMany({ select: { galeria: true } }),
+  ]);
+
+  const usos: string[] = [];
+  if (curso) usos.push("un curso");
+  if (noticia) usos.push("una noticia");
+  if (banner) usos.push("el banner de la portada");
+  if (logo) usos.push("el logo");
+  if (
+    sobreElCentro.some((fila) => {
+      const galeria = fila.galeria;
+      if (!Array.isArray(galeria)) return false;
+      return galeria.some(
+        (foto) =>
+          typeof foto === "object" &&
+          foto !== null &&
+          (foto as { url?: unknown }).url === url
+      );
+    })
+  ) {
+    usos.push("la galería de “Sobre el centro”");
+  }
+
+  return usos;
+}
+
+/// ¿Algún contenido del sitio sigue apuntando a esta imagen?
+export async function imagenEstaEnUso(id: number): Promise<boolean> {
+  return (await referenciasImagen(id)).length > 0;
+}
+
+/// Borra una imagen administrada a partir de su URL interna, pero solo si ya no
+/// está en uso en ninguna parte del sitio.
+///
+/// La comprobación es obligatoria: la misma imagen subida una vez puede estar
+/// referenciada por el logo y por un curso, o por dos fotos de la galería. Sin
+/// esto, guardar el logo dejaba apuntando a una imagen inexistente en el curso
+/// que la usaba.
+///
+/// Es una limpieza de mejor esfuerzo: si la URL es externa o la imagen ya no
+/// existe, no hace nada.
 export async function borrarImagenPorUrl(
   url: string | null | undefined
-): Promise<void> {
+): Promise<boolean> {
   const id = idImagenDesdeUrl(url);
-  if (!id) return;
+  if (!id) return false;
+
   try {
+    if (await imagenEstaEnUso(id)) return false;
     await prisma.imagen.delete({ where: { id } });
+    return true;
   } catch {
     // La imagen pudo haber sido eliminada antes; el borrado es best-effort.
+    return false;
   }
 }

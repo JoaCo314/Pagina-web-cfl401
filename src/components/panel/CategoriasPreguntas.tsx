@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import ConfirmDialog from "@/components/panel/ConfirmDialog";
+import { fetchConTimeout, TimeoutError } from "@/lib/fetchTimeout";
 
 export type CategoriaListable = {
   id: number;
@@ -24,6 +26,8 @@ export default function CategoriasPreguntas({
   const [editandoNombre, setEditandoNombre] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
+  // Categoría a la que le corresponde el diálogo de eliminación.
+  const [porEliminar, setPorEliminar] = useState<CategoriaListable | null>(null);
 
   async function crear() {
     const nombre = nueva.trim();
@@ -107,20 +111,10 @@ export default function CategoriasPreguntas({
   }
 
   async function eliminar(categoria: CategoriaListable) {
-    const cantidad = categoria._count.preguntas;
-    const confirmar = window.confirm(
-      `¿Eliminar la categoría "${categoria.nombre}"${
-        cantidad > 0
-          ? ` y sus ${cantidad} pregunta${cantidad === 1 ? "" : "s"}`
-          : ""
-      }? Esta acción no se puede deshacer.`
-    );
-    if (!confirmar) return;
-
     setOcupado(true);
     setError(null);
     try {
-      const res = await fetch(`/api/categorias-preguntas/${categoria.id}`, {
+      const res = await fetchConTimeout(`/api/categorias-preguntas/${categoria.id}`, {
         method: "DELETE",
       });
       if (!res.ok) {
@@ -130,9 +124,14 @@ export default function CategoriasPreguntas({
         setError(data?.error ?? "No se pudo eliminar la categoría.");
         return;
       }
+      setPorEliminar(null);
       router.refresh();
-    } catch {
-      setError("No se pudo eliminar la categoría.");
+    } catch (err) {
+      setError(
+        err instanceof TimeoutError
+          ? "El servidor tardó demasiado. Intentá nuevamente."
+          : "No se pudo eliminar la categoría. Revisá tu conexión e intentá nuevamente."
+      );
     } finally {
       setOcupado(false);
     }
@@ -253,7 +252,10 @@ export default function CategoriasPreguntas({
                     <button
                       type="button"
                       className="link-accion link-eliminar"
-                      onClick={() => eliminar(categoria)}
+                      onClick={() => {
+                        setError(null);
+                        setPorEliminar(categoria);
+                      }}
                       disabled={ocupado}
                     >
                       Eliminar
@@ -264,6 +266,25 @@ export default function CategoriasPreguntas({
             </li>
           ))}
         </ul>
+      )}
+
+      {porEliminar && (
+        <ConfirmDialog
+          abierto
+          titulo="Eliminar la categoría"
+          destructivo
+          ocupado={ocupado}
+          confirmar="Eliminar"
+          mensaje={`Se va a eliminar la categoría "${porEliminar.nombre}"${
+            porEliminar._count.preguntas > 0
+              ? ` y sus ${porEliminar._count.preguntas} pregunta${
+                  porEliminar._count.preguntas === 1 ? "" : "s"
+                }`
+              : ""
+          }. Esta acción no se puede deshacer.`}
+          onCancelar={() => setPorEliminar(null)}
+          onConfirmar={() => eliminar(porEliminar)}
+        />
       )}
     </div>
   );

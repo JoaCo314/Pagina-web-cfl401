@@ -19,7 +19,7 @@ export function iconoCategoria(categoria: string | null): string {
   return "📘";
 }
 
-export function formatearFecha(fecha: string | null): string {
+export function formatearFecha(fecha: string | Date | null): string {
   if (!fecha) return "A confirmar";
   return new Date(fecha).toLocaleDateString("es-AR", {
     day: "2-digit",

@@ -2,10 +2,11 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verificarPassword } from "@/lib/auth/password";
+import { crearLimitador, ipCliente } from "@/lib/auth/rateLimit";
 import {
   SESSION_COOKIE,
-  SESSION_MAX_AGE_SECONDS,
   crearTokenSesion,
+  opcionesCookieSesion,
   publicarUsuario,
 } from "@/lib/auth/session";
 
@@ -18,8 +19,20 @@ const USUARIO_SELECT = {
   email: true,
   passwordHash: true,
   activo: true,
+  debeCambiarContrasena: true,
+  versionSesion: true,
   rol: { select: { nombre: true, nivel: true } },
 } as const;
+
+/// Control de intentos fallidos (anti fuerza bruta). Dos contadores
+/// independientes: por cuenta (email) y por IP de origen (anti password
+/// spraying). Ver `src/lib/auth/rateLimit.ts` para el alcance del estado en
+/// memoria.
+const limitador = crearLimitador({
+  maxIntentos: 5,
+  maxIntentosPorIp: 20,
+  duracionMs: 15 * 60 * 1000,
+});
 
 export async function POST(request: NextRequest) {
   let body: unknown;
@@ -45,8 +58,21 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const ip = ipCliente(request);
+  const identidad = email.trim().toLowerCase();
+  const limite = limitador.chequear(identidad, ip);
+  if (!limite.permitido) {
+    return NextResponse.json(
+      {
+        error: "Demasiados intentos fallidos. Probá de nuevo más tarde.",
+        esperaSegundos: limite.esperaSegundos,
+      },
+      { status: 429 }
+    );
+  }
+
   const usuario = await prisma.usuario.findUnique({
-    where: { email: email.trim().toLowerCase() },
+    where: { email: identidad },
     select: USUARIO_SELECT,
   });
 
@@ -56,21 +82,18 @@ export async function POST(request: NextRequest) {
     verificarPassword(password, usuario.passwordHash);
 
   if (!usuario || !credencialesValidas) {
+    limitador.registrarFallo(identidad, ip);
     return NextResponse.json(
       { error: "Credenciales inválidas. Verificá los datos ingresados." },
       { status: 401 }
     );
   }
 
-  const token = await crearTokenSesion(usuario.id);
+  limitador.limpiar(identidad, ip);
+
+  const token = await crearTokenSesion(usuario.id, usuario.versionSesion);
   const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: request.nextUrl.protocol === "https:",
-    path: "/",
-    maxAge: SESSION_MAX_AGE_SECONDS,
-  });
+  cookieStore.set(SESSION_COOKIE, token, opcionesCookieSesion(request));
 
   return NextResponse.json({ user: publicarUsuario(usuario) });
 }

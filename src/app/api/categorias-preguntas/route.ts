@@ -1,14 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
+import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
 import { validarCategoriaPregunta } from "@/lib/preguntasFrecuentes";
 
 export const dynamic = "force-dynamic";
 
 /// Listado de categorías de preguntas frecuentes (todas, incluidas inactivas).
-/// Usado por el panel para cargar las vistas y los formularios de preguntas.
+/// Es un endpoint de panel: requiere sesión y permiso de edición de FAQs, igual
+/// que el resto de las rutas privadas de esta familia. El sitio público consume
+/// las categorías ya filtradas dentro de GET /api/preguntas-frecuentes.
 export async function GET() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  }
+
+  if (!tienePermiso(user, PERMISOS.PREGUNTAS_FAQS_EDITAR)) {
+    return NextResponse.json(
+      { error: "No tenés permiso para realizar esta acción." },
+      { status: 403 }
+    );
+  }
+
+  if (user.debeCambiarContrasena) {
+    return NextResponse.json(
+      { error: "Primero tenés que cambiar tu contraseña temporal." },
+      { status: 403 }
+    );
+  }
+
   try {
     const categorias = await prisma.categoriaPregunta.findMany({
       select: {
@@ -23,8 +47,11 @@ export async function GET() {
 
     return NextResponse.json({ categorias });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }
 
@@ -42,6 +69,9 @@ export async function POST(request: NextRequest) {
       { status: 403 }
     );
   }
+
+  const bloqueado = respuestaSiContrasenaTemporal(user);
+  if (bloqueado) return bloqueado;
 
   let body: unknown;
   try {
@@ -69,15 +99,19 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ categoria }, { status: 201 });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    const duplicada =
-      message.includes("Unique constraint") || message.includes("unique");
-    if (duplicada) {
+    console.error("[API] Error interno:", err);
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
       return NextResponse.json(
         { error: "Ya existe una categoría con ese nombre." },
         { status: 409 }
       );
     }
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }

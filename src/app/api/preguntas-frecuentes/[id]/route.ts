@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
+import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
 import {
   PREGUNTA_SELECT,
@@ -52,6 +53,9 @@ export async function PUT(
     );
   }
 
+  const bloqueado = respuestaSiContrasenaTemporal(user);
+  if (bloqueado) return bloqueado;
+
   let body: unknown;
   try {
     body = await request.json();
@@ -94,8 +98,11 @@ export async function PUT(
 
     return NextResponse.json({ pregunta });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }
 
@@ -125,6 +132,9 @@ export async function DELETE(
       { status: 403 }
     );
   }
+  const bloqueado = respuestaSiContrasenaTemporal(user);
+  if (bloqueado) return bloqueado;
+
 
   const existente = await prisma.preguntaFrecuente.findUnique({
     where: { id: preguntaId },
@@ -141,7 +151,10 @@ export async function DELETE(
     await prisma.preguntaFrecuente.delete({ where: { id: preguntaId } });
     return NextResponse.json({ eliminado: true });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }

@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/session";
+import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
+import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
+import { referenciasImagen } from "@/lib/imagenes";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +45,82 @@ export async function GET(
       },
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
+  }
+}
+
+/// Elimina una imagen subida que ya no se usa. Es la contrapartida de las
+/// limpiezas automáticas al reemplazar imágenes: permite recuperar las filas
+/// que quedaron huérfanas (por ejemplo, tras cancelar un formulario). No se
+/// borra si todavía se referencia en cursos, noticias, la galería de "Sobre
+/// el centro" o la configuración del sitio. Administrador y Preceptor.
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  const imagenId = Number(id);
+  if (!Number.isInteger(imagenId) || imagenId <= 0) {
+    return NextResponse.json(
+      { error: "ID de imagen inválido" },
+      { status: 400 }
+    );
+  }
+
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  }
+
+  const puedeBorrar =
+    tienePermiso(user, PERMISOS.CURSOS_CREAR) ||
+    tienePermiso(user, PERMISOS.NOTICIAS_CREAR);
+  if (!puedeBorrar) {
+    return NextResponse.json(
+      { error: "No tenés permiso para realizar esta acción." },
+      { status: 403 }
+    );
+  }
+
+  const bloqueado = respuestaSiContrasenaTemporal(user);
+  if (bloqueado) return bloqueado;
+
+  try {
+    const usos = await referenciasImagen(imagenId);
+
+    if (usos.length > 0) {
+      return NextResponse.json(
+        {
+          error: `La imagen se usa en ${usos.join(", ")}. Reemplazala antes de borrarla.`,
+        },
+        { status: 409 }
+      );
+    }
+
+    await prisma.imagen.delete({ where: { id: imagenId } });
+    return NextResponse.json({ eliminado: true });
+  } catch (err) {
+    if (
+      err &&
+      typeof err === "object" &&
+      "code" in err &&
+      (err as { code?: string }).code === "P2025"
+    ) {
+      return NextResponse.json(
+        { error: "La imagen no existe." },
+        { status: 404 }
+      );
+    }
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }

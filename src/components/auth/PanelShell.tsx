@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { SeccionPanel } from "@/lib/auth/autorizacion";
@@ -10,6 +10,7 @@ type UsuarioSesion = {
   nombre: string;
   apellido: string;
   email: string;
+  debeCambiarContrasena: boolean;
   rol: { nombre: string; nivel: number };
 };
 
@@ -26,6 +27,15 @@ export default function PanelShell({
   const pathname = usePathname();
   const [cerrando, setCerrando] = useState(false);
   const [menusAbierto, setMenusAbierto] = useState(false);
+  const bloqueado = user.debeCambiarContrasena;
+
+  // Con contraseña temporal no se puede operar el panel: se manda al cambio
+  // obligatorio y el shell no renderiza nada del contenido.
+  useEffect(() => {
+    if (bloqueado) {
+      router.replace("/panel/cambiar-mi-contrasena");
+    }
+  }, [bloqueado, router]);
 
   async function cerrarSesion() {
     setCerrando(true);
@@ -36,6 +46,21 @@ export default function PanelShell({
     }
     router.replace("/panel/login");
     router.refresh();
+  }
+
+  if (bloqueado) {
+    return (
+      <div className="panel">
+        <main className="wrap panel-main">
+          <p className="form-error">
+            Tu contraseña es temporal. Necesás cambiarla antes de seguir.
+          </p>
+          <Link href="/panel/cambiar-mi-contrasena" className="btn-primary btn-sm">
+            Cambiar mi contraseña
+          </Link>
+        </main>
+      </div>
+    );
   }
 
   return (
@@ -81,31 +106,34 @@ export default function PanelShell({
             <span></span>
             <span></span>
           </button>
-        </div>
-        <div className="panel-nav-links">
-          {secciones.map((seccion) => {
-            const activa =
-              seccion.clave === "inicio"
-                ? pathname === "/panel"
-                : seccion.href
-                  ? pathname.startsWith(seccion.href)
-                  : false;
-            const clase = `panel-nav-item${activa ? " active" : ""}`;
-            return seccion.href ? (
-              <Link
-                key={seccion.clave}
-                href={seccion.href}
-                className={clase}
-                onClick={() => setMenusAbierto(false)}
-              >
-                {seccion.titulo}
-              </Link>
-            ) : (
-              <span key={seccion.clave} className={clase}>
-                {seccion.titulo}
-              </span>
-            );
-          })}
+          {/* Los links van dentro del `.wrap`: antes eran hermanos de él, así que
+              en pantalla ancha arrancaban en el borde del panel y quedaban
+              desalineados con el título y el contenido. */}
+          <div className="panel-nav-links">
+            {secciones.map((seccion) => {
+              const activa =
+                seccion.clave === "inicio"
+                  ? pathname === "/panel"
+                  : seccion.href
+                    ? pathname.startsWith(seccion.href)
+                    : false;
+              const clase = `panel-nav-item${activa ? " active" : ""}`;
+              return seccion.href ? (
+                <Link
+                  key={seccion.clave}
+                  href={seccion.href}
+                  className={clase}
+                  onClick={() => setMenusAbierto(false)}
+                >
+                  {seccion.titulo}
+                </Link>
+              ) : (
+                <span key={seccion.clave} className={clase}>
+                  {seccion.titulo}
+                </span>
+              );
+            })}
+          </div>
         </div>
       </nav>
 

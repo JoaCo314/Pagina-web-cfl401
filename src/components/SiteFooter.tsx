@@ -9,10 +9,10 @@ export default async function SiteFooter() {
       <div className="wrap">
         <div className="foot-grid">
           <div>
-            <h4>{config?.footerCflTitulo ?? "CFL 401 Azul"}</h4>
-            <p style={{ fontSize: 14, opacity: 0.8, maxWidth: 260 }}>
-              {config?.footerCflTexto ?? "Cursos y capacitaciones gratuitas y presenciales para fortalecer las capacidades de las personas para el trabajo."}
-            </p>
+            <h4>{config?.footerCflTitulo ?? ""}</h4>
+            {config?.footerCflTexto ? (
+              <p className="foot-texto">{config.footerCflTexto}</p>
+            ) : null}
           </div>
           <div>
             <h4>Explorar</h4>
@@ -21,10 +21,10 @@ export default async function SiteFooter() {
                 <Link href="/cursos">Cursos</Link>
               </li>
               <li>
-                <a href="#">Docentes</a>
+                <Link href="/sobre-el-centro">Sobre el centro</Link>
               </li>
               <li>
-                <Link href="/sobre-el-centro">Sobre el centro</Link>
+                <Link href="/noticias">Noticias</Link>
               </li>
             </ul>
           </div>
@@ -35,26 +35,22 @@ export default async function SiteFooter() {
                 <Link href="/preguntas-frecuentes">Preguntas frecuentes</Link>
               </li>
               <li>
-                <Link href="/noticias">Noticias</Link>
-              </li>
-              <li>
                 <Link href="/contacto">Contacto</Link>
               </li>
             </ul>
           </div>
           <div>
-            <h4>{config?.footerContactosTitulo ?? "Contacto"}</h4>
+            <h4>{config?.footerContactosTitulo ?? ""}</h4>
             <ul>
-              <li>{config?.footerEmail ?? "cfl401azul@gmail.com"}</li>
-              <li>{config?.footerTelefono ?? "+54 2281 32-3444"}</li>
+              {config?.footerEmail ? <li>{config.footerEmail}</li> : null}
+              {config?.footerTelefono ? <li>{config.footerTelefono}</li> : null}
               {config?.footerDireccion && <li>{config.footerDireccion}</li>}
-              <li>{config?.footerHorarios ?? "Lunes a viernes de 8:00 a 12:00 y de 14:00 a 22:00"}</li>
+              {config?.footerHorarios ? <li>{config.footerHorarios}</li> : null}
             </ul>
           </div>
         </div>
-        <div className="foot-bottom">
-          <span>{config?.footerCopy ?? "© 2026 Centro de Formación Laboral 401 — Azul"}</span>
-          <span>Maqueta de referencia — no es el sitio oficial</span>
+<div className="foot-bottom">
+          {config?.footerCopy ? <span>{config.footerCopy}</span> : null}
         </div>
       </div>
     </footer>

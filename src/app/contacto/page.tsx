@@ -11,16 +11,28 @@ export default async function ContactoPage() {
   return (
     <>
       <SiteHeader active="contacto" />
-      <main className="wrap" style={{ padding: "32px 0" }}>
-        <h1>{config?.contactoTitulo ?? "Contacto"}</h1>
-        <p className="panel-lead">{config?.contactoSubtitulo ?? "Escribinos y te respondemos a la brevedad."}</p>
+      <div className="page-header" id="contenido" tabIndex={-1}>
+        <div className="wrap">
+          <h1>{config?.contactoTitulo ?? ""}</h1>
+          {config?.contactoSubtitulo ? <p>{config.contactoSubtitulo}</p> : null}
+        </div>
+      </div>
+      <main className="wrap contacto-main">
         <div className="contacto-grid">
           <div>
             <ul className="info-list">
-              <li><strong>Dirección:</strong> {config?.contactoDireccion ?? "Azul, Provincia de Buenos Aires"}</li>
-              <li><strong>Tel:</strong> {config?.contactoTelefono ?? "+54 2281 32-3444"}</li>
-              <li><strong>Email:</strong> {config?.contactoEmail ?? "cfl401azul@gmail.com"}</li>
-              <li><strong>Horarios:</strong> {config?.contactoHorarios ?? "Lunes a viernes de 8:00 a 12:00 y de 14:00 a 22:00"}</li>
+              {config?.contactoDireccion ? (
+                <li><strong>Dirección:</strong> {config.contactoDireccion}</li>
+              ) : null}
+              {config?.contactoTelefono ? (
+                <li><strong>Tel:</strong> {config.contactoTelefono}</li>
+              ) : null}
+              {config?.contactoEmail ? (
+                <li><strong>Email:</strong> {config.contactoEmail}</li>
+              ) : null}
+              {config?.contactoHorarios ? (
+                <li><strong>Horarios:</strong> {config.contactoHorarios}</li>
+              ) : null}
             </ul>
           </div>
           <div>

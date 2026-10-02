@@ -4,7 +4,11 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import CampoImagen from "@/components/panel/CampoImagen";
 import type { EstadoImagen } from "@/components/panel/CampoImagen";
-import { subirImagen, validarArchivoImagen } from "@/lib/imagenesCliente";
+import {
+  subirImagen,
+  validarArchivoImagen,
+  eliminarImagenHuerfana,
+} from "@/lib/imagenesCliente";
 import EditorTextoEnriquecido from "@/components/panel/EditorTextoEnriquecido";
 
 export type NoticiaFormInicial = {
@@ -98,6 +102,9 @@ export default function NoticiaForm({
     setEnviando(true);
     try {
       let imagenUrl: string | null = imagenActual;
+      // URL de una imagen subida en este intento: si la noticia es rechazada,
+      // queda sin referencia y se borra para no dejar basura.
+      let imagenSubida: string | null = null;
       if (estadoImagen.quitar) {
         imagenUrl = null;
       } else if (estadoImagen.archivo) {
@@ -112,6 +119,7 @@ export default function NoticiaForm({
           return;
         }
         imagenUrl = subida.url;
+        imagenSubida = subida.url;
       }
 
       const body = { ...datos, imagenUrl: imagenUrl ?? "", activo };
@@ -135,7 +143,10 @@ export default function NoticiaForm({
         error?: string;
       } | null;
       setError(data?.error ?? "No se pudo guardar la noticia.");
+      if (imagenSubida) void eliminarImagenHuerfana(imagenSubida);
     } catch {
+      // Error de red: no se sabe si la noticia se guardó, así que la imagen se
+      // deja en pie (queda huérfana y se limpia desde /panel/imagenes).
       setError("No se pudo guardar la noticia. Intentá nuevamente.");
     } finally {
       setEnviando(false);

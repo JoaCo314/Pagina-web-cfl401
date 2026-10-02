@@ -52,17 +52,23 @@ export type CursoInputNormalizado = {
   docenteIds: number[];
 };
 
-export type DocenteActivo = {
+export type DocenteAsignable = {
   id: number;
   nombre: string;
   apellido: string;
   email: string;
+  activo: boolean;
 };
 
-export async function obtenerDocentesActivos(): Promise<DocenteActivo[]> {
+/// Docentes que se pueden asignar a un curso. Incluye los inactivos: si un
+/// docente queda con cursos asignados y después se lo desactiva, el formulario
+/// de ese curso tiene que poder mostrarlo y quitarlo. Un docente inactivo no se
+/// puede agregar de cero, pero tampoco queda escondido en un curso que ya lo
+/// tiene asignado.
+export async function obtenerDocentesAsignables(): Promise<DocenteAsignable[]> {
   return prisma.usuario.findMany({
-    where: { activo: true, rol: { nombre: "Docente" } },
-    select: { id: true, nombre: true, apellido: true, email: true },
+    where: { rol: { nombre: "Docente" } },
+    select: { id: true, nombre: true, apellido: true, email: true, activo: true },
     orderBy: [{ apellido: "asc" }, { nombre: "asc" }],
   });
 }
@@ -259,6 +265,15 @@ export async function validarDatosCurso(
 
   const fechaFin = parsearFecha(fuente.fechaFin, "fechaFin");
   if (fechaFin.error) return { ok: false, error: fechaFin.error };
+
+  // Un curso no puede terminar antes de empezar: sin esto se guardan periodos
+  // invertidos que después se muestran como "cerrado" en el sitio público.
+  if (fechaInicio.valor && fechaFin.valor && fechaFin.valor < fechaInicio.valor) {
+    return {
+      ok: false,
+      error: "La fecha de fin no puede ser anterior a la fecha de inicio.",
+    };
+  }
 
   const enlaceInscripcion = parsearEnlaceInscripcion(fuente.enlaceInscripcion);
   if (enlaceInscripcion.error) {

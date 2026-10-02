@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
+import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
 import { NOTICIA_SELECT, validarDatosNoticia } from "@/lib/noticiaAdmin";
 
 export const dynamic = "force-dynamic";
+
+/// Máximo de noticias que devuelve el listado público, sin importar el `limit`.
+const LIMITE_MAXIMO_NOTICIAS = 100;
 
 /// Listado público de noticias (RF-17). Solo se devuelven las activas, de la
 /// más reciente a la más antigua. El panel consulta Prisma directamente para
@@ -13,20 +17,27 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const limiteParam = Number(searchParams.get("limit"));
-    const take =
-      Number.isInteger(limiteParam) && limiteParam > 0 ? limiteParam : undefined;
+    // Tope duro: el endpoint es público y sin límite cualquiera puede pedir las
+    // noticias enteras en una sola respuesta.
+    const take = Math.min(
+      Number.isInteger(limiteParam) && limiteParam > 0 ? limiteParam : 50,
+      LIMITE_MAXIMO_NOTICIAS
+    );
 
     const noticias = await prisma.noticia.findMany({
       where: { activo: true },
       select: NOTICIA_SELECT,
       orderBy: [{ fecha: "desc" }, { createdAt: "desc" }],
-      ...(take ? { take } : {}),
+      take,
     });
 
     return NextResponse.json({ noticias, total: noticias.length });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }
 
@@ -44,6 +55,9 @@ export async function POST(request: NextRequest) {
       { status: 403 }
     );
   }
+
+  const bloqueado = respuestaSiContrasenaTemporal(user);
+  if (bloqueado) return bloqueado;
 
   let body: unknown;
   try {
@@ -73,7 +87,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ noticia }, { status: 201 });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
   }
 }
