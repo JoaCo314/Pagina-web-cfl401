@@ -1,8 +1,30 @@
 # QA — Tarea #13: Pruebas de acceso denegado por rol
 
 **Referencias:** RNF-04 · Sección 12 (matriz de permisos)
-**Fecha de ejecución:** 17/09/2026
+**Fecha de ejecución:** 17/09/2026 · **Actualizado:** 30/09/2026
 **Entorno:** contenedor Docker · `http://localhost:4088` · base seed de CFL 401
+
+## Por qué se actualiza este reporte
+
+La ejecución original (17/09/2026) dejó la gestión de usuarios como
+`⏳ Pendiente` porque **el panel y los endpoints no existían todavía**: era una
+funcionalidad del MVP que no se había implementado.
+
+Desde entonces se desarrolló una serie de funcionalidades que **no estaban
+previstas en el MVP** y que cambian el alcance de esta tarea:
+
+- **Gestión de usuarios** (RF-13/RF-14/RF-15): panel, endpoints, permisos por
+  rol y el alcance acotado del Preceptor solo sobre cuentas Docente.
+- **Contraseña temporal derivada del DNI** y blanqueo desde el panel, con el
+  bloqueo de toda la API mientras la contraseña siga siendo temporal.
+- **`versionSesion`**: cambiar o blanquear una contraseña cierra las sesiones
+  abiertas de esa cuenta en otros equipos.
+- **Endpoint `GET /api/categorias-preguntas`** protegido por sesión y
+  `PREGUNTAS_FAQS_EDITAR`, antes público.
+
+Los resultados de la ejecución original (tabla de cursos, A1–AD6) se conservan
+sin cambios: siguen vigentes. Lo que se agrega es la sección **Gestión de
+usuarios (U1–U21)**, que cierra los pendientes que quedaron abiertos.
 
 ## Aclaraciones de alcance
 
@@ -12,11 +34,10 @@
 - **Docente**: puede **editar** los cursos que le fueron asignados, pero **no
   puede eliminarlos ni modificar la asignación de docentes** (RF-09/RF-12/RF-16),
   independientemente de lo que digan otras tareas.
-- **Gestión de usuarios** (crear Administradores/Preceptores/Docentes y
-  desactivar cuentas): los permisos existen en la matriz (`USUARIOS_CREAR_*`,
-  `USUARIOS_DESACTIVAR`) pero **el endpoint y el panel de usuarios aún no están
-  implementados**. La validación "un Preceptor no puede crear Administradores ni
-  Preceptores" se podrá probar y cerrar cuando se implemente esa funcionalidad.
+- **Gestión de usuarios**: implementada (`USUARIOS_CREAR_*`, `USUARIOS_VER_TODOS`,
+  `USUARIOS_GESTIONAR_DOCENTES`). El Administrador gestiona todas las cuentas; el
+  Preceptor **solo las de rol Docente** (RF-15 con alcance acotado); el Docente no
+  tiene acceso al área de usuarios.
 
 ## Matriz de permisos verificada (implementada a la fecha)
 
@@ -71,17 +92,47 @@
 | AD5 | Administrador | Consultar asignación de docentes | `GET /api/cursos/1/docentes` | 200 | 200 | ✔ |
 | AD6 | Administrador | Acceder a `/panel` | `GET /panel` | 200 | 200 | ✔ |
 
-## Pendiente de verificación (funcionalidad no implementada)
+## Gestión de usuarios (RF-13/RF-14/RF-15) — ejecución 30/09/2026
 
-| ID | Rol | Acción | Estado |
-|----|-----|--------|--------|
-| P5 | Preceptor | Crear Administrador | ⏳ Pendiente — endpoint de alta de usuarios inexistente |
-| P6 | Preceptor | Crear Preceptor | ⏳ Pendiente — endpoint de alta de usuarios inexistente |
-| — | Preceptor | Crear Docente | ⏳ Pendiente — endpoint de alta de usuarios inexistente |
-| — | Cualquier rol | `GET /panel/usuarios` | ⏳ Pendiente — página inexistente (404) |
+Alcance implementado: el Administrador ve y gestiona **todas** las cuentas; el
+Preceptor ve y gestiona **solo las de rol Docente** (sin importar que conozca el
+ID de otra cuenta); el Docente no accede al área de usuarios.
 
-Al implementarse el panel de usuarios se probará que el Preceptor solo pueda
-crear Docentes (no Administradores ni Preceptores) conforme a RF-13/RF-14.
+| ID | Rol | Acción | Request | Esperado | Obtenido | Estado |
+|----|-----|--------|---------|----------|----------|--------|
+| U1 | Anónimo | Listar usuarios | `GET /api/admin/usuarios` | 401 | 401 | ✔ |
+| U2 | Anónimo | Crear usuario | `POST /api/admin/usuarios` | 401 | 401 | ✔ |
+| U3 | Anónimo | Blanquear contraseña | `PATCH /api/admin/usuarios/3` | 401 | 401 | ✔ |
+| U4 | Docente | Listar usuarios | `GET /api/admin/usuarios` | 403 | 403 | ✔ |
+| U5 | Docente | Ver panel de usuarios | `GET /panel/usuarios` | 307 → `/panel` | 307 | ✔ |
+| U6 | Docente | Blanquear a otro docente | `PATCH /api/admin/usuarios/4` | 403 | 403 | ✔ |
+| U7 | Preceptor | Listar usuarios | `GET /api/admin/usuarios` | 200 solo docentes | 200 (3 docentes) | ✔ |
+| U8 | Preceptor | Ver panel de usuarios | `GET /panel/usuarios` | 200 sin adm./preceptores | 200 | ✔ |
+| U9 | Preceptor | Blanquear contraseña de un docente | `PATCH /api/admin/usuarios/3` | 200 | 200 | ✔ |
+| U10 | Preceptor | Desactivar / reactivar un docente | `PATCH /api/admin/usuarios/3` | 200 | 200 | ✔ |
+| U11 | Preceptor | Corregir DNI de un docente | `PATCH /api/admin/usuarios/4` | 200 | 200 | ✔ |
+| U12 | Preceptor | Blanquear a un **Administrador** | `PATCH /api/admin/usuarios/1` | 403 | 403 | ✔ |
+| U13 | Preceptor | Blanquear a un **Preceptor** | `PATCH /api/admin/usuarios/2` | 403 | 403 | ✔ |
+| U14 | Preceptor | Corregir DNI de un Administrador | `PATCH /api/admin/usuarios/1` | 403 | 403 | ✔ |
+| U15 | Preceptor | Crear **Docente** | `POST /api/admin/usuarios` rol Docente | 201 | 201 | ✔ |
+| U16 | Preceptor | Crear **Preceptor** | `POST /api/admin/usuarios` rol Preceptor | 403 | 403 | ✔ |
+| U17 | Preceptor | Crear **Administrador** | `POST /api/admin/usuarios` rol Administrador | 403 | 403 | ✔ |
+| U18 | Preceptor | Asignar contraseña escrita a mano | `PATCH` con `password` | 400 | 400 | ✔ |
+| U19 | Preceptor | Ver roles en el alta | `GET /panel/usuarios/nuevo` | solo opción Docente | solo Docente | ✔ |
+| U20 | Administrador | Listar usuarios | `GET /api/admin/usuarios` | 200 (5 cuentas) | 200 | ✔ |
+| U21 | Administrador | Blanquear a un Preceptor | `PATCH /api/admin/usuarios/2` | 200 | 200 | ✔ |
+
+Notas de esta ejecución:
+
+- Con `debeCambiarContrasena` en `true`, cualquier página del panel responde
+  `307 → /panel/cambiar-mi-contrasena` **en el servidor**, sin depender del
+  JavaScript del navegador (verificado en las 17 páginas del panel).
+- La contraseña temporal nunca viaja en las respuestas de la API ni se muestra
+  en pantalla: se deriva del DNI (últimos 4 dígitos) y se comunica al usuario.
+- El listado del Preceptor oculta la columna Rol porque todas sus filas son
+  Docente, y el resumen del panel muestra "Docentes activos" en lugar del total
+  de cuentas.
+- La base quedó sin residuos: se ejecutó el seed al terminar.
 
 ## Notas y limitaciones observadas
 
