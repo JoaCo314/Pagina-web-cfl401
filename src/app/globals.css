@@ -2497,6 +2497,22 @@ a.panel-nav-item:hover {
 .form-field-full {
   grid-column: 1 / -1;
 }
+/* Ayuda bajo un campo: el placeholder desaparece al escribir, así que lo
+   importante se deja siempre visible. */
+.form-hint {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--cfl-navy-1);
+  opacity: 0.75;
+}
+/* Los placeholders son texto de ejemplo, no contenido: se atenúan para que
+   no se lean como un valor ya cargado. */
+.form-field input::placeholder,
+.form-field textarea::placeholder,
+.form-field select::placeholder {
+  color: #6b7280;
+  opacity: 1;
+}
 .docentes-box {
   display: grid;
   grid-template-columns: 1fr 1fr;

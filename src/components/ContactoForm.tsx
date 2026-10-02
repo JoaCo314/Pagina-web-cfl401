@@ -75,6 +75,7 @@ export default function ContactoForm() {
           required
           maxLength={120}
           autoComplete="name"
+          placeholder="Ej.: Ana Gómez"
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
         />
@@ -87,19 +88,24 @@ export default function ContactoForm() {
           required
           maxLength={200}
           autoComplete="email"
+          placeholder="Tu correo, no el del centro"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
+        <small className="form-hint">
+          Escribí tu correo: nuestra respuesta se envía a la bandeja de entrada
+          de esa cuenta.
+        </small>
       </label>
       <label className="form-field">
-        <span>Curso de interés</span>
+        <span>Curso de interés (opcional)</span>
         <input
           type="text"
           name="curso"
           maxLength={120}
+          placeholder="Ej.: Panadería"
           value={curso}
           onChange={(e) => setCurso(e.target.value)}
-          placeholder="Opcional"
         />
       </label>
       <label className="form-field">
@@ -109,6 +115,7 @@ export default function ContactoForm() {
           rows={4}
           required
           maxLength={2000}
+          placeholder="Contanos qué necesitás: inscripción, consulta sobre un curso, un problema con la web…"
           value={mensaje}
           onChange={(e) => setMensaje(e.target.value)}
         />
