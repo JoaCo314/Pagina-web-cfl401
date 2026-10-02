@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
 import { PERMISOS, obtenerSeccionesPanel, tienePermiso } from "@/lib/auth/autorizacion";
-import { obtenerDocentesActivos } from "@/lib/cursoAdmin";
+import { obtenerDocentesAsignables } from "@/lib/cursoAdmin";
 import PanelShell from "@/components/auth/PanelShell";
 import CursoForm from "@/components/panel/CursoForm";
 
@@ -19,7 +19,7 @@ export default async function NuevoCursoPage() {
     redirect("/panel");
   }
 
-  const docentes = await obtenerDocentesActivos();
+  const docentes = await obtenerDocentesAsignables();
   const secciones = obtenerSeccionesPanel(user);
 
   return (

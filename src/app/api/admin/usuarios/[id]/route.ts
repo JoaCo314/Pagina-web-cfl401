@@ -2,16 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
-import { puedeGestionarUsuario } from "@/lib/auth/autorizacion";
+import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
+import { puedeGestionarUsuario, PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
 import {
   contrasenaTemporalDesdeDni,
   hashPassword,
 } from "@/lib/auth/password";
 import { USUARIO_SELECT } from "@/lib/usuariosAdmin";
+import { REGEX_DNI } from "@/lib/validaciones";
 
 export const dynamic = "force-dynamic";
-
-const REGEX_DNI = /^\d{7,8}$/;
 
 /// Edición básica de usuario (RF-15): desactivar o reactivar una cuenta,
 /// corregir su DNI y blanquear su contraseña. El Administrador puede hacerlo
@@ -49,6 +49,7 @@ export async function PATCH(
       nombre: true,
       apellido: true,
       dni: true,
+      debeCambiarContrasena: true,
       rol: { select: { nombre: true } },
     },
   });
@@ -65,6 +66,9 @@ export async function PATCH(
       { status: 403 }
     );
   }
+
+  const bloqueado = respuestaSiContrasenaTemporal(user);
+  if (bloqueado) return bloqueado;
 
   let body: unknown;
   try {
@@ -96,6 +100,15 @@ export async function PATCH(
   }
 
   if (fuente.accion === "blanquearContrasena") {
+    if (usuarioId === user.id) {
+      return NextResponse.json(
+        {
+          error:
+            "No podés blanquear tu propia contraseña. Usá «Cambiar mi contraseña».",
+        },
+        { status: 400 }
+      );
+    }
     const contrasenaTemporal = contrasenaTemporalDesdeDni(existente.dni);
     try {
       const usuario = await prisma.usuario.update({
@@ -103,6 +116,8 @@ export async function PATCH(
         data: {
           passwordHash: hashPassword(contrasenaTemporal),
           debeCambiarContrasena: true,
+          // Invalida las sesiones abiertas de esa cuenta en otros equipos.
+          versionSesion: { increment: 1 },
         },
         select: USUARIO_SELECT,
       });
@@ -124,6 +139,12 @@ export async function PATCH(
       return NextResponse.json(
         { error: "El campo activo debe ser un valor booleano." },
         { status: 400 }
+      );
+    }
+    if (!tienePermiso(user, PERMISOS.USUARIOS_DESACTIVAR)) {
+      return NextResponse.json(
+        { error: "No tenés permiso para activar o desactivar cuentas." },
+        { status: 403 }
       );
     }
     if (usuarioId === user.id) {
@@ -155,6 +176,13 @@ export async function PATCH(
         );
       }
       cambios.dni = dni;
+
+      // Si la cuenta está con contraseña temporal, esa contraseña deriva del DNI.
+      // Corregir el DNI tiene que rehacerla: si no, el usuario podría quedarse
+      // con una contraseña que no conoce.
+      if (existente.debeCambiarContrasena) {
+        cambios.passwordHash = hashPassword(contrasenaTemporalDesdeDni(dni));
+      }
     }
   }
 

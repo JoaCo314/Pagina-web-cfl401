@@ -31,10 +31,18 @@ model Usuario {
   /// contraseña temporal al blanquear una cuenta (últimos 4 dígitos).
   dni       String   @unique
   email     String   @unique
+  // El login normaliza a minúsculas, pero este `@unique` compara el texto tal
+  // cual: sin el índice funcional `usuarios_email_lower_key` (creado a mano en
+  // las migraciones, Prisma no modela índices sobre expresiones) se podrían
+  // guardar dos cuentas que difieren solo en mayúsculas.
   passwordHash String
   /// Marca que la contraseña actual es temporal (blanqueada o inicial) y que el
   /// usuario debe definir una nueva antes de seguir usando el panel.
   debeCambiarContrasena Boolean @default(false)
+  /// Se incrementa cada vez que se define una contraseña nueva para la cuenta
+  /// (cambio propio o blanqueo). El JWT lleva la versión con la que se emitió,
+  /// así todos los tokens anteriores dejan de validar y hay que volver a entrar.
+  versionSesion Int      @default(1)
   activo    Boolean  @default(true)
   rolId     Int
   rol       Rol      @relation(fields: [rolId], references: [id])
@@ -264,4 +272,27 @@ model SiteConfig {
   updatedAt DateTime @updatedAt
 
   @@map("site_config")
+}
+
+/// Consulta enviada desde el formulario público de /contacto. No se envía por
+/// email: queda registrada acá y el Administrador la lee desde el panel.
+/// `leido` permite separar lo nuevo de lo ya visto sin borrar nada.
+model MensajeContacto {
+  id        Int       @id @default(autoincrement())
+  nombre    String
+  email     String
+  /// Curso de interés: texto libre, no una clave foránea (el visitor puede
+  /// escribir cualquier cosa y el catálogo cambia).
+  curso     String?
+  mensaje   String
+  leido     Boolean   @default(false)
+  /// Origen de la consulta, para poder distinguirla de una respuesta interna.
+  ip        String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([leido])
+  @@index([createdAt])
+  @@map("mensajes_contacto")
 }

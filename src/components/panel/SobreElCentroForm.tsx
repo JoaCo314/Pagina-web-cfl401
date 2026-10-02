@@ -4,7 +4,7 @@ import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import EditorTextoEnriquecido from "@/components/panel/EditorTextoEnriquecido";
 import { extraerTextoPlano, htmlDesdeTextoPlano } from "@/lib/htmlEnriquecidoUtil";
-import { subirImagen, validarArchivoImagen } from "@/lib/imagenesCliente";
+import { subirImagen, validarArchivoImagen, eliminarImagenHuerfana } from "@/lib/imagenesCliente";
 
 export type HitoForm = { anio: string; titulo: string; texto: string };
 export type EstadisticaForm = { valor: string; etiqueta: string };
@@ -52,6 +52,10 @@ export default function SobreElCentroForm({
   const router = useRouter();
   const [datos, setDatos] = useState<SobreFormInicial>(inicial ?? INICIAL);
   const fileRef = useRef<HTMLInputElement>(null);
+  // Fotos subidas en esta sesión que todavía no se guardaron. Si la persona
+  // quita una antes de guardar, no hay nada que la referencie: se borra
+  // enseguida en vez de dejar la fila huérfana en la base.
+  const fotosNuevasRef = useRef<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [subiendo, setSubiendo] = useState(false);
@@ -99,6 +103,19 @@ export default function SobreElCentroForm({
     }));
   }
 
+  function quitarFoto(i: number) {
+    const url = datos.galeria[i]?.url;
+    setDatos((prev) => ({
+      ...prev,
+      galeria: prev.galeria.filter((_, j) => j !== i),
+    }));
+    // Las fotos que ya estaban guardadas las limpia el servidor al guardar; las
+    // de esta sesión todavía no las referencia nadie.
+    if (url && fotosNuevasRef.current.delete(url)) {
+      void eliminarImagenHuerfana(url);
+    }
+  }
+
   async function agregarFoto() {
     const file = fileRef.current?.files?.[0];
     if (!file) return;
@@ -121,6 +138,7 @@ export default function SobreElCentroForm({
         ...prev,
         galeria: [...prev.galeria, { url: subida.url, leyenda: "" }],
       }));
+      fotosNuevasRef.current.add(subida.url);
     } catch {
       setError("No se pudo subir la imagen. Intentá nuevamente.");
     } finally {
@@ -142,6 +160,7 @@ export default function SobreElCentroForm({
       });
 
       if (res.ok) {
+        fotosNuevasRef.current.clear();
         router.refresh();
         setError(null);
         return;
@@ -419,12 +438,7 @@ export default function SobreElCentroForm({
                   <button
                     type="button"
                     className="link-accion link-eliminar"
-                    onClick={() =>
-                      setDatos((prev) => ({
-                        ...prev,
-                        galeria: prev.galeria.filter((_, j) => j !== i),
-                      }))
-                    }
+                    onClick={() => quitarFoto(i)}
                   >
                     Quitar
                   </button>

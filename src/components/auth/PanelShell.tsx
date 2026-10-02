@@ -106,31 +106,34 @@ export default function PanelShell({
             <span></span>
             <span></span>
           </button>
-        </div>
-        <div className="panel-nav-links">
-          {secciones.map((seccion) => {
-            const activa =
-              seccion.clave === "inicio"
-                ? pathname === "/panel"
-                : seccion.href
-                  ? pathname.startsWith(seccion.href)
-                  : false;
-            const clase = `panel-nav-item${activa ? " active" : ""}`;
-            return seccion.href ? (
-              <Link
-                key={seccion.clave}
-                href={seccion.href}
-                className={clase}
-                onClick={() => setMenusAbierto(false)}
-              >
-                {seccion.titulo}
-              </Link>
-            ) : (
-              <span key={seccion.clave} className={clase}>
-                {seccion.titulo}
-              </span>
-            );
-          })}
+          {/* Los links van dentro del `.wrap`: antes eran hermanos de él, así que
+              en pantalla ancha arrancaban en el borde del panel y quedaban
+              desalineados con el título y el contenido. */}
+          <div className="panel-nav-links">
+            {secciones.map((seccion) => {
+              const activa =
+                seccion.clave === "inicio"
+                  ? pathname === "/panel"
+                  : seccion.href
+                    ? pathname.startsWith(seccion.href)
+                    : false;
+              const clase = `panel-nav-item${activa ? " active" : ""}`;
+              return seccion.href ? (
+                <Link
+                  key={seccion.clave}
+                  href={seccion.href}
+                  className={clase}
+                  onClick={() => setMenusAbierto(false)}
+                >
+                  {seccion.titulo}
+                </Link>
+              ) : (
+                <span key={seccion.clave} className={clase}>
+                  {seccion.titulo}
+                </span>
+              );
+            })}
+          </div>
         </div>
       </nav>
 

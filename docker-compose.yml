@@ -25,7 +25,12 @@ services:
     container_name: cfl401-init
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-cfl401}?schema=public
-      RUN_SEED: ${RUN_SEED:-true}
+      # Las migraciones y el seed los corre este servicio una sola vez, antes de
+      # que arranque web (que además espera a que init termine bien).
+      # RUN_MIGRATIONS=false solo para este servicio: el entrypoint de web
+      # repite `migrate deploy`, que es idempotente pero no hacía falta.
+      RUN_SEED: ${RUN_SEED:-false}
+      RUN_MIGRATIONS: "true"
     depends_on:
       db:
         condition: service_healthy
@@ -38,9 +43,28 @@ services:
     container_name: cfl401-web
     ports:
       - '4088:3000'
+    healthcheck:
+      # Verifica que la app responde de verdad, no solo que el proceso existe:
+      # /api/health da 503 si la base no está accesible.
+      test:
+        [
+          'CMD-SHELL',
+          'wget -qO- http://127.0.0.1:3000/api/health || exit 1',
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-cfl401}?schema=public
       AUTH_SECRET: ${AUTH_SECRET:-cfl401-dev-secret-cambiar-en-produccion}
+      # web no corre migraciones ni seed: de eso se encarga el servicio init.
+      RUN_MIGRATIONS: "false"
+      RUN_SEED: "false"
+      # En desarrollo la app habla directo con el host y no hay proxy que fije la
+      # IP real. Ponelo en `true` solo detrás de Nginx/Traefik/Dokploy; si no, los
+      # límites por IP comparten una única clave para todas las conexiones.
+      TRUST_PROXY: ${TRUST_PROXY:-false}
     depends_on:
       db:
         condition: service_healthy

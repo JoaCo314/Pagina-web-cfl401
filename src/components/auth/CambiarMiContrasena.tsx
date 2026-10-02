@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { fetchConTimeout, TimeoutError } from "@/lib/fetchTimeout";
 
 export default function CambiarMiContrasena({ nombre }: { nombre: string }) {
   const router = useRouter();
@@ -10,6 +11,7 @@ export default function CambiarMiContrasena({ nombre }: { nombre: string }) {
   const [repetir, setRepetir] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [saliendo, setSaliendo] = useState(false);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -34,7 +36,7 @@ export default function CambiarMiContrasena({ nombre }: { nombre: string }) {
 
     setEnviando(true);
     try {
-      const res = await fetch("/api/auth/mi-contrasena", {
+      const res = await fetchConTimeout("/api/auth/mi-contrasena", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ passwordActual, passwordNueva }),
@@ -48,13 +50,38 @@ export default function CambiarMiContrasena({ nombre }: { nombre: string }) {
 
       const data = (await res.json().catch(() => null)) as {
         error?: string;
+        esperaSegundos?: number;
       } | null;
-      setError(data?.error ?? "No se pudo cambiar la contraseña.");
-    } catch {
-      setError("No se pudo cambiar la contraseña. Intentá nuevamente.");
+
+      if (res.status === 429 && data?.esperaSegundos) {
+        const minutos = Math.max(1, Math.ceil(data.esperaSegundos / 60));
+        setError(
+          `Demasiados intentos fallidos. Volvé a intentar en ${minutos} minuto${minutos > 1 ? "s" : ""}.`
+        );
+      } else {
+        setError(data?.error ?? "No se pudo cambiar la contraseña.");
+      }
+    } catch (err) {
+      setError(
+        err instanceof TimeoutError
+          ? "El servidor tardó demasiado. Intentá nuevamente."
+          : "No se pudo cambiar la contraseña. Revisá tu conexión e intentá nuevamente."
+      );
     } finally {
       setEnviando(false);
     }
+  }
+
+  async function onSalir() {
+    setSaliendo(true);
+    try {
+      await fetchConTimeout("/api/auth/logout", { method: "POST" });
+    } catch {
+      // Si el logout falla, seguimos a la pantalla de acceso: el panel igual
+      // va a rebotar porque la contraseña sigue pendiente.
+    }
+    router.replace("/login");
+    router.refresh();
   }
 
   return (
@@ -69,7 +96,10 @@ export default function CambiarMiContrasena({ nombre }: { nombre: string }) {
         <span>Contraseña temporal (actual)</span>
         <input
           type="password"
+          name="passwordActual"
           autoComplete="current-password"
+          required
+          maxLength={72}
           value={passwordActual}
           onChange={(e) => setPasswordActual(e.target.value)}
         />
@@ -79,7 +109,11 @@ export default function CambiarMiContrasena({ nombre }: { nombre: string }) {
         <span>Contraseña nueva (mínimo 8 caracteres)</span>
         <input
           type="password"
+          name="passwordNueva"
           autoComplete="new-password"
+          required
+          minLength={8}
+          maxLength={72}
           value={passwordNueva}
           onChange={(e) => setPasswordNueva(e.target.value)}
         />
@@ -89,17 +123,34 @@ export default function CambiarMiContrasena({ nombre }: { nombre: string }) {
         <span>Repetí la contraseña nueva</span>
         <input
           type="password"
+          name="repetir"
           autoComplete="new-password"
+          required
+          minLength={8}
+          maxLength={72}
           value={repetir}
           onChange={(e) => setRepetir(e.target.value)}
         />
       </label>
 
-      {error && <p className="auth-error">{error}</p>}
+      <p className="auth-error" role="alert" aria-live="assertive">
+        {error ?? ""}
+      </p>
 
       <button type="submit" className="auth-submit" disabled={enviando}>
         {enviando ? "Guardando…" : "Guardar contraseña"}
       </button>
+
+      <p className="auth-note sin-seleccion">
+        <button
+          type="button"
+          className="auth-submit-secondary"
+          onClick={onSalir}
+          disabled={enviando || saliendo}
+        >
+          {saliendo ? "Saliendo…" : "Salir de la cuenta"}
+        </button>
+      </p>
     </form>
   );
 }

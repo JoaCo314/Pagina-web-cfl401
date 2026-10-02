@@ -1,7 +1,9 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { esEmailValido, REGEX_DNI } from "@/lib/validaciones";
+import { fetchConTimeout, TimeoutError } from "@/lib/fetchTimeout";
 
 export default function UsuarioForm({
   rolesPermitidos,
@@ -20,16 +22,19 @@ export default function UsuarioForm({
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [creado, setCreado] = useState<{ nombre: string } | null>(null);
+  // El foco vuelve al primer campo al "Crear otro": si no, el teclado queda
+  // parado en un botón que ya no existe.
+  const primerCampoRef = useRef<HTMLInputElement>(null);
 
   function validarFront(): string | null {
     if (!nombre.trim()) return "El nombre es obligatorio.";
     if (!apellido.trim()) return "El apellido es obligatorio.";
     if (!dni.trim()) return "El DNI es obligatorio.";
-    if (!/^\d{7,8}$/.test(dni.trim())) {
+    if (!REGEX_DNI.test(dni.trim())) {
       return "El DNI debe tener 7 u 8 dígitos.";
     }
     if (!email.trim()) return "El email es obligatorio.";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    if (!esEmailValido(email)) {
       return "El email no tiene un formato válido.";
     }
     if (!rol) return "Seleccioná un rol.";
@@ -57,7 +62,7 @@ export default function UsuarioForm({
         activo,
       });
 
-      const res = await fetch("/api/admin/usuarios", {
+      const res = await fetchConTimeout("/api/admin/usuarios", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body,
@@ -73,8 +78,12 @@ export default function UsuarioForm({
         error?: string;
       } | null;
       setError(data?.error ?? "No se pudo crear el usuario.");
-    } catch {
-      setError("No se pudo crear el usuario. Intentá nuevamente.");
+    } catch (err) {
+      setError(
+        err instanceof TimeoutError
+          ? "El servidor tardó demasiado. Intentá nuevamente."
+          : "No se pudo crear el usuario. Revisá tu conexión e intentá nuevamente."
+      );
     } finally {
       setEnviando(false);
     }
@@ -108,11 +117,18 @@ export default function UsuarioForm({
             type="button"
             className="btn-ghost-dark btn-sm"
             onClick={() => {
+              // "Crear otro" tiene que volver el formulario al estado inicial
+              // completo: si quedan el rol y el activo del alta anterior, la
+              // cuenta siguiente se crea sin querer con esos valores.
               setCreado(null);
               setNombre("");
               setApellido("");
               setDni("");
               setEmail("");
+              setRol(rolesPermitidos[0] ?? "");
+              setActivo(true);
+              setError(null);
+              primerCampoRef.current?.focus();
             }}
           >
             Crear otro
@@ -130,6 +146,11 @@ export default function UsuarioForm({
         </span>
         <input
           type="text"
+          name="nombre"
+          ref={primerCampoRef}
+          required
+          maxLength={100}
+          autoComplete="off"
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
           placeholder="Ej: Ana"
@@ -142,6 +163,10 @@ export default function UsuarioForm({
         </span>
         <input
           type="text"
+          name="apellido"
+          required
+          maxLength={100}
+          autoComplete="off"
           value={apellido}
           onChange={(e) => setApellido(e.target.value)}
           placeholder="Ej: Martínez"
@@ -154,7 +179,11 @@ export default function UsuarioForm({
         </span>
         <input
           type="text"
+          name="dni"
           inputMode="numeric"
+          required
+          maxLength={8}
+          autoComplete="off"
           value={dni}
           onChange={(e) => setDni(e.target.value)}
           placeholder="Ej: 30123456"
@@ -167,6 +196,10 @@ export default function UsuarioForm({
         </span>
         <input
           type="email"
+          name="email"
+          required
+          maxLength={200}
+          autoComplete="off"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Ej: ana.martinez@cfl401.edu.ar"
@@ -182,7 +215,12 @@ export default function UsuarioForm({
         <span>
           Rol <strong>*</strong>
         </span>
-        <select value={rol} onChange={(e) => setRol(e.target.value)}>
+        <select
+          name="rol"
+          required
+          value={rol}
+          onChange={(e) => setRol(e.target.value)}
+        >
           {rolesPermitidos.map((r) => (
             <option key={r} value={r}>
               {r}
@@ -200,7 +238,9 @@ export default function UsuarioForm({
         <span>Cuenta activa (puede iniciar sesión)</span>
       </label>
 
-      {error && <p className="form-error">{error}</p>}
+      <p className="form-error" role="alert" aria-live="assertive">
+        {error ?? ""}
+      </p>
 
       <div className="form-actions">
         <button type="submit" className="btn-primary btn-sm" disabled={enviando}>

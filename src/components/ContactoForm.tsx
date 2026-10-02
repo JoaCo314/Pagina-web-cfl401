@@ -1,6 +1,7 @@
 "use client";
 // Creado por sofia-athos - Formulario funcional de contacto
 import { FormEvent, useState } from "react";
+import { fetchConTimeout, TimeoutError } from "@/lib/fetchTimeout";
 
 export default function ContactoForm() {
   const [nombre, setNombre] = useState("");
@@ -15,14 +16,18 @@ export default function ContactoForm() {
     setError(null);
     setEstado("enviando");
     try {
-      const res = await fetch("/api/contacto", {
+      const res = await fetchConTimeout("/api/contacto", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre, email, curso, mensaje }),
+        // `sitio-web` es un honeypot: está oculto y nobody lo completa a mano.
+        body: JSON.stringify({ nombre, email, curso, mensaje, "sitio-web": "" }),
       });
-      const data = (await res.json().catch(() => null)) as { error?: string } | null;
+      const data = (await res.json().catch(() => null)) as {
+        error?: string;
+        mensaje?: string;
+      } | null;
       if (!res.ok) {
-        setError(data?.error ?? "No se pudo enviar.");
+        setError(data?.error ?? "No se pudo enviar la consulta.");
         setEstado("error");
         return;
       }
@@ -31,24 +36,96 @@ export default function ContactoForm() {
       setEmail("");
       setCurso("");
       setMensaje("");
-    } catch {
-      setError("Error de red.");
+    } catch (err) {
+      setError(
+        err instanceof TimeoutError
+          ? "El servidor tardó demasiado. Intentá nuevamente."
+          : "No se pudo enviar la consulta. Revisá tu conexión e intentá nuevamente."
+      );
       setEstado("error");
     }
   }
 
   if (estado === "ok") {
-    return <p className="form-ok">¡Gracias! Tu consulta fue enviada. Te responderemos a la brevedad.</p>;
+    return (
+      <div className="form-ok" role="status">
+        <p>¡Gracias! Tu consulta fue enviada. Te responderemos a la brevedad.</p>
+        <p className="form-note">
+          La respuesta llega al correo que dejaste cargado. Si en un par de días
+          no tenés novedades, escribinos de nuevo.
+        </p>
+        <button
+          type="button"
+          className="btn-ghost-dark btn-sm"
+          onClick={() => setEstado("idle")}
+        >
+          Enviar otra consulta
+        </button>
+      </div>
+    );
   }
 
   return (
     <form onSubmit={onSubmit} className="guia-form" noValidate>
-      <label className="form-field"><span>Nombre y Apellido *</span><input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required /></label>
-      <label className="form-field"><span>Correo *</span><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
-      <label className="form-field"><span>Curso de interés</span><input type="text" value={curso} onChange={(e) => setCurso(e.target.value)} placeholder="Opcional" /></label>
-      <label className="form-field"><span>Mensaje *</span><textarea rows={4} value={mensaje} onChange={(e) => setMensaje(e.target.value)} required /></label>
-      {error && <p className="form-error">{error}</p>}
-      <button type="submit" className="btn-primary btn-sm" disabled={estado === "enviando"}>{estado === "enviando" ? "Enviando…" : "Enviar consulta"}</button>
+      <label className="form-field">
+        <span>Nombre y Apellido *</span>
+        <input
+          type="text"
+          name="nombre"
+          required
+          maxLength={120}
+          autoComplete="name"
+          value={nombre}
+          onChange={(e) => setNombre(e.target.value)}
+        />
+      </label>
+      <label className="form-field">
+        <span>Correo *</span>
+        <input
+          type="email"
+          name="email"
+          required
+          maxLength={200}
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </label>
+      <label className="form-field">
+        <span>Curso de interés</span>
+        <input
+          type="text"
+          name="curso"
+          maxLength={120}
+          value={curso}
+          onChange={(e) => setCurso(e.target.value)}
+          placeholder="Opcional"
+        />
+      </label>
+      <label className="form-field">
+        <span>Mensaje *</span>
+        <textarea
+          name="mensaje"
+          rows={4}
+          required
+          maxLength={2000}
+          value={mensaje}
+          onChange={(e) => setMensaje(e.target.value)}
+        />
+      </label>
+      {/* Honeypot: invisible para personas, tentador para bots. */}
+      <div className="sr-only" aria-hidden="true">
+        <label>
+          No completes este campo
+          <input type="text" name="sitio-web" tabIndex={-1} autoComplete="off" />
+        </label>
+      </div>
+      <p className="form-error" role="alert" aria-live="assertive">
+        {error ?? ""}
+      </p>
+      <button type="submit" className="btn-primary btn-sm" disabled={estado === "enviando"}>
+        {estado === "enviando" ? "Enviando…" : "Enviar consulta"}
+      </button>
     </form>
   );
 }

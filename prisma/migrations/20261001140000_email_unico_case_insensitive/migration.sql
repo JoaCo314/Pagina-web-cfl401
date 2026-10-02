@@ -1,0 +1,11 @@
+-- El login y el alta de usuarios normalizan el correo a minúsculas, pero el
+-- `@unique` de Prisma compara el texto tal cual está guardado. Eso dejaba pasar
+-- dos cuentas que solo se diferencian por mayúsculas ("Ana@..." y "ana@..."),
+-- que el login no distingue y por lo tanto son la misma cuenta.
+--
+-- Índice único sobre la versión en minúsculas: la base ahora garantiza que no
+-- existan dos cuentas con el mismo correo sin importar cómo esté escrito.
+--
+-- Prisma no modela índices funcionales, así que este índice se administra a mano
+-- desde las migraciones. Verificado antes de crearlo: no había duplicados.
+CREATE UNIQUE INDEX "usuarios_email_lower_key" ON "usuarios" (lower("email"));

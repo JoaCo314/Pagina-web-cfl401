@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
+import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
 import { validarContenidosGuia } from "@/lib/contenidoGuia";
 
@@ -54,6 +55,9 @@ export async function PUT(request: NextRequest) {
       { status: 403 }
     );
   }
+
+  const bloqueado = respuestaSiContrasenaTemporal(user);
+  if (bloqueado) return bloqueado;
 
   let body: unknown;
   try {

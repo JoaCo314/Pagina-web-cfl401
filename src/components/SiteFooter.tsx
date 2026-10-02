@@ -11,9 +11,7 @@ export default async function SiteFooter() {
           <div>
             <h4>{config?.footerCflTitulo ?? ""}</h4>
             {config?.footerCflTexto ? (
-              <p style={{ fontSize: 14, opacity: 0.8, maxWidth: 260 }}>
-                {config.footerCflTexto}
-              </p>
+              <p className="foot-texto">{config.footerCflTexto}</p>
             ) : null}
           </div>
           <div>
@@ -23,10 +21,10 @@ export default async function SiteFooter() {
                 <Link href="/cursos">Cursos</Link>
               </li>
               <li>
-                <a href="#">Docentes</a>
+                <Link href="/sobre-el-centro">Sobre el centro</Link>
               </li>
               <li>
-                <Link href="/sobre-el-centro">Sobre el centro</Link>
+                <Link href="/noticias">Noticias</Link>
               </li>
             </ul>
           </div>
@@ -35,9 +33,6 @@ export default async function SiteFooter() {
             <ul>
               <li>
                 <Link href="/preguntas-frecuentes">Preguntas frecuentes</Link>
-              </li>
-              <li>
-                <Link href="/noticias">Noticias</Link>
               </li>
               <li>
                 <Link href="/contacto">Contacto</Link>
@@ -54,9 +49,8 @@ export default async function SiteFooter() {
             </ul>
           </div>
         </div>
-        <div className="foot-bottom">
+<div className="foot-bottom">
           {config?.footerCopy ? <span>{config.footerCopy}</span> : null}
-          <span>Maqueta de referencia — no es el sitio oficial</span>
         </div>
       </div>
     </footer>

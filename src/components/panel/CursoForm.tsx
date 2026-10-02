@@ -2,12 +2,16 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { DocenteActivo } from "@/lib/cursoAdmin";
+import type { DocenteAsignable } from "@/lib/cursoAdmin";
 import EditorTextoEnriquecido from "@/components/panel/EditorTextoEnriquecido";
 import { extraerTextoPlano, valorInicialEditor } from "@/lib/htmlEnriquecidoUtil";
 import CampoImagen from "@/components/panel/CampoImagen";
 import type { EstadoImagen } from "@/components/panel/CampoImagen";
-import { subirImagen, validarArchivoImagen } from "@/lib/imagenesCliente";
+import {
+  subirImagen,
+  validarArchivoImagen,
+  eliminarImagenHuerfana,
+} from "@/lib/imagenesCliente";
 
 export type CursoFormInicial = {
   id: number;
@@ -36,7 +40,7 @@ export default function CursoForm({
   inicial,
   puedeAsignarDocentes = true,
 }: {
-  docentes: DocenteActivo[];
+  docentes: DocenteAsignable[];
   inicial?: CursoFormInicial;
   puedeAsignarDocentes?: boolean;
 }) {
@@ -143,6 +147,9 @@ export default function CursoForm({
     setEnviando(true);
     try {
       let imagenUrl: string | null = imagenActual;
+      // URL de una imagen subida en este intento. Si el guardado es rechazado
+      // explícitamente, queda sin referencia y se borra para no dejar basura.
+      let imagenSubida: string | null = null;
       if (estadoImagen.quitar) {
         imagenUrl = null;
       } else if (estadoImagen.archivo) {
@@ -157,6 +164,7 @@ export default function CursoForm({
           return;
         }
         imagenUrl = subida.url;
+        imagenSubida = subida.url;
       }
 
       if (esEdicion) {
@@ -176,6 +184,8 @@ export default function CursoForm({
             error?: string;
           } | null;
           setError(data?.error ?? "No se pudo guardar el curso.");
+          // El servidor rechazó el curso: la imagen nueva no la referencia nadie.
+          if (imagenSubida) void eliminarImagenHuerfana(imagenSubida);
           return;
         }
 
@@ -196,6 +206,7 @@ export default function CursoForm({
             setError(
               data?.error ?? "No se pudieron guardar los docentes asignados."
             );
+            // El curso ya quedó guardado con la imagen: no se toca acá.
             return;
           }
         }
@@ -228,7 +239,10 @@ export default function CursoForm({
         error?: string;
       } | null;
       setError(data?.error ?? "No se pudo guardar el curso.");
+      if (imagenSubida) void eliminarImagenHuerfana(imagenSubida);
     } catch {
+      // Error de red: no se sabe si el curso se guardó, así que la imagen se
+      // deja en pie (queda huérfana y se limpia desde /panel/imagenes).
       setError("No se pudo guardar el curso. Intentá nuevamente.");
     } finally {
       setEnviando(false);
@@ -392,41 +406,67 @@ export default function CursoForm({
         />
       </div>
 
-      {puedeAsignarDocentes && (
-        <div className="form-field form-field-full">
-          <span>Docentes asignados</span>
-          {docentes.length === 0 ? (
-            <p className="form-aviso">
-              Todavía no hay docentes activos. Creá usuarios con rol Docente
-              para poder asignarlos.
-            </p>
-          ) : (
-            <div className="docentes-box">
-              {docentes.map((docente) => {
-                const activoDocente = docenteIds.includes(docente.id);
-                return (
-                  <label
-                    key={docente.id}
-                    className={`docente-opt${activoDocente ? " activo" : ""}`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={activoDocente}
-                      onChange={() => alternarDocente(docente.id)}
-                    />
-                    <span>
-                      <strong>
-                        {docente.nombre} {docente.apellido}
-                      </strong>
-                      <small>{docente.email}</small>
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
+      {puedeAsignarDocentes && (() => {
+        // Solo se ofrecen docentes activos para agregar. Los que ya están
+        // asignados aparecen igual aunque estén inactivos: así se los puede ver
+        // y quitar del curso, en vez de quedar como un docente fantasma que el
+        // listado del curso muestra y el formulario no.
+        const disponibles = docentes.filter(
+          (d) => d.activo || docenteIds.includes(d.id)
+        );
+        const inactivosAsignados = docentes.filter(
+          (d) => !d.activo && docenteIds.includes(d.id)
+        );
+
+        return (
+          <div className="form-field form-field-full">
+            <span>Docentes asignados</span>
+            {disponibles.length === 0 ? (
+              <p className="form-aviso">
+                Todavía no hay docentes activos. Creá usuarios con rol Docente
+                para poder asignarlos.
+              </p>
+            ) : (
+              <div className="docentes-box">
+                {disponibles.map((docente) => {
+                  const asignado = docenteIds.includes(docente.id);
+                  return (
+                    <label
+                      key={docente.id}
+                      className={`docente-opt${asignado ? " activo" : ""}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={asignado}
+                        onChange={() => alternarDocente(docente.id)}
+                      />
+                      <span>
+                        <strong>
+                          {docente.nombre} {docente.apellido}
+                        </strong>
+                        <small>{docente.email}</small>
+                        {!docente.activo && (
+                          <small className="docente-inactivo">
+                            Cuenta desactivada
+                          </small>
+                        )}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
+            {inactivosAsignados.length > 0 && (
+              <p className="form-aviso">
+                Hay {inactivosAsignados.length} docente
+                {inactivosAsignados.length > 1 ? "s" : ""} con la cuenta
+                desactivada entre los asignados. Si querés que recuperen el
+                acceso al panel, reactivá la cuenta desde Usuarios.
+              </p>
+            )}
+          </div>
+        );
+      })()}
 
       {esEdicion && puedeAsignarDocentes && (
         <label className="form-field form-field-full form-toggle">
@@ -439,7 +479,9 @@ export default function CursoForm({
         </label>
       )}
 
-      {error && <p className="form-error">{error}</p>}
+      <p className="form-error" role="alert" aria-live="assertive">
+        {error ?? ""}
+      </p>
 
       <div className="form-actions">
         <button type="submit" className="btn-primary btn-sm" disabled={enviando}>

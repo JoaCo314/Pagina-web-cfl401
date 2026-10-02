@@ -4,6 +4,7 @@ import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session"
 import { PERMISOS, obtenerSeccionesPanel, tienePermiso } from "@/lib/auth/autorizacion";
 import { prisma } from "@/lib/prisma";
 import { CURSO_SELECT } from "@/lib/cursoAdmin";
+import { formatearFecha } from "@/lib/cursoUtils";
 import PanelShell from "@/components/auth/PanelShell";
 import EliminarCurso from "@/components/panel/EliminarCurso";
 
@@ -66,17 +67,7 @@ export default async function CursosPanelPage() {
                   <td data-label="Curso">
                     <strong>{curso.nombre}</strong>
                     <small className="td-sub">
-                      Inicio:{" "}
-                      {curso.fechaInicio
-                        ? new Date(curso.fechaInicio).toLocaleDateString(
-                            "es-AR",
-                            {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                            }
-                          )
-                        : "A confirmar"}
+                      Inicio: {formatearFecha(curso.fechaInicio)}
                       {curso.horarios ? ` · ${curso.horarios}` : ""}
                     </small>
                   </td>

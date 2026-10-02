@@ -7,7 +7,7 @@ import {
   puedeGestionarCurso,
 } from "@/lib/auth/autorizacion";
 import { prisma } from "@/lib/prisma";
-import { CURSO_SELECT, obtenerDocentesActivos } from "@/lib/cursoAdmin";
+import { CURSO_SELECT, obtenerDocentesAsignables } from "@/lib/cursoAdmin";
 import PanelShell from "@/components/auth/PanelShell";
 import CursoForm from "@/components/panel/CursoForm";
 import type { CursoFormInicial } from "@/components/panel/CursoForm";
@@ -38,7 +38,7 @@ export default async function EditarCursoPage({
       where: { id: cursoId },
       select: CURSO_SELECT,
     }),
-    obtenerDocentesActivos(),
+    obtenerDocentesAsignables(),
   ]);
 
   if (!curso) {
@@ -75,7 +75,9 @@ export default async function EditarCursoPage({
     imagenUrl: curso.imagenUrl,
     informacionAdicional: curso.informacionAdicional,
     activo: curso.activo,
-    docentes: curso.docentes.map((d) => ({ docenteId: d.docenteId })),
+    docentes: curso.docentes.map((d: { docenteId: number }) => ({
+      docenteId: d.docenteId,
+    })),
   };
 
   const secciones = obtenerSeccionesPanel(user);

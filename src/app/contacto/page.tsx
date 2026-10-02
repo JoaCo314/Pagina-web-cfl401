@@ -17,7 +17,7 @@ export default async function ContactoPage() {
           {config?.contactoSubtitulo ? <p>{config.contactoSubtitulo}</p> : null}
         </div>
       </div>
-      <main className="wrap" style={{ padding: "32px 0" }}>
+      <main className="wrap contacto-main">
         <div className="contacto-grid">
           <div>
             <ul className="info-list">

@@ -4,6 +4,7 @@ import {
   type Permiso,
 } from "@/lib/auth/autorizacion";
 import type { UsuarioSesion } from "@/lib/auth/session";
+import { esEmailValido, REGEX_DNI } from "@/lib/validaciones";
 
 /// Permiso específico necesario para crear cada rol (RF-13/RF-14).
 /// Administrador: puede crear Administrador, Preceptor y Docente.
@@ -37,8 +38,6 @@ export const USUARIO_SELECT = {
 } as const;
 
 /// Formato de DNI argentino: 7 u 8 dígitos, sin letras ni signos.
-const REGEX_DNI = /^\d{7,8}$/;
-
 export type UsuarioInputNormalizado = {
   nombre: string;
   apellido: string;
@@ -93,7 +92,7 @@ export async function validarDatosUsuario(
   const email = limpiarObligatorio(fuente.email, "El email", 200);
   if (email.error) return { ok: false, error: email.error };
   const emailNormalizado = email.valor.toLowerCase();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNormalizado)) {
+  if (!esEmailValido(emailNormalizado)) {
     return { ok: false, error: "El email no tiene un formato válido." };
   }
 

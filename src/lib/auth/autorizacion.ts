@@ -22,6 +22,10 @@ export const PERMISOS = {
   SOBRE_EL_CENTRO_EDITAR: "sobre_el_centro:editar",
   PREGUNTAS_FAQS_EDITAR: "preguntas_faqs:editar",
   SITE_CONFIG_EDITAR: "site_config:editar", // sofia-athos: banner, logo, footer y contactos editables
+  /// Consultas que llegan por el formulario público de /contacto. Solo el
+  /// Administrador: los datos personales de quien consulta no se exponen al
+  /// preceptor, que sí puede editar los datos de contacto del sitio.
+  CONSULTAS_VER: "consultas:ver",
 } as const;
 
 export type Permiso = (typeof PERMISOS)[keyof typeof PERMISOS];
@@ -65,6 +69,7 @@ const PERMISOS_POR_ROL: Record<
     PERMISOS.SOBRE_EL_CENTRO_EDITAR,
     PERMISOS.PREGUNTAS_FAQS_EDITAR,
     PERMISOS.SITE_CONFIG_EDITAR,
+    PERMISOS.CONSULTAS_VER,
   ],
   [ROLES.PRECEPTOR]: [
     PERMISOS.CURSOS_VER,
@@ -76,6 +81,7 @@ const PERMISOS_POR_ROL: Record<
     PERMISOS.USUARIOS_CREAR,
     PERMISOS.USUARIOS_CREAR_DOCENTE,
     PERMISOS.USUARIOS_GESTIONAR_DOCENTES,
+    PERMISOS.USUARIOS_DESACTIVAR,
     PERMISOS.GUIA_EDITAR,
     PERMISOS.NOTICIAS_CREAR,
     PERMISOS.NOTICIAS_EDITAR,
@@ -182,7 +188,8 @@ export type SeccionPanel = {
     | "sobre"
     | "faqs"
     | "contacto"
-    | "configuracion";
+    | "configuracion"
+    | "consultas";
   titulo: string;
   descripcion: string;
   href?: string;
@@ -293,6 +300,15 @@ export function obtenerSeccionesPanel(
       titulo: "Configuración del sitio",
       descripcion: "Banner azul, logo, footer, mapa de ubicación y demás textos del sitio.",
       href: "/panel/configuracion",
+    });
+  }
+
+  if (tienePermiso(usuario, PERMISOS.CONSULTAS_VER)) {
+    secciones.push({
+      clave: "consultas",
+      titulo: "Consultas",
+      descripcion: "Mensajes que llegan por el formulario de contacto del sitio.",
+      href: "/panel/consultas",
     });
   }
 

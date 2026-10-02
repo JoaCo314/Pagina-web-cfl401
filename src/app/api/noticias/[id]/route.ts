@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
+import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
 import { NOTICIA_SELECT, validarDatosNoticia } from "@/lib/noticiaAdmin";
 import { borrarImagenPorUrl } from "@/lib/imagenes";
@@ -84,6 +85,9 @@ export async function PUT(
     );
   }
 
+  const bloqueado = respuestaSiContrasenaTemporal(user);
+  if (bloqueado) return bloqueado;
+
   let body: unknown;
   try {
     body = await request.json();
@@ -164,6 +168,9 @@ export async function DELETE(
       { status: 403 }
     );
   }
+  const bloqueado = respuestaSiContrasenaTemporal(user);
+  if (bloqueado) return bloqueado;
+
 
   const existente = await prisma.noticia.findUnique({
     where: { id: noticiaId },

@@ -119,29 +119,40 @@ async function main() {
     },
   ];
 
+  // El seed es de arranque, no un reseteador: solo crea lo que falta. En una base
+  // existente deja intactas las contraseñas (ni `passwordHash` ni
+  // `debeCambiarContrasena`), porque correr el seed no puede ser la forma de
+  // devolverle a alguien el acceso a su cuenta ni dejarlo con una contraseña
+  // temporal que no es la que le corresponde.
   const userIds: Record<string, number> = {};
   for (const u of usuarios) {
-    const saved = await prisma.usuario.upsert({
+    const existente = await prisma.usuario.findUnique({
       where: { email: u.email },
-      update: {
-        nombre: u.nombre,
-        apellido: u.apellido,
-        dni: u.dni,
-        rolId: roleIds[u.rol],
-        passwordHash: hashSync(PASSWORDS[u.email] ?? "Cambiar-123!", 10),
-        debeCambiarContrasena: false,
-      },
-      create: {
-        nombre: u.nombre,
-        apellido: u.apellido,
-        dni: u.dni,
-        email: u.email,
-        passwordHash: hashSync(PASSWORDS[u.email] ?? "Cambiar-123!", 10),
-        debeCambiarContrasena: false,
-        activo: true,
-        rolId: roleIds[u.rol],
-      },
+      select: { id: true },
     });
+
+    const saved = existente
+      ? await prisma.usuario.update({
+          where: { id: existente.id },
+          data: {
+            nombre: u.nombre,
+            apellido: u.apellido,
+            dni: u.dni,
+            rolId: roleIds[u.rol],
+          },
+        })
+      : await prisma.usuario.create({
+          data: {
+            nombre: u.nombre,
+            apellido: u.apellido,
+            dni: u.dni,
+            email: u.email,
+            passwordHash: hashSync(PASSWORDS[u.email] ?? "Cambiar-123!", 10),
+            debeCambiarContrasena: false,
+            activo: true,
+            rolId: roleIds[u.rol],
+          },
+        });
     userIds[u.email] = saved.id;
   }
 
@@ -322,8 +333,8 @@ Felicitamos a todos los egresados y los invitamos a continuar su formación en l
       titulo: "Información adicional",
       contenido: `• Todas las capacitaciones son gratuitas y de carácter público.
 • Los horarios varían según la cursada; consultá la ficha de cada curso.
-• La sede principal del CFL 401 se encuentra en [dirección a completar].
-• Para consultas podés comunicarte al teléfono [teléfono] o escribirnos por correo electrónico.`,
+• La sede principal del CFL 401 se encuentra en San Martín 1240, Azul.
+• Para consultas podés comunicarte al teléfono +54 2281 32-3444 o escribir a cfl401azul@gmail.com.`,
       orden: 4,
     },
   ];

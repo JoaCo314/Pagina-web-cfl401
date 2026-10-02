@@ -1,6 +1,7 @@
 // Creado por sofia-athos - API editable para banner, logo, footer y contactos
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/session";
+import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
 import {
   getSiteConfig,
@@ -85,6 +86,9 @@ export async function PUT(request: NextRequest) {
   if (!tienePermiso(user, PERMISOS.SITE_CONFIG_EDITAR)) {
     return NextResponse.json({ error: "No tenés permiso para realizar esta acción." }, { status: 403 });
   }
+
+  const bloqueado = respuestaSiContrasenaTemporal(user);
+  if (bloqueado) return bloqueado;
 
   let body: unknown;
   try {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
+import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
 import {
   PREGUNTA_SELECT,
@@ -51,6 +52,9 @@ export async function PUT(
       { status: 404 }
     );
   }
+
+  const bloqueado = respuestaSiContrasenaTemporal(user);
+  if (bloqueado) return bloqueado;
 
   let body: unknown;
   try {
@@ -128,6 +132,9 @@ export async function DELETE(
       { status: 403 }
     );
   }
+  const bloqueado = respuestaSiContrasenaTemporal(user);
+  if (bloqueado) return bloqueado;
+
 
   const existente = await prisma.preguntaFrecuente.findUnique({
     where: { id: preguntaId },

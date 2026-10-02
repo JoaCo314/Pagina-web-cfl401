@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import type { SiteConfigData } from "@/lib/siteConfig";
 import CampoImagen from "@/components/panel/CampoImagen";
 import type { EstadoImagen } from "@/components/panel/CampoImagen";
-import { subirImagen, validarArchivoImagen } from "@/lib/imagenesCliente";
+import {
+  subirImagen,
+  validarArchivoImagen,
+  eliminarImagenHuerfana,
+} from "@/lib/imagenesCliente";
 import { extraerUrlIframe } from "@/lib/embed";
 
 type Props = { inicial: SiteConfigData };
@@ -37,6 +41,22 @@ export default function SiteConfigForm({ inicial }: Props) {
     setError(null);
     setEnviando(true);
     try {
+      // Se validan los textos antes de subir nada: si el mapa está mal no tiene
+      // sentido dejar dos imágenes en la base que después se van a borrar.
+      if (
+        datos.mapaUrl &&
+        !/^https?:\/\/\S+$/i.test(datos.mapaUrl.trim())
+      ) {
+        setError(
+          "El mapa debe ser un iframe de Google Maps o una URL que empiece con http:// o https://."
+        );
+        return;
+      }
+
+      // Imágenes subidas en este intento. Si el guardado se rechaza, no quedan
+      // referenciadas por nada y se borran.
+      const subidas: string[] = [];
+
       let bannerImagenUrl: string | null = bannerActual;
       if (estadoBanner.quitar) {
         bannerImagenUrl = null;
@@ -52,6 +72,7 @@ export default function SiteConfigForm({ inicial }: Props) {
           return;
         }
         bannerImagenUrl = subidaBanner.url;
+        subidas.push(subidaBanner.url);
       }
 
       let logoUrl: string | null = logoActual;
@@ -61,29 +82,22 @@ export default function SiteConfigForm({ inicial }: Props) {
         const errorLogo = validarArchivoImagen(estadoLogo.archivo);
         if (errorLogo) {
           setError(errorLogo);
+          for (const url of subidas) void eliminarImagenHuerfana(url);
           return;
         }
         const subidaLogo = await subirImagen(estadoLogo.archivo);
         if (!subidaLogo.ok) {
           setError(subidaLogo.error);
+          for (const url of subidas) void eliminarImagenHuerfana(url);
           return;
         }
         logoUrl = subidaLogo.url;
+        subidas.push(subidaLogo.url);
       }
 
       const sinContacto = Object.fromEntries(
         Object.entries(datos).filter(([clave]) => !clave.startsWith("contacto"))
       );
-
-      if (
-        datos.mapaUrl &&
-        !/^https?:\/\/\S+$/i.test(datos.mapaUrl.trim())
-      ) {
-        setError(
-          "El mapa debe ser un iframe de Google Maps o una URL que empiece con http:// o https://."
-        );
-        return;
-      }
 
       const res = await fetch("/api/site-config", {
         method: "PUT",
@@ -97,11 +111,15 @@ export default function SiteConfigForm({ inicial }: Props) {
       if (!res.ok) {
         const data = (await res.json().catch(() => null)) as { error?: string } | null;
         setError(data?.error ?? "No se pudo guardar.");
+        for (const url of subidas) void eliminarImagenHuerfana(url);
         return;
       }
       setGuardado(true);
       router.refresh();
     } catch {
+      // Error de red: no se sabe si la configuración se guardó, así que las
+      // imágenes se dejan en pie (quedan huérfanas y se limpian desde
+      // /panel/imagenes).
       setError("No se pudo guardar. Intentá nuevamente.");
     } finally {
       setEnviando(false);

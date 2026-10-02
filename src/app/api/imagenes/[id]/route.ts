@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
+import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
-import { urlImagenInterna } from "@/lib/imagenes";
+import { referenciasImagen } from "@/lib/imagenes";
 
 export const dynamic = "force-dynamic";
 
@@ -87,39 +88,11 @@ export async function DELETE(
     );
   }
 
-  const url = urlImagenInterna(imagenId);
+  const bloqueado = respuestaSiContrasenaTemporal(user);
+  if (bloqueado) return bloqueado;
 
   try {
-    const [curso, noticia, sobre, config] = await Promise.all([
-      prisma.curso.findFirst({
-        where: { imagenUrl: url },
-        select: { id: true },
-      }),
-      prisma.noticia.findFirst({
-        where: { imagenUrl: url },
-        select: { id: true },
-      }),
-      prisma.sobreElCentro.findFirst({
-        select: { id: true, galeria: true },
-      }),
-      prisma.siteConfig.findUnique({
-        where: { id: 1 },
-        select: { bannerImagenUrl: true, logoUrl: true },
-      }),
-    ]);
-
-    const usos: string[] = [];
-    if (curso) usos.push("un curso");
-    if (noticia) usos.push("una noticia");
-    if (
-      sobre?.galeria &&
-      Array.isArray(sobre.galeria) &&
-      (sobre.galeria as { url: string }[]).some((foto) => foto.url === url)
-    ) {
-      usos.push("la galería de “Sobre el centro”");
-    }
-    if (config?.bannerImagenUrl === url) usos.push("el banner de la portada");
-    if (config?.logoUrl === url) usos.push("el logo");
+    const usos = await referenciasImagen(imagenId);
 
     if (usos.length > 0) {
       return NextResponse.json(
