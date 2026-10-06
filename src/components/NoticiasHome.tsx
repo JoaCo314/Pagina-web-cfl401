@@ -9,7 +9,7 @@ import type { Noticia } from "@/lib/noticiaUtils";
 /// noticias (o falla la carga) no se muestra nada, para no dejar un bloque
 /// vacío en la página de inicio.
 export default function NoticiasHome() {
-  const [noticias, setNoticias] = useState<Noticia[]>([]);
+  const [noticias, setNoticias] = useState<Noticia[] | null>(null);
 
   useEffect(() => {
     fetch("/api/noticias?limit=3")
@@ -18,10 +18,10 @@ export default function NoticiasHome() {
       .catch(() => setNoticias([]));
   }, []);
 
-  if (noticias.length === 0) return null;
+  if (noticias !== null && noticias.length === 0) return null;
 
   return (
-    <section className="noticias-section">
+    <section className="noticias-section noticias-section--alt">
       <div className="wrap">
         <div className="section-head">
           <h2>Últimas noticias</h2>
@@ -30,11 +30,24 @@ export default function NoticiasHome() {
             del CFL 401.
           </p>
         </div>
-        <div className="noticias-home">
-          {noticias.map((noticia) => (
-            <NoticiaCard key={noticia.id} noticia={noticia} />
-          ))}
-        </div>
+        {noticias === null ? (
+          <>
+            <div className="noticias-home" aria-hidden="true">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="skeleton skeleton-noticia" />
+              ))}
+            </div>
+            <p className="sr-only" role="status">
+              Cargando noticias…
+            </p>
+          </>
+        ) : (
+          <div className="noticias-home">
+            {noticias.map((noticia) => (
+              <NoticiaCard key={noticia.id} noticia={noticia} />
+            ))}
+          </div>
+        )}
         <div className="noticias-home-cta">
           <Link href="/noticias" className="btn-primary btn-sm">
             Ver todas las noticias

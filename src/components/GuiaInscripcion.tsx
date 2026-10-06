@@ -40,7 +40,24 @@ export default function GuiaInscripcion() {
   }
 
   if (bloques === null) {
-    return <p className="courses-empty">Cargando guía de inscripción…</p>;
+    return (
+      <>
+        <div className="guia-grid" aria-hidden="true">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="guia-card skeleton-tarjeta">
+              <div className="skeleton skeleton-icono" />
+              <div className="skeleton skeleton-linea media" />
+              <div className="skeleton skeleton-linea" />
+              <div className="skeleton skeleton-linea" />
+              <div className="skeleton skeleton-linea corta" />
+            </div>
+          ))}
+        </div>
+        <p className="sr-only" role="status">
+          Cargando guía de inscripción…
+        </p>
+      </>
+    );
   }
 
   return (
