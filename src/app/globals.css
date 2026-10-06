@@ -137,6 +137,11 @@ a {
   top: 0;
   z-index: 50;
   border-bottom: 1px solid rgba(18, 42, 69, 0.1);
+  transition: box-shadow 0.2s ease;
+}
+/* Sombra agregada por SiteHeaderCliente cuando la página scrollea. */
+.site-header.con-sombra {
+  box-shadow: 0 10px 24px -16px rgba(18, 42, 69, 0.45);
 }
 .site-nav {
   display: flex;
@@ -200,6 +205,22 @@ a {
   color: var(--cfl-navy-2);
   font-weight: 600;
 }
+/* Pestaña activa del navbar público: barra celeste equilibrada con la que
+   ya usa el panel (`.panel-nav-item.active`). Va en un pseudo-elemento para
+   no alterar la altura de la fila de enlaces. */
+.navlinks a.active {
+  position: relative;
+}
+.navlinks a.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--cfl-blue);
+}
 .nav-cta,
 .btn-login,
 .btn-login-solid {
@@ -217,10 +238,16 @@ a {
 .nav-cta {
   background: var(--cfl-navy-2);
   color: var(--cfl-white);
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, transform 0.1s ease;
 }
 .nav-cta:hover {
   background: var(--cfl-blue-deep);
+}
+.nav-cta:active,
+.btn-login:active,
+.btn-login-solid:active {
+  transform: translateY(1px);
+  filter: brightness(0.94);
 }
 .nav-actions {
   display: flex;
@@ -231,7 +258,10 @@ a {
   border: 1.5px solid var(--cfl-navy-2);
   color: var(--cfl-navy-2);
   background: var(--cfl-white);
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
 }
 .btn-login:hover {
   background: var(--cfl-navy-2);
@@ -240,7 +270,7 @@ a {
 .btn-login-solid {
   background: var(--cfl-blue);
   color: var(--cfl-white);
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, transform 0.1s ease;
 }
 .btn-login-solid:hover {
   background: var(--cfl-blue-deep);
@@ -304,6 +334,8 @@ a {
 .nav-mobile a.active {
   color: var(--cfl-navy-2);
   font-weight: 700;
+  background: var(--cfl-blue-light);
+  box-shadow: inset 3px 0 0 var(--cfl-blue);
 }
 .nav-mobile > a:hover {
   color: var(--cfl-navy-2);
@@ -369,7 +401,7 @@ a {
   gap: 6px;
 }
 .hero h1 {
-  font-size: 38px;
+  font-size: clamp(27px, 1.5vw + 21px, 38px);
   line-height: 1.18;
   max-width: 640px;
   margin-bottom: 16px;
@@ -393,9 +425,14 @@ a {
   font-weight: 700;
   font-size: 15px;
   display: inline-block;
+  transition: filter 0.15s ease, transform 0.1s ease;
 }
 .btn-primary:hover {
   filter: brightness(1.06);
+}
+.btn-primary:active {
+  filter: brightness(0.94);
+  transform: translateY(1px);
 }
 .btn-ghost {
   border: 1.5px solid rgba(255, 255, 255, 0.5);
@@ -405,9 +442,14 @@ a {
   font-weight: 600;
   font-size: 15px;
   display: inline-block;
+  transition: background 0.15s ease, transform 0.1s ease;
 }
 .btn-ghost:hover {
   background: rgba(255, 255, 255, 0.1);
+}
+.btn-ghost:active {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(1px);
 }
 
 /* ── Guide section (guía de inscripción) ─────────────────── */
@@ -533,7 +575,7 @@ a {
   padding: 48px 0;
 }
 .page-header h1 {
-  font-size: 32px;
+  font-size: clamp(26px, 1.4vw + 20px, 32px);
   margin-bottom: 8px;
 }
 .page-header p {
@@ -597,11 +639,23 @@ a {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: box-shadow 0.15s, border-color 0.15s;
+  transition:
+    box-shadow 0.15s,
+    border-color 0.15s,
+    transform 0.15s;
 }
 .course-card:hover {
   box-shadow: 0 14px 28px -16px rgba(18, 42, 69, 0.28);
   border-color: var(--cfl-blue);
+  transform: translateY(-2px);
+}
+/* Foto del curso en la tarjeta del catálogo: antes no tenía ninguna regla y
+   la imagen se desbordaba del padding de la card. */
+.course-img {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  border-radius: 6px;
 }
 .course-top {
   display: flex;
@@ -678,11 +732,90 @@ a {
   font-weight: 700;
 }
 
+/* Estado vacío / de error del catálogo y de las noticias: bloque con aire,
+   fondo de la paleta y borde discontinuo para diferenciarlo del contenido. */
 .courses-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
   text-align: center;
-  padding: 48px 0;
-  color: var(--cfl-ink);
-  opacity: 0.7;
+  padding: 44px 24px;
+  background: var(--cfl-blue-light);
+  border: 1.5px dashed rgba(18, 42, 69, 0.22);
+  border-radius: 10px;
+  color: var(--cfl-navy-2);
+  font-size: 15px;
+}
+
+/* ── Skeletons (estados de carga del sitio público) ─────── */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--cfl-blue-light);
+  border-radius: 6px;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.8),
+    transparent
+  );
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
+}
+.skeleton-linea {
+  width: 100%;
+  height: 13px;
+  border-radius: 4px;
+}
+.skeleton-linea.media {
+  width: 70%;
+}
+.skeleton-linea.corta {
+  width: 45%;
+}
+.skeleton-titulo {
+  width: min(65%, 420px);
+  height: 30px;
+  border-radius: 6px;
+}
+.skeleton-img {
+  height: 170px;
+}
+.skeleton-icono {
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
+}
+.skeleton-tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.skeleton-noticia {
+  height: 170px;
+  border-radius: 8px;
+}
+.skeleton-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 760px;
 }
 
 /* ── Course detail ───────────────────────────────────────── */
@@ -794,16 +927,21 @@ a {
 .detail-cta {
   display: block;
   margin-top: 16px;
-  background: var(--cfl-success);
+  background: var(--cfl-blue-deep);
   color: var(--cfl-white);
   text-align: center;
   padding: 14px;
   border-radius: 6px;
   font-weight: 700;
   font-size: 15px;
+  transition: filter 0.15s ease, transform 0.1s ease;
 }
 .detail-cta:hover {
   filter: brightness(1.06);
+}
+.detail-cta:active {
+  filter: brightness(0.94);
+  transform: translateY(1px);
 }
 .detail-notfound {
   text-align: center;
@@ -833,6 +971,11 @@ a {
 .noticias-section {
   padding: 56px 0;
 }
+/* Ritmo de fondos: la sección de noticias de la home se separa del blanco
+   contiguo con el celeste de la paleta. */
+.noticias-section--alt {
+  background: var(--cfl-blue-light);
+}
 .noticias-section .section-head {
   max-width: 620px;
   margin-bottom: 32px;
@@ -859,11 +1002,15 @@ a {
   border: 1.5px solid rgba(18, 42, 69, 0.12);
   border-radius: 8px;
   overflow: hidden;
-  transition: box-shadow 0.15s, border-color 0.15s;
+  transition:
+    box-shadow 0.15s,
+    border-color 0.15s,
+    transform 0.15s;
 }
 .noticia-card:hover {
   box-shadow: 0 14px 28px -16px rgba(18, 42, 69, 0.28);
   border-color: var(--cfl-blue);
+  transform: translateY(-2px);
 }
 .noticia-card.con-imagen {
   flex-direction: row;
@@ -941,7 +1088,7 @@ a {
   margin-bottom: 10px;
 }
 .noticia-articulo h1 {
-  font-size: 32px;
+  font-size: clamp(26px, 1.4vw + 20px, 32px);
   color: var(--cfl-navy);
   margin-bottom: 12px;
 }
@@ -1529,6 +1676,11 @@ a {
   background: var(--cfl-white);
   overflow: hidden;
 }
+/* Ítem desplegado: el borde pasa al celeste de la paleta para marcar cuál
+   quedó abierto. */
+.faq-item:has(.faq-respuesta.abierta) {
+  border-color: var(--cfl-blue);
+}
 .faq-pregunta {
   width: 100%;
   display: flex;
@@ -1564,14 +1716,22 @@ a {
   transform: rotate(225deg);
   margin-top: 4px;
 }
+/* La respuesta se abre con el truco de grid `0fr → 1fr`: a diferencia de
+   `max-height`, la transición dura lo mismo con una respuesta corta que con
+   una muy larga y no hace falta adivinar un techo. El hijo directo (el wrapper
+   de HtmlEnriquecido) es el que recorta con overflow. */
 .faq-respuesta {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.25s ease;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease;
   padding: 0 18px;
 }
 .faq-respuesta.abierta {
-  max-height: 1000px;
+  grid-template-rows: 1fr;
+}
+.faq-respuesta > * {
+  min-height: 0;
+  overflow: hidden;
 }
 .faq-respuesta p {
   font-size: 14.5px;
@@ -1847,6 +2007,14 @@ a.panel-nav-item:hover {
   font-size: 14px;
   opacity: 0.88;
 }
+.site-footer ul a {
+  transition: color 0.15s ease;
+}
+.site-footer ul a:hover {
+  color: var(--cfl-blue-light);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .foot-bottom {
   border-top: 1px solid var(--cfl-line);
   padding-top: 18px;
@@ -2038,9 +2206,13 @@ a.panel-nav-item:hover {
   font-size: 14px;
   cursor: pointer;
   background: transparent;
+  transition: background 0.15s ease, transform 0.1s ease;
 }
 .btn-ghost-dark:hover {
   background: rgba(18, 42, 69, 0.05);
+}
+.btn-ghost-dark:active {
+  transform: translateY(1px);
 }
 .panel-table-wrap {
   background: var(--cfl-white);
@@ -3047,9 +3219,6 @@ a.panel-nav-item:hover {
   .detail-head h1 {
     font-size: 26px;
   }
-  .hero h1 {
-    font-size: 30px;
-  }
   .panel-cards {
     grid-template-columns: 1fr;
   }
@@ -3136,23 +3305,14 @@ a.panel-nav-item:hover {
   .hero {
     padding: 44px 0 52px;
   }
-  .hero h1 {
-    font-size: 27px;
-  }
   .hero p.lead {
     font-size: 15.5px;
   }
   .page-header {
     padding: 34px 0;
   }
-  .page-header h1 {
-    font-size: 26px;
-  }
   .detail-body {
     padding: 24px 0 48px;
-  }
-  .noticia-articulo h1 {
-    font-size: 26px;
   }
   .noticia-body {
     padding: 20px;
