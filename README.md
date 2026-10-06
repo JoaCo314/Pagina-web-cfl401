@@ -145,7 +145,7 @@ El modelo de datos se define en `prisma/schema.prisma`. Entidades:
 - **Curso** — oferta educativa (campos de la sección 7 del documento).
 - **CursoDocente** — relación N:N entre cursos y docentes asignados.
 - **Imagen** — imágenes subidas desde el panel, guardadas como bytes y servidas por `/api/imagenes/[id]`.
-- **MensajeContacto** — consultas que llegan por el formulario público de `/contacto`. El panel del Administrador las lee y marca como leídas.
+- **MensajeContacto** — consultas que llegan por el formulario público de `/contacto`. El panel las lee (Administrador y Preceptor) y marca como leídas.
 
 Comandos de base de datos:
 

@@ -43,6 +43,7 @@ function respuesta429(esperaSegundos: number) {
 const LARGO_MAXIMO = {
   nombre: 120,
   email: 200,
+  celular: 60,
   curso: 120,
   mensaje: 2000,
 } as const;
@@ -105,13 +106,16 @@ export async function POST(request: NextRequest) {
 
   const curso = texto(fuente.curso, LARGO_MAXIMO.curso);
 
+  // Opcional, como el curso: se guarda para poder responderle por WhatsApp.
+  const celular = texto(fuente.celular, LARGO_MAXIMO.celular);
+
   // Normalizado para que "Ana@x.com" y "ana@x.com" compartan el mismo tope.
   const limiteCorreo = limitePorCorreo.chequear(email.toLowerCase());
   if (!limiteCorreo.permitido) return respuesta429(limiteCorreo.esperaSegundos);
 
   try {
     await prisma.mensajeContacto.create({
-      data: { nombre, email, mensaje, curso: curso ?? null, ip },
+      data: { nombre, email, mensaje, curso: curso ?? null, celular: celular ?? null, ip },
     });
   } catch (err) {
     console.error("[API] Error interno:", err);

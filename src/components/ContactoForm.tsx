@@ -6,6 +6,7 @@ import { fetchConTimeout, TimeoutError } from "@/lib/fetchTimeout";
 export default function ContactoForm() {
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
+  const [celular, setCelular] = useState("");
   const [curso, setCurso] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [estado, setEstado] = useState<"idle" | "enviando" | "ok" | "error">("idle");
@@ -20,7 +21,7 @@ export default function ContactoForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         // `sitio-web` es un honeypot: está oculto y nobody lo completa a mano.
-        body: JSON.stringify({ nombre, email, curso, mensaje, "sitio-web": "" }),
+        body: JSON.stringify({ nombre, email, celular, curso, mensaje, "sitio-web": "" }),
       });
       const data = (await res.json().catch(() => null)) as {
         error?: string;
@@ -34,6 +35,7 @@ export default function ContactoForm() {
       setEstado("ok");
       setNombre("");
       setEmail("");
+      setCelular("");
       setCurso("");
       setMensaje("");
     } catch (err) {
@@ -95,6 +97,21 @@ export default function ContactoForm() {
         <small className="form-hint">
           Escribí tu correo: nuestra respuesta se envía a la bandeja de entrada
           de esa cuenta.
+        </small>
+      </label>
+      <label className="form-field">
+        <span>Celular (opcional)</span>
+        <input
+          type="tel"
+          name="celular"
+          maxLength={60}
+          autoComplete="tel"
+          placeholder="Ej.: +54 9 2281 55-1234"
+          value={celular}
+          onChange={(e) => setCelular(e.target.value)}
+        />
+        <small className="form-hint">
+          Si preferís, podemos responderte por WhatsApp a este número.
         </small>
       </label>
       <label className="form-field">

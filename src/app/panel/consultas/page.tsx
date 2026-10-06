@@ -27,7 +27,8 @@ export default async function ConsultasPanelPage({
   const user = await getCurrentUser();
   if (!user) redirect("/panel/login");
   exigirContrasenaActualizada(user);
-  // Exclusivo del Administrador: las consultas traen datos personales.
+  // Disponible para Administrador y Preceptor: las consultas traen datos
+  // personales y ambos roles las responden.
   if (!tienePermiso(user, PERMISOS.CONSULTAS_VER)) redirect("/panel");
 
   const { filtro } = await searchParams;
@@ -92,6 +93,14 @@ export default async function ConsultasPanelPage({
               </div>
               <p className="consulta-meta">
                 <a href={`mailto:${m.email}`}>{m.email}</a>
+                {m.celular && (
+                  <>
+                    {" · "}
+                    <a href={`tel:${m.celular.replace(/[^+\d]/g, "")}`}>
+                      {m.celular}
+                    </a>
+                  </>
+                )}
                 {" · "}
                 <time dateTime={m.createdAt.toISOString()}>
                   {formatoFecha.format(m.createdAt)}

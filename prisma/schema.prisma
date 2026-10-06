@@ -275,12 +275,15 @@ model SiteConfig {
 }
 
 /// Consulta enviada desde el formulario público de /contacto. No se envía por
-/// email: queda registrada acá y el Administrador la lee desde el panel.
-/// `leido` permite separar lo nuevo de lo ya visto sin borrar nada.
+/// email: queda registrada acá y el Administrador o el Preceptor la lee desde
+/// el panel. `leido` permite separar lo nuevo de lo ya visto sin borrar nada.
 model MensajeContacto {
   id        Int       @id @default(autoincrement())
   nombre    String
   email     String
+  /// Número de celular de quien consulta: opcional, para poder responderle por
+  /// WhatsApp si prefiere así.
+  celular   String?
   /// Curso de interés: texto libre, no una clave foránea (el visitor puede
   /// escribir cualquier cosa y el catálogo cambia).
   curso     String?
