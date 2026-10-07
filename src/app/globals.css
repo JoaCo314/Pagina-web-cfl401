@@ -432,6 +432,9 @@ a {
 }
 .btn-primary:hover {
   filter: brightness(1.06);
+  /* Halo sutil del mismo azul: se aplica a los botones del panel Y a los CTA
+     públicos que comparten la clase, manteniendo un hover coherente. */
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--cfl-blue-deep) 18%, transparent);
 }
 .btn-primary:active {
   filter: brightness(0.94);
@@ -2246,7 +2249,8 @@ a.panel-nav-item:hover {
   transition: background 0.15s ease, transform 0.1s ease;
 }
 .btn-ghost-dark:hover {
-  background: rgba(18, 42, 69, 0.05);
+  background-color: color-mix(in srgb, var(--cfl-navy-2) 8%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--cfl-navy-2) 12%, transparent);
 }
 .btn-ghost-dark:active {
   transform: translateY(1px);
@@ -2574,10 +2578,19 @@ a.panel-nav-item:hover {
 }
 .acciones-usuario-fila {
   display: inline-flex;
-  gap: 6px;
+  /* 6px alcanzaban cuando Guardar/Cancelar eran botones. Como palabras con
+     píldora (sobresalen 9px por lado) necesitan el mismo aire de 18px para
+     que las píldoras no se crucen. */
+  gap: 20px;
 }
 .celda-acciones {
   white-space: nowrap;
+}
+/* Las dos columnas de acciones (Desactivar/Activar y Blanquear) van lado a
+   lado en la celda. Con la píldora del `.link-accion` (que sobresale 9px por
+   lado) sin separación se cruzaban los pills por 18px. */
+.celda-acciones > .acciones-usuario + .acciones-usuario {
+  margin-left: 22px;
 }
 /* La casilla no tiene espacios: sin el corte forzado, un email largo marca el
    ancho mínimo de la columna y agranda el mínimo de toda la tabla. */
@@ -2596,22 +2609,54 @@ a.panel-nav-item:hover {
   opacity: 0.75;
 }
 .link-accion {
-  color: var(--cfl-navy-2);
+  /* Acción del panel como palabra (sin caja de botón): azul accesible por
+     defecto (5.4:1 sobre blanco). El tono por acción va en la variable local
+     `--ac`: Rojo para eliminar/desactivar, verde para activar, ámbar para
+     blanquear. En hover se pinta una píldora sutil del mismo tono — el radius
+     de color pedido para los controles del panel. El padding se compensa con
+     margen negativo para que el texto no se mueva. */
+  --ac: var(--cfl-blue-deep);
+  color: var(--ac);
+  display: inline-block;
+  padding: 3px 9px;
+  margin: -3px -9px;
+  border-radius: 999px;
   font-weight: 600;
   white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 .link-accion:hover {
   text-decoration: underline;
+  background-color: color-mix(in srgb, var(--ac) 9%, transparent);
+}
+.link-accion:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+/* Blanquear la contraseña devuelve a una temporal: es un aviso de atención,
+   no una baja, así que usa el ámbar de la paleta y no el rojo destructivo. */
+.link-accion-alerta {
+  --ac: var(--cfl-warn-fg);
+}
+/* Acción secundaria del mismo grupo (p. ej. "Cancelar" frente a "Guardar DNI"). */
+.link-accion-secundario {
+  --ac: var(--cfl-navy-2);
+}
+/* Reactivar una cuenta es una acción positiva: verde de éxito del panel. */
+.link-activar {
+  --ac: var(--cfl-success);
 }
 .link-eliminar {
-  color: var(--cfl-warn-low-fg);
+  --ac: var(--cfl-warn-low-fg);
+  color: var(--ac);
 }
 .link-eliminar:hover {
   color: var(--cfl-warn-low-fg-hover);
 }
 .acciones-curso {
   display: flex;
-  gap: 14px;
+  gap: 20px;
   align-items: center;
   white-space: nowrap;
 }
@@ -2669,6 +2714,7 @@ a.panel-nav-item:hover {
 }
 .btn-danger:hover {
   filter: brightness(1.08);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--cfl-warn-low-fg) 18%, transparent);
 }
 .btn-danger:disabled {
   opacity: 0.6;
@@ -3455,6 +3501,11 @@ a.panel-nav-item:hover {
     left: 0;
     right: 0;
     flex-direction: column;
+    /* El modo escritorio deja `flex-wrap: wrap` para que las 11 secciones
+       pasen a dos filas. Acá, en columna + max-height, ese wrap colaba las
+       secciones a una segunda COLUMNA (scroll lateral 750px). Con nowrap es
+       un desplegable de una columna y el sobrante scrollea en vertical. */
+    flex-wrap: nowrap;
     align-items: stretch;
     gap: 0;
     background: var(--cfl-white);
@@ -3568,7 +3619,7 @@ a.panel-nav-item:hover {
   .acciones-curso {
     justify-content: flex-end;
     flex-wrap: wrap;
-    gap: 10px 16px;
+    gap: 12px 20px;
   }
 }
 

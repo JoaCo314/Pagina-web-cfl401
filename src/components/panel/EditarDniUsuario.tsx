@@ -115,7 +115,7 @@ export default function EditarDniUsuario({
         <span className="acciones-usuario-fila">
           <button
             type="button"
-            className="btn-sm btn-primary"
+            className="link-accion"
             onClick={guardar}
             disabled={enviando}
           >
@@ -123,7 +123,7 @@ export default function EditarDniUsuario({
           </button>
           <button
             type="button"
-            className="btn-sm btn-ghost-dark"
+            className="link-accion link-accion-secundario"
             onClick={cancelar}
             disabled={enviando}
           >
@@ -147,7 +147,7 @@ export default function EditarDniUsuario({
       <span className="dni-valor">{dni}</span>
       <button
         type="button"
-        className="btn-sm btn-ghost-dark"
+        className="link-accion"
         onClick={abrir}
         disabled={enviando}
         aria-label={`Editar DNI de ${nombre}`}

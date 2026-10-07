@@ -72,7 +72,7 @@ export default function BlanquearContrasena({
     <span className="acciones-usuario">
       <button
         type="button"
-        className="btn-sm btn-ghost-dark"
+        className="link-accion link-accion-alerta"
         onClick={() => {
           setError(null);
           setListo(false);

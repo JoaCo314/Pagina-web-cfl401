@@ -62,7 +62,7 @@ export default function ToggleUsuario({
     <span className="acciones-usuario">
       <button
         type="button"
-        className="btn-sm btn-ghost-dark"
+        className={activo ? "link-accion link-eliminar" : "link-accion link-activar"}
         onClick={() => {
           setError(null);
           setConfirmar(true);
