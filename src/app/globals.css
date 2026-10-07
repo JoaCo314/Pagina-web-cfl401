@@ -16,10 +16,14 @@
   --cfl-ink: #16202c;
   --cfl-line: rgba(255, 255, 255, 0.14);
   --cfl-success: #1f7a4c;
+  --cfl-success-bg: #e6f7ee;
+  --cfl-success-border: #bfe0cb;
   --cfl-warn-bg: #fff4e0;
   --cfl-warn-fg: #8f5307;
   --cfl-warn-low-bg: #fde8e8;
   --cfl-warn-low-fg: #b23a3a;
+  --cfl-warn-low-fg-hover: #8e2f2f;
+  --cfl-muted: #6b7280;
 }
 
 @theme inline {
@@ -133,6 +137,11 @@ a {
   top: 0;
   z-index: 50;
   border-bottom: 1px solid rgba(18, 42, 69, 0.1);
+  transition: box-shadow 0.2s ease;
+}
+/* Sombra agregada por SiteHeaderCliente cuando la página scrollea. */
+.site-header.con-sombra {
+  box-shadow: 0 10px 24px -16px rgba(18, 42, 69, 0.45);
 }
 .site-nav {
   display: flex;
@@ -171,7 +180,7 @@ a {
 }
 .logo-text .sub {
   font-size: 11.5px;
-  color: var(--cfl-blue);
+  color: var(--cfl-blue-deep);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -196,6 +205,22 @@ a {
   color: var(--cfl-navy-2);
   font-weight: 600;
 }
+/* Pestaña activa del navbar público: barra celeste equilibrada con la que
+   ya usa el panel (`.panel-nav-item.active`). Va en un pseudo-elemento para
+   no alterar la altura de la fila de enlaces. */
+.navlinks a.active {
+  position: relative;
+}
+.navlinks a.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--cfl-blue);
+}
 .nav-cta,
 .btn-login,
 .btn-login-solid {
@@ -213,10 +238,16 @@ a {
 .nav-cta {
   background: var(--cfl-navy-2);
   color: var(--cfl-white);
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, transform 0.1s ease;
 }
 .nav-cta:hover {
   background: var(--cfl-blue-deep);
+}
+.nav-cta:active,
+.btn-login:active,
+.btn-login-solid:active {
+  transform: translateY(1px);
+  filter: brightness(0.94);
 }
 .nav-actions {
   display: flex;
@@ -227,19 +258,25 @@ a {
   border: 1.5px solid var(--cfl-navy-2);
   color: var(--cfl-navy-2);
   background: var(--cfl-white);
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
 }
 .btn-login:hover {
   background: var(--cfl-navy-2);
   color: var(--cfl-white);
 }
+/* Botón sólido con texto blanco: el celeste `--cfl-blue` da 3.5:1 contra el
+   blanco (no llega a AA), así que el estado base usa `--cfl-blue-deep` (5.4:1)
+   y el hover baja a navy-2. */
 .btn-login-solid {
-  background: var(--cfl-blue);
+  background: var(--cfl-blue-deep);
   color: var(--cfl-white);
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, transform 0.1s ease;
 }
 .btn-login-solid:hover {
-  background: var(--cfl-blue-deep);
+  background: var(--cfl-navy-2);
 }
 .nav-burger {
   display: none;
@@ -300,6 +337,8 @@ a {
 .nav-mobile a.active {
   color: var(--cfl-navy-2);
   font-weight: 700;
+  background: var(--cfl-blue-light);
+  box-shadow: inset 3px 0 0 var(--cfl-blue);
 }
 .nav-mobile > a:hover {
   color: var(--cfl-navy-2);
@@ -314,17 +353,17 @@ a {
 }
 .nav-mobile a.btn-login {
   text-align: center;
-  border: 1.5px solid var(--cfl-blue);
-  border-bottom: 1.5px solid var(--cfl-blue);
+  border: 1.5px solid var(--cfl-blue-deep);
+  border-bottom: 1.5px solid var(--cfl-blue-deep);
   border-radius: 4px;
   font-weight: 600;
   color: var(--cfl-white);
-  background: var(--cfl-blue);
+  background: var(--cfl-blue-deep);
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 .nav-mobile a.btn-login:hover {
-  background: var(--cfl-blue-deep);
-  border-color: var(--cfl-blue-deep);
+  background: var(--cfl-navy-2);
+  border-color: var(--cfl-navy-2);
 }
 .nav-mobile a.btn-login-solid {
   text-align: center;
@@ -365,7 +404,7 @@ a {
   gap: 6px;
 }
 .hero h1 {
-  font-size: 38px;
+  font-size: clamp(27px, 1.5vw + 21px, 38px);
   line-height: 1.18;
   max-width: 640px;
   margin-bottom: 16px;
@@ -389,9 +428,17 @@ a {
   font-weight: 700;
   font-size: 15px;
   display: inline-block;
+  transition: filter 0.15s ease, transform 0.1s ease;
 }
 .btn-primary:hover {
   filter: brightness(1.06);
+  /* Halo sutil del mismo azul: se aplica a los botones del panel Y a los CTA
+     públicos que comparten la clase, manteniendo un hover coherente. */
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--cfl-blue-deep) 18%, transparent);
+}
+.btn-primary:active {
+  filter: brightness(0.94);
+  transform: translateY(1px);
 }
 .btn-ghost {
   border: 1.5px solid rgba(255, 255, 255, 0.5);
@@ -401,9 +448,14 @@ a {
   font-weight: 600;
   font-size: 15px;
   display: inline-block;
+  transition: background 0.15s ease, transform 0.1s ease;
 }
 .btn-ghost:hover {
   background: rgba(255, 255, 255, 0.1);
+}
+.btn-ghost:active {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(1px);
 }
 
 /* ── Guide section (guía de inscripción) ─────────────────── */
@@ -529,7 +581,7 @@ a {
   padding: 48px 0;
 }
 .page-header h1 {
-  font-size: 32px;
+  font-size: clamp(26px, 1.4vw + 20px, 32px);
   margin-bottom: 8px;
 }
 .page-header p {
@@ -593,11 +645,23 @@ a {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: box-shadow 0.15s, border-color 0.15s;
+  transition:
+    box-shadow 0.15s,
+    border-color 0.15s,
+    transform 0.15s;
 }
 .course-card:hover {
   box-shadow: 0 14px 28px -16px rgba(18, 42, 69, 0.28);
   border-color: var(--cfl-blue);
+  transform: translateY(-2px);
+}
+/* Foto del curso en la tarjeta del catálogo: antes no tenía ninguna regla y
+   la imagen se desbordaba del padding de la card. */
+.course-img {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  border-radius: 6px;
 }
 .course-top {
   display: flex;
@@ -674,11 +738,90 @@ a {
   font-weight: 700;
 }
 
+/* Estado vacío / de error del catálogo y de las noticias: bloque con aire,
+   fondo de la paleta y borde discontinuo para diferenciarlo del contenido. */
 .courses-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
   text-align: center;
-  padding: 48px 0;
-  color: var(--cfl-ink);
-  opacity: 0.7;
+  padding: 44px 24px;
+  background: var(--cfl-blue-light);
+  border: 1.5px dashed rgba(18, 42, 69, 0.22);
+  border-radius: 10px;
+  color: var(--cfl-navy-2);
+  font-size: 15px;
+}
+
+/* ── Skeletons (estados de carga del sitio público) ─────── */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--cfl-blue-light);
+  border-radius: 6px;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.8),
+    transparent
+  );
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
+}
+.skeleton-linea {
+  width: 100%;
+  height: 13px;
+  border-radius: 4px;
+}
+.skeleton-linea.media {
+  width: 70%;
+}
+.skeleton-linea.corta {
+  width: 45%;
+}
+.skeleton-titulo {
+  width: min(65%, 420px);
+  height: 30px;
+  border-radius: 6px;
+}
+.skeleton-img {
+  height: 170px;
+}
+.skeleton-icono {
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
+}
+.skeleton-tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.skeleton-noticia {
+  height: 170px;
+  border-radius: 8px;
+}
+.skeleton-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 760px;
 }
 
 /* ── Course detail ───────────────────────────────────────── */
@@ -790,16 +933,21 @@ a {
 .detail-cta {
   display: block;
   margin-top: 16px;
-  background: var(--cfl-success);
+  background: var(--cfl-blue-deep);
   color: var(--cfl-white);
   text-align: center;
   padding: 14px;
   border-radius: 6px;
   font-weight: 700;
   font-size: 15px;
+  transition: filter 0.15s ease, transform 0.1s ease;
 }
 .detail-cta:hover {
   filter: brightness(1.06);
+}
+.detail-cta:active {
+  filter: brightness(0.94);
+  transform: translateY(1px);
 }
 .detail-notfound {
   text-align: center;
@@ -829,6 +977,11 @@ a {
 .noticias-section {
   padding: 56px 0;
 }
+/* Ritmo de fondos: la sección de noticias de la home se separa del blanco
+   contiguo con el celeste de la paleta. */
+.noticias-section--alt {
+  background: var(--cfl-blue-light);
+}
 .noticias-section .section-head {
   max-width: 620px;
   margin-bottom: 32px;
@@ -855,11 +1008,15 @@ a {
   border: 1.5px solid rgba(18, 42, 69, 0.12);
   border-radius: 8px;
   overflow: hidden;
-  transition: box-shadow 0.15s, border-color 0.15s;
+  transition:
+    box-shadow 0.15s,
+    border-color 0.15s,
+    transform 0.15s;
 }
 .noticia-card:hover {
   box-shadow: 0 14px 28px -16px rgba(18, 42, 69, 0.28);
   border-color: var(--cfl-blue);
+  transform: translateY(-2px);
 }
 .noticia-card.con-imagen {
   flex-direction: row;
@@ -887,7 +1044,7 @@ a {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--cfl-blue);
+  color: var(--cfl-blue-deep);
 }
 .noticia-card h3 {
   font-size: 20px;
@@ -937,7 +1094,7 @@ a {
   margin-bottom: 10px;
 }
 .noticia-articulo h1 {
-  font-size: 32px;
+  font-size: clamp(26px, 1.4vw + 20px, 32px);
   color: var(--cfl-navy);
   margin-bottom: 12px;
 }
@@ -1004,7 +1161,7 @@ a {
   line-height: 1.7;
 }
 .noticia-cuerpo li::marker {
-  color: #2a6ea3;
+  color: var(--cfl-blue-deep);
 }
 .noticia-cuerpo li p {
   opacity: 1;
@@ -1021,7 +1178,7 @@ a {
   margin: 0;
 }
 .noticia-cuerpo a {
-  color: #2563eb;
+  color: var(--cfl-blue-deep);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -1131,7 +1288,7 @@ a {
   margin: 0;
 }
 .contenido-enriquecido a {
-  color: #2563eb;
+  color: var(--cfl-blue-deep);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -1219,7 +1376,7 @@ a {
 }
 .auth-note {
   font-size: 13px;
-  color: var(--cfl-blue);
+  color: var(--cfl-blue-deep);
   background: #eef5ff;
   border: 1px solid rgba(18, 42, 69, 0.1);
   padding: 10px 12px;
@@ -1285,8 +1442,10 @@ a {
   opacity: 0.6;
   cursor: default;
 }
+/* Blanco sobre `--cfl-blue` da 3.5:1 (min AA 4.5): con `--cfl-blue-deep`
+   el estado normal queda en 5.4:1 y el hover (brightness 1.06) en ~5:1. */
 .auth-submit {
-  background: var(--cfl-blue);
+  background: var(--cfl-blue-deep);
   color: var(--cfl-white);
   border: 0;
   padding: 13px;
@@ -1525,6 +1684,11 @@ a {
   background: var(--cfl-white);
   overflow: hidden;
 }
+/* Ítem desplegado: el borde pasa al celeste de la paleta para marcar cuál
+   quedó abierto. */
+.faq-item:has(.faq-respuesta.abierta) {
+  border-color: var(--cfl-blue);
+}
 .faq-pregunta {
   width: 100%;
   display: flex;
@@ -1560,14 +1724,22 @@ a {
   transform: rotate(225deg);
   margin-top: 4px;
 }
+/* La respuesta se abre con el truco de grid `0fr → 1fr`: a diferencia de
+   `max-height`, la transición dura lo mismo con una respuesta corta que con
+   una muy larga y no hace falta adivinar un techo. El hijo directo (el wrapper
+   de HtmlEnriquecido) es el que recorta con overflow. */
 .faq-respuesta {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.25s ease;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease;
   padding: 0 18px;
 }
 .faq-respuesta.abierta {
-  max-height: 1000px;
+  grid-template-rows: 1fr;
+}
+.faq-respuesta > * {
+  min-height: 0;
+  overflow: hidden;
 }
 .faq-respuesta p {
   font-size: 14.5px;
@@ -1644,7 +1816,7 @@ a {
   opacity: 0.6;
 }
 .panel-ver-sitio {
-  background: var(--cfl-blue);
+  background: var(--cfl-blue-deep);
   color: var(--cfl-white);
   padding: 8px 14px;
   border-radius: 5px;
@@ -1655,7 +1827,7 @@ a {
   transition: background 0.15s;
 }
 .panel-ver-sitio:hover {
-  background: var(--cfl-blue-deep);
+  background: var(--cfl-navy-2);
 }
 .panel-nav {
   position: relative;
@@ -1671,16 +1843,22 @@ a {
 }
 .panel-nav-links {
   display: flex;
+  /* Envolver en vez de scrollear: con las 11 secciones del administrador los
+     links medían 1353px contra 1124px disponibles y "Consultas" quedaba
+     totalmente fuera de pantalla en todos los anchos. Con wrap pasan a dos
+     filas y ninguna sección se corta. */
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  overflow-x: auto;
+  gap: 0 6px;
 }
 .panel-nav-item {
   padding: 14px 18px;
   font-size: 14px;
   font-weight: 500;
   color: var(--cfl-ink);
-  opacity: 0.55;
+  /* 0.55 daba 3.76:1 contra el blanco del nav; con 0.70 el link inactivo
+     queda en ~5.5:1 (AA) y sigue destacando menos que el activo (opacity 1). */
+  opacity: 0.7;
   white-space: nowrap;
   cursor: default;
   text-decoration: none;
@@ -1709,6 +1887,32 @@ a.panel-nav-item:hover {
   opacity: 0.7;
   max-width: 640px;
   margin-bottom: 36px;
+}
+/* Cuando el lead va seguido del detalle colapsado, el lead resume y el
+   <details> aporta el texto largo: el margen grande sobra. */
+.panel-lead:has(+ .panel-lead-detalle) {
+  margin-bottom: 10px;
+}
+.panel-lead-detalle {
+  max-width: 640px;
+  margin-bottom: 36px;
+  font-size: 14px;
+}
+.panel-lead-detalle summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--cfl-blue-deep);
+  padding: 6px 0;
+}
+.panel-lead-detalle summary:focus-visible {
+  outline: 3px solid var(--cfl-blue);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.panel-lead-detalle p {
+  margin: 6px 0 0;
+  opacity: 0.8;
+  line-height: 1.55;
 }
 .panel-stats {
   display: grid;
@@ -1842,6 +2046,14 @@ a.panel-nav-item:hover {
   gap: 9px;
   font-size: 14px;
   opacity: 0.88;
+}
+.site-footer ul a {
+  transition: color 0.15s ease;
+}
+.site-footer ul a:hover {
+  color: var(--cfl-blue-light);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .foot-bottom {
   border-top: 1px solid var(--cfl-line);
@@ -2034,9 +2246,14 @@ a.panel-nav-item:hover {
   font-size: 14px;
   cursor: pointer;
   background: transparent;
+  transition: background 0.15s ease, transform 0.1s ease;
 }
 .btn-ghost-dark:hover {
-  background: rgba(18, 42, 69, 0.05);
+  background-color: color-mix(in srgb, var(--cfl-navy-2) 8%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--cfl-navy-2) 12%, transparent);
+}
+.btn-ghost-dark:active {
+  transform: translateY(1px);
 }
 .panel-table-wrap {
   background: var(--cfl-white);
@@ -2173,23 +2390,24 @@ a.panel-nav-item:hover {
   border-radius: 12px;
 }
 .badge-estado.ok {
-  background: #e4f5ea;
-  color: #16743b;
+  background: var(--cfl-success-bg);
+  color: var(--cfl-success);
 }
 .badge-estado.off {
-  background: #f6ecec;
-  color: #a03c3c;
+  background: var(--cfl-warn-low-bg);
+  color: var(--cfl-warn-low-fg);
 }
 .badge-estado.pendiente {
-  background: #fdf3e0;
-  color: #8a5a12;
+  background: var(--cfl-warn-bg);
+  color: var(--cfl-warn-fg);
   margin-left: 6px;
 }
 .acciones-usuario {
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  /* 4px dejaba el DNI pegado al botón de editar (arriba del todo, sin aire). */
+  gap: 8px;
 }
 /* Diálogo de confirmación del panel (ConfirmDialog). */
 .dialogo-fondo {
@@ -2222,7 +2440,7 @@ a.panel-nav-item:hover {
 }
 .dialogo-mensaje {
   font-size: 14px;
-  color: var(--cfl-blue);
+  color: var(--cfl-blue-deep);
   white-space: pre-line;
 }
 .dialogo-acciones {
@@ -2236,8 +2454,8 @@ a.panel-nav-item:hover {
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
-  background: #eef7f1;
-  border: 1px solid #bfe0cb;
+  background: var(--cfl-success-bg);
+  border: 1px solid var(--cfl-success-border);
   border-radius: 10px;
   padding: 16px 18px;
   margin-bottom: 18px;
@@ -2360,10 +2578,30 @@ a.panel-nav-item:hover {
 }
 .acciones-usuario-fila {
   display: inline-flex;
-  gap: 6px;
+  /* 6px alcanzaban cuando Guardar/Cancelar eran botones. Como palabras con
+     píldora (sobresalen 9px por lado) necesitan el mismo aire de 18px para
+     que las píldoras no se crucen. */
+  gap: 20px;
 }
 .celda-acciones {
   white-space: nowrap;
+}
+/* Las dos columnas de acciones (Desactivar/Activar y Blanquear) van lado a
+   lado en la celda. Con la píldora del `.link-accion` (que sobresale 9px por
+   lado) sin separación se cruzaban los pills por 18px. */
+.celda-acciones > .acciones-usuario + .acciones-usuario {
+  margin-left: 22px;
+}
+/* La casilla no tiene espacios: sin el corte forzado, un email largo marca el
+   ancho mínimo de la columna y agranda el mínimo de toda la tabla. */
+.panel-table td[data-label="Email"] {
+  overflow-wrap: anywhere;
+}
+/* `white-space: nowrap` de `.celda-acciones` se hereda al mensaje de éxito:
+   con la frase completa del blanqueo la tabla se disparaba de 1122 a 1667px.
+   El texto vuelve a envolverse dentro de la celda. */
+.celda-acciones .td-sub {
+  white-space: normal;
 }
 .form-note {
   font-size: 13px;
@@ -2371,22 +2609,54 @@ a.panel-nav-item:hover {
   opacity: 0.75;
 }
 .link-accion {
-  color: var(--cfl-navy-2);
+  /* Acción del panel como palabra (sin caja de botón): azul accesible por
+     defecto (5.4:1 sobre blanco). El tono por acción va en la variable local
+     `--ac`: Rojo para eliminar/desactivar, verde para activar, ámbar para
+     blanquear. En hover se pinta una píldora sutil del mismo tono — el radius
+     de color pedido para los controles del panel. El padding se compensa con
+     margen negativo para que el texto no se mueva. */
+  --ac: var(--cfl-blue-deep);
+  color: var(--ac);
+  display: inline-block;
+  padding: 3px 9px;
+  margin: -3px -9px;
+  border-radius: 999px;
   font-weight: 600;
   white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 .link-accion:hover {
   text-decoration: underline;
+  background-color: color-mix(in srgb, var(--ac) 9%, transparent);
+}
+.link-accion:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+/* Blanquear la contraseña devuelve a una temporal: es un aviso de atención,
+   no una baja, así que usa el ámbar de la paleta y no el rojo destructivo. */
+.link-accion-alerta {
+  --ac: var(--cfl-warn-fg);
+}
+/* Acción secundaria del mismo grupo (p. ej. "Cancelar" frente a "Guardar DNI"). */
+.link-accion-secundario {
+  --ac: var(--cfl-navy-2);
+}
+/* Reactivar una cuenta es una acción positiva: verde de éxito del panel. */
+.link-activar {
+  --ac: var(--cfl-success);
 }
 .link-eliminar {
-  color: var(--cfl-warn-low-fg);
+  --ac: var(--cfl-warn-low-fg);
+  color: var(--ac);
 }
 .link-eliminar:hover {
-  color: #8e2f2f;
+  color: var(--cfl-warn-low-fg-hover);
 }
 .acciones-curso {
   display: flex;
-  gap: 14px;
+  gap: 20px;
   align-items: center;
   white-space: nowrap;
 }
@@ -2444,6 +2714,7 @@ a.panel-nav-item:hover {
 }
 .btn-danger:hover {
   filter: brightness(1.08);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--cfl-warn-low-fg) 18%, transparent);
 }
 .btn-danger:disabled {
   opacity: 0.6;
@@ -2472,7 +2743,7 @@ a.panel-nav-item:hover {
   color: var(--cfl-navy-2);
 }
 .form-field > span strong {
-  color: #c0392b;
+  color: var(--cfl-warn-low-fg);
 }
 .form-field input,
 .form-field textarea,
@@ -2510,7 +2781,7 @@ a.panel-nav-item:hover {
 .form-field input::placeholder,
 .form-field textarea::placeholder,
 .form-field select::placeholder {
-  color: #6b7280;
+  color: var(--cfl-muted);
   opacity: 1;
 }
 .docentes-box {
@@ -2548,7 +2819,7 @@ a.panel-nav-item:hover {
   font-size: 12px;
 }
 .docente-inactivo {
-  color: #a03c3c;
+  color: var(--cfl-warn-low-fg);
   opacity: 1;
   font-weight: 600;
 }
@@ -2643,13 +2914,13 @@ a.panel-nav-item:hover {
   background: var(--cfl-blue-light);
 }
 .imagen-accion-peligro {
-  border-color: rgba(180, 40, 40, 0.35);
-  color: #a12828;
+  border-color: rgba(178, 58, 58, 0.35);
+  color: var(--cfl-warn-low-fg);
 }
 .imagen-accion-peligro:hover {
-  border-color: #b03030;
-  color: #a12828;
-  background: #fdf3f3;
+  border-color: var(--cfl-warn-low-fg);
+  color: var(--cfl-warn-low-fg-hover);
+  background: var(--cfl-warn-low-bg);
 }
 .imagen-accion:disabled,
 .imagen-subir:has(input:disabled) {
@@ -2895,9 +3166,9 @@ a.panel-nav-item:hover {
 }
 .form-ok {
   font-size: 14px;
-  color: #155e3a;
-  background: #e6f7ee;
-  border: 1px solid #b7e3cd;
+  color: var(--cfl-success);
+  background: var(--cfl-success-bg);
+  border: 1px solid var(--cfl-success-border);
   padding: 12px 14px;
   border-radius: 6px;
   margin-bottom: 16px;
@@ -2957,7 +3228,7 @@ a.panel-nav-item:hover {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--cfl-blue);
+  color: var(--cfl-blue-deep);
   padding: 0 6px;
 }
 .guia-contador {
@@ -3042,9 +3313,6 @@ a.panel-nav-item:hover {
   }
   .detail-head h1 {
     font-size: 26px;
-  }
-  .hero h1 {
-    font-size: 30px;
   }
   .panel-cards {
     grid-template-columns: 1fr;
@@ -3132,23 +3400,14 @@ a.panel-nav-item:hover {
   .hero {
     padding: 44px 0 52px;
   }
-  .hero h1 {
-    font-size: 27px;
-  }
   .hero p.lead {
     font-size: 15.5px;
   }
   .page-header {
     padding: 34px 0;
   }
-  .page-header h1 {
-    font-size: 26px;
-  }
   .detail-body {
     padding: 24px 0 48px;
-  }
-  .noticia-articulo h1 {
-    font-size: 26px;
   }
   .noticia-body {
     padding: 20px;
@@ -3242,6 +3501,11 @@ a.panel-nav-item:hover {
     left: 0;
     right: 0;
     flex-direction: column;
+    /* El modo escritorio deja `flex-wrap: wrap` para que las 11 secciones
+       pasen a dos filas. Acá, en columna + max-height, ese wrap colaba las
+       secciones a una segunda COLUMNA (scroll lateral 750px). Con nowrap es
+       un desplegable de una columna y el sobrante scrollea en vertical. */
+    flex-wrap: nowrap;
     align-items: stretch;
     gap: 0;
     background: var(--cfl-white);
@@ -3288,8 +3552,14 @@ a.panel-nav-item:hover {
   .form-actions .btn-ghost-dark {
     text-align: center;
   }
+}
 
-  /* Tablas del panel → tarjetas apiladas */
+/* Tablas del panel → tarjetas apiladas. El breakpoint va en 1020px y no en
+   680px: la tabla de usuarios necesita 961px y con el wrap del panel (viewport
+   − 58px de padding) el scroll horizontal aparecía entre 681 y 1018px, dejando
+   las columnas Estado y Acciones cortadas. Con tarjetas desde 1020px no hay
+   franja de scroll en ningún ancho. */
+@media (max-width: 1020px) {
   .panel-table-wrap {
     border: none;
     background: transparent;
@@ -3349,7 +3619,7 @@ a.panel-nav-item:hover {
   .acciones-curso {
     justify-content: flex-end;
     flex-wrap: wrap;
-    gap: 10px 16px;
+    gap: 12px 20px;
   }
 }
 
@@ -3364,10 +3634,10 @@ a.panel-nav-item:hover {
   gap: 4px;
   padding: 6px 8px;
   margin-bottom: 0;
-  border: 1px solid #d1d5db;
+  border: 1px solid rgba(18, 42, 69, 0.18);
   border-bottom: none;
   border-radius: 6px 6px 0 0;
-  background: #f8fafc;
+  background: var(--cfl-blue-light);
 }
 .rte-toolbar button,
 .rte-toolbar input[type="color"] {
@@ -3377,23 +3647,23 @@ a.panel-nav-item:hover {
   border: 1px solid transparent;
   border-radius: 4px;
   background: transparent;
-  color: #1f2937;
+  color: var(--cfl-ink);
   font-size: 14px;
   line-height: 1;
   cursor: pointer;
 }
 .rte-toolbar button:hover,
 .rte-toolbar button:focus-visible {
-  background: #e5e7eb;
-  border-color: #d1d5db;
+  background: rgba(18, 42, 69, 0.08);
+  border-color: rgba(18, 42, 69, 0.18);
 }
 /* Botón activo: la propiedad está aplicada al texto bajo el caret/selección.
    Se marca con un gris más oscuro para diferenciarlo del hover. */
 .rte-toolbar button.activo,
 .rte-toolbar .rte-color.activo {
-  background: #cbd5e1;
-  border-color: #9ca3af;
-  color: #0f172a;
+  background: var(--cfl-blue-deep);
+  border-color: var(--cfl-blue-deep);
+  color: var(--cfl-white);
 }
 .rte-toolbar input[type="color"] {
   width: 40px;
@@ -3409,13 +3679,13 @@ a.panel-nav-item:hover {
   border: 1px solid transparent;
   border-radius: 4px;
   background: transparent;
-  color: #1f2937;
+  color: var(--cfl-ink);
   cursor: pointer;
 }
 .rte-color:hover,
 .rte-color:focus-within {
-  background: #e5e7eb;
-  border-color: #d1d5db;
+  background: rgba(18, 42, 69, 0.08);
+  border-color: rgba(18, 42, 69, 0.18);
 }
 .rte-color input[type="color"] {
   width: 26px;
@@ -3443,24 +3713,24 @@ a.panel-nav-item:hover {
   width: 1px;
   height: 22px;
   margin: 0 6px;
-  background: #d1d5db;
+  background: rgba(18, 42, 69, 0.18);
 }
 .rte-area {
   min-height: 260px;
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid rgba(18, 42, 69, 0.22);
   border-radius: 0 0 6px 6px;
   background: #ffffff;
 }
 .rte-area:focus,
 .form-field-editor:focus-within .rte-area {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  border-color: var(--cfl-blue-deep);
+  box-shadow: 0 0 0 3px rgba(42, 110, 163, 0.15);
 }
 .rte-area:empty::before {
   content: attr(data-placeholder);
-  color: #9ca3af;
+  color: var(--cfl-muted);
   pointer-events: none;
 }
 .rte-area p,
@@ -3498,7 +3768,7 @@ a.panel-nav-item:hover {
   margin: 2px 0 6px;
 }
 .rte-area li::marker {
-  color: #2a6ea3;
+  color: var(--cfl-blue-deep);
 }
 .rte-area ul ul,
 .rte-area ol ul {
@@ -3523,18 +3793,19 @@ a.panel-nav-item:hover {
 .rte-area blockquote {
   margin: 0 0 10px;
   padding: 4px 12px;
-  border-left: 3px solid #cbd5e1;
-  color: #475569;
+  border-left: 3px solid var(--cfl-blue);
+  background: var(--cfl-blue-light);
+  color: var(--cfl-navy-2);
 }
 .rte-area a {
-  color: #2563eb;
+  color: var(--cfl-blue-deep);
   text-decoration: underline;
 }
 .rte-area code,
 .rte-area pre {
   font-family: ui-monospace, monospace;
   font-size: 0.92em;
-  background: #f1f5f9;
+  background: #eef2f7;
   border-radius: 4px;
 }
 .rte-area code {

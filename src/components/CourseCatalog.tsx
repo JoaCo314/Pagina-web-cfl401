@@ -107,6 +107,13 @@ export default function CourseCatalog() {
     );
   }, [categorias, busqueda, rubro]);
 
+  const hayFiltros = busqueda.trim() !== "" || rubro !== "";
+
+  function limpiarFiltros() {
+    setBusqueda("");
+    setRubro("");
+  }
+
   if (error) {
     return (
       <p className="courses-empty">
@@ -148,11 +155,38 @@ export default function CourseCatalog() {
       <section className="courses-section">
         <div className="wrap">
           {categorias === null ? (
-            <p className="courses-empty">Cargando cursos…</p>
+            <>
+              <div className="course-grid" aria-hidden="true">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="course-card skeleton-tarjeta">
+                    <div className="skeleton skeleton-img" />
+                    <div className="skeleton skeleton-linea corta" />
+                    <div className="skeleton skeleton-linea media" />
+                    <div className="skeleton skeleton-linea" />
+                    <div className="skeleton skeleton-linea corta" />
+                  </div>
+                ))}
+              </div>
+              <p className="sr-only" role="status">
+                Cargando cursos…
+              </p>
+            </>
           ) : cursosFiltrados.length === 0 ? (
-            <p className="courses-empty">
-              No encontramos cursos con esos filtros. Probá con otros términos.
-            </p>
+            <div className="courses-empty">
+              <p>
+                No encontramos cursos con esos filtros. Probá con otros
+                términos.
+              </p>
+              {hayFiltros && (
+                <button
+                  type="button"
+                  className="btn-ghost-dark"
+                  onClick={limpiarFiltros}
+                >
+                  Limpiar filtros
+                </button>
+              )}
+            </div>
           ) : (
             <div className="course-grid">
               {cursosFiltrados.map((curso) => (

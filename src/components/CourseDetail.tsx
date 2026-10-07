@@ -93,7 +93,17 @@ export default function CourseDetail({ id }: { id: number }) {
     return (
       <section className="wrap detail-body" id="contenido" tabIndex={-1}>
         {volverAlCatalogo}
-        <p className="courses-empty">Cargando curso…</p>
+        <div className="skeleton-detalle" aria-hidden="true">
+          <div className="skeleton skeleton-img" />
+          <div className="skeleton skeleton-titulo" />
+          <div className="skeleton skeleton-linea" />
+          <div className="skeleton skeleton-linea media" />
+          <div className="skeleton skeleton-linea" />
+          <div className="skeleton skeleton-linea corta" />
+        </div>
+        <p className="sr-only" role="status">
+          Cargando curso…
+        </p>
       </section>
     );
   }

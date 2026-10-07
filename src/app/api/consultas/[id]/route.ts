@@ -7,7 +7,7 @@ import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
 export const dynamic = "force-dynamic";
 
 /// Marca una consulta como leída (o la vuelve a marcar como no leída).
-/// Exclusivo del Administrador, igual que el listado.
+/// Disponible para Administrador y Preceptor, igual que el listado.
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

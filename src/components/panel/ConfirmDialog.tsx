@@ -29,10 +29,15 @@ export default function ConfirmDialog({
 }) {
   const tituloId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
+  // Elemento que tenía el foco antes de abrir el diálogo (el botón que lo
+  // llamó). Al cerrar se devuelve el foco a ese botón: si no, el navegador lo
+  // pierde al desmontar el panel y quien navega con teclado queda en <body>.
+  const focoAnteriorRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!abierto) return;
 
+    focoAnteriorRef.current = document.activeElement as HTMLElement | null;
     const panel = panelRef.current;
     panel?.focus();
 
@@ -63,7 +68,14 @@ export default function ConfirmDialog({
     }
 
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      // Al desmontarse (confirmar o cancelar) el foco vuelve al disparador.
+      const anterior = focoAnteriorRef.current;
+      if (anterior && anterior.isConnected) {
+        anterior.focus();
+      }
+    };
   }, [abierto, onCancelar]);
 
   if (!abierto) return null;

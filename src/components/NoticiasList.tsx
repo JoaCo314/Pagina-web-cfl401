@@ -28,7 +28,16 @@ export default function NoticiasList() {
             minutos.
           </p>
         ) : noticias === null ? (
-          <p className="courses-empty">Cargando noticias…</p>
+          <>
+            <div className="noticias-list" aria-hidden="true">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="skeleton skeleton-noticia" />
+              ))}
+            </div>
+            <p className="sr-only" role="status">
+              Cargando noticias…
+            </p>
+          </>
         ) : noticias.length === 0 ? (
           <p className="courses-empty">
             Todavía no hay noticias publicadas. Volvé a visitarnos pronto.

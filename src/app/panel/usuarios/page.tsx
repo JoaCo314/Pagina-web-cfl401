@@ -62,9 +62,20 @@ export default async function UsuariosPanelPage() {
           </h1>
           <p className="panel-lead">
             {soloDocentes
-              ? "Listado de las cuentas con rol Docente del CFL 401. Podés dar de alta cuentas, corregir el DNI, blanquear la contraseña y desactivar o reactivar docentes. Las cuentas de administradores y preceptores las administra el administrador del centro."
-              : "Listado completo de las cuentas del CFL 401. Podés dar de alta, desactivar o reactivar usuarios y blanquear la contraseña de cada cuenta. El blanqueo siempre genera la contraseña temporal con los últimos 4 dígitos del DNI y la persona tiene que cambiarla al ingresar. Si corregís el DNI de una cuenta que todavía tiene la contraseña temporal, la temporal se vuelve a calcular con el DNI nuevo. Un usuario desactivado pierde el acceso al panel inmediatamente."}
+              ? "Cuentas con rol Docente del CFL 401: se pueden dar de alta, editar el DNI, blanquear la contraseña y activar o desactivar."
+              : "Todas las cuentas del CFL 401: alta, edición de DNI, blanqueo de contraseña y activación o desactivación de usuarios."}
           </p>
+          {/* El detalle largo (password temporal, recálculo al corregir el DNI,
+              efectos de la baja) iba en el lead como párrafos sueltos y quedaba
+              como un muro de texto arriba de la tabla. Ahora está colapsado. */}
+          <details className="panel-lead-detalle">
+            <summary>¿Cómo funcionan las contraseñas y los permisos?</summary>
+            <p>
+              {soloDocentes
+                ? "Las cuentas de administradores y preceptores las administra el administrador del centro: acá solo aparecen los docentes."
+                : "El blanqueo siempre genera la contraseña temporal con los últimos 4 dígitos del DNI y la persona tiene que cambiarla al ingresar. Si corregís el DNI de una cuenta que todavía tiene la contraseña temporal, la temporal se vuelve a calcular con el DNI nuevo. Un usuario desactivado pierde el acceso al panel inmediatamente."}
+            </p>
+          </details>
         </div>
         <Link href="/panel/usuarios/nuevo" className="btn-primary btn-sm">
           + Nuevo usuario
@@ -91,9 +102,10 @@ export default async function UsuariosPanelPage() {
                 <th scope="col">Email</th>
                 {!soloDocentes && <th scope="col">Rol</th>}
                 <th scope="col">Estado</th>
-                <th scope="col">
-                  <span className="sr-only">Acciones</span>
-                </th>
+                {/* Título visible en escritorio (antes era sr-only y la columna
+                    quedaba sin encabezado); en modo tarjeta el thead no se ve,
+                    así que ahí manda el data-label "Acciones" de la celda. */}
+                <th scope="col">Acciones</th>
               </tr>
             </thead>
             <tbody>

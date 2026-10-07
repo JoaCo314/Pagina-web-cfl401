@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type SiteHeaderClienteProps = {
   active?: string;
@@ -25,6 +25,16 @@ export default function SiteHeaderCliente({
   logoAlt = "CFL 401 Azul",
 }: SiteHeaderClienteProps) {
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const [conSombra, setConSombra] = useState(false);
+
+  // El header es sticky: apenas la página se separa del tope se le agrega
+  // una sombra para que se note que sigue flotando sobre el contenido.
+  useEffect(() => {
+    const onScroll = () => setConSombra(window.scrollY > 4);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   function cerrarMenu() {
     setMenuAbierto(false);
@@ -49,7 +59,7 @@ export default function SiteHeaderCliente({
         </div>
       </div>
 
-      <header className="site-header">
+      <header className={`site-header${conSombra ? " con-sombra" : ""}`}>
         <nav className="wrap site-nav">
           <Link href="/" className="logo" onClick={cerrarMenu}>
             {/* eslint-disable-next-line @next/next/no-img-element */}

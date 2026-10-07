@@ -72,7 +72,17 @@ export default function NoticiaDetail({ id }: { id: number }) {
     return (
       <section className="wrap detail-body" id="contenido" tabIndex={-1}>
         {volverAtras}
-        <p className="courses-empty">Cargando noticia…</p>
+        <div className="skeleton-detalle" aria-hidden="true">
+          <div className="skeleton skeleton-linea corta" />
+          <div className="skeleton skeleton-titulo" />
+          <div className="skeleton skeleton-img" />
+          <div className="skeleton skeleton-linea" />
+          <div className="skeleton skeleton-linea media" />
+          <div className="skeleton skeleton-linea" />
+        </div>
+        <p className="sr-only" role="status">
+          Cargando noticia…
+        </p>
       </section>
     );
   }

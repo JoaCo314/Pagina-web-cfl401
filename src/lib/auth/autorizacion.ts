@@ -22,9 +22,8 @@ export const PERMISOS = {
   SOBRE_EL_CENTRO_EDITAR: "sobre_el_centro:editar",
   PREGUNTAS_FAQS_EDITAR: "preguntas_faqs:editar",
   SITE_CONFIG_EDITAR: "site_config:editar", // sofia-athos: banner, logo, footer y contactos editables
-  /// Consultas que llegan por el formulario público de /contacto. Solo el
-  /// Administrador: los datos personales de quien consulta no se exponen al
-  /// preceptor, que sí puede editar los datos de contacto del sitio.
+  /// Consultas que llegan por el formulario público de /contacto. Administrador
+  /// y Preceptor la leen desde el panel para poder responderle a quien escribió.
   CONSULTAS_VER: "consultas:ver",
 } as const;
 
@@ -89,6 +88,7 @@ const PERMISOS_POR_ROL: Record<
     PERMISOS.SOBRE_EL_CENTRO_EDITAR,
     PERMISOS.PREGUNTAS_FAQS_EDITAR,
     PERMISOS.SITE_CONFIG_EDITAR,
+    PERMISOS.CONSULTAS_VER,
   ],
   [ROLES.DOCENTE]: [PERMISOS.CURSOS_VER],
 };
