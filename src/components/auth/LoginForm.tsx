@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { fetchConTimeout, TimeoutError } from "@/lib/fetchTimeout";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export default function LoginForm() {
     setEnviando(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetchConTimeout("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -39,8 +40,12 @@ export default function LoginForm() {
         error?: string;
       } | null;
       setError(data?.error ?? "No se pudo iniciar sesión.");
-    } catch {
-      setError("No se pudo iniciar sesión. Intentá de nuevo en unos minutos.");
+    } catch (err) {
+      setError(
+        err instanceof TimeoutError
+          ? "El servidor tardó demasiado. Intentá nuevamente."
+          : "No se pudo iniciar sesión. Intentá de nuevo en unos minutos."
+      );
     } finally {
       setEnviando(false);
     }
@@ -72,7 +77,12 @@ export default function LoginForm() {
         />
       </label>
 
-      {error && <p className="auth-error">{error}</p>}
+      {/* Siempre en el DOM (igual que CambiarMiContrasena): sin error el CSS
+          `.auth-error:empty` lo oculta, y con role/aria-live el lector de
+          pantalla anuncia "Credenciales inválidas" apenas aparece. */}
+      <p className="auth-error" role="alert" aria-live="polite">
+        {error ?? ""}
+      </p>
 
       <button type="submit" className="auth-submit" disabled={enviando}>
         {enviando ? "Ingresando…" : "Ingresar"}

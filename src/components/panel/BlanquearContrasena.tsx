@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/panel/ConfirmDialog";
 import { fetchConTimeout, TimeoutError } from "@/lib/fetchTimeout";
@@ -20,8 +20,20 @@ export default function BlanquearContrasena({
   const [confirmar, setConfirmar] = useState(false);
   const [listo, setListo] = useState(false);
 
+  // El mensaje de éxito se va solo: si queda hasta recargar, la fila queda
+  // alta de verdad durante toda la sesión. Va antes del early return de
+  // `esPropio` para no romper el orden de los hooks.
+  useEffect(() => {
+    if (!listo) return;
+    const t = setTimeout(() => setListo(false), 6000);
+    return () => clearTimeout(t);
+  }, [listo]);
+
+  // En la fila propia no hay acciones: el aviso "Tu cuenta" lo pinta
+  // ToggleUsuario (el otro componente de la misma celda), y renderizarlo en
+  // los dos dejaba dos renglones idénticos uno encima del otro.
   if (esPropio) {
-    return <span className="td-sub">Tu cuenta</span>;
+    return null;
   }
 
   async function blanquear() {

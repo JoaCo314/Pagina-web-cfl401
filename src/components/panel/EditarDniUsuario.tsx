@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { REGEX_DNI } from "@/lib/validaciones";
 import { fetchConTimeout, TimeoutError } from "@/lib/fetchTimeout";
@@ -28,6 +28,14 @@ export default function EditarDniUsuario({
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [listo, setListo] = useState<string | null>(null);
+
+  // El mensaje de éxito vive dentro de una celda de la tabla: si queda hasta
+  // recargar la página agranda la fila durante toda la sesión. Se va solo.
+  useEffect(() => {
+    if (!listo) return;
+    const t = setTimeout(() => setListo(null), 6000);
+    return () => clearTimeout(t);
+  }, [listo]);
 
   function abrir() {
     setValor(dni);
@@ -142,8 +150,9 @@ export default function EditarDniUsuario({
         className="btn-sm btn-ghost-dark"
         onClick={abrir}
         disabled={enviando}
+        aria-label={`Editar DNI de ${nombre}`}
       >
-        Corregir
+        Editar
       </button>
       <span className="form-error" role="alert" aria-live="polite">
         {error ?? ""}

@@ -267,13 +267,16 @@ a {
   background: var(--cfl-navy-2);
   color: var(--cfl-white);
 }
+/* Botón sólido con texto blanco: el celeste `--cfl-blue` da 3.5:1 contra el
+   blanco (no llega a AA), así que el estado base usa `--cfl-blue-deep` (5.4:1)
+   y el hover baja a navy-2. */
 .btn-login-solid {
-  background: var(--cfl-blue);
+  background: var(--cfl-blue-deep);
   color: var(--cfl-white);
   transition: background 0.15s ease, transform 0.1s ease;
 }
 .btn-login-solid:hover {
-  background: var(--cfl-blue-deep);
+  background: var(--cfl-navy-2);
 }
 .nav-burger {
   display: none;
@@ -350,17 +353,17 @@ a {
 }
 .nav-mobile a.btn-login {
   text-align: center;
-  border: 1.5px solid var(--cfl-blue);
-  border-bottom: 1.5px solid var(--cfl-blue);
+  border: 1.5px solid var(--cfl-blue-deep);
+  border-bottom: 1.5px solid var(--cfl-blue-deep);
   border-radius: 4px;
   font-weight: 600;
   color: var(--cfl-white);
-  background: var(--cfl-blue);
+  background: var(--cfl-blue-deep);
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 .nav-mobile a.btn-login:hover {
-  background: var(--cfl-blue-deep);
-  border-color: var(--cfl-blue-deep);
+  background: var(--cfl-navy-2);
+  border-color: var(--cfl-navy-2);
 }
 .nav-mobile a.btn-login-solid {
   text-align: center;
@@ -1436,8 +1439,10 @@ a {
   opacity: 0.6;
   cursor: default;
 }
+/* Blanco sobre `--cfl-blue` da 3.5:1 (min AA 4.5): con `--cfl-blue-deep`
+   el estado normal queda en 5.4:1 y el hover (brightness 1.06) en ~5:1. */
 .auth-submit {
-  background: var(--cfl-blue);
+  background: var(--cfl-blue-deep);
   color: var(--cfl-white);
   border: 0;
   padding: 13px;
@@ -1808,7 +1813,7 @@ a {
   opacity: 0.6;
 }
 .panel-ver-sitio {
-  background: var(--cfl-blue);
+  background: var(--cfl-blue-deep);
   color: var(--cfl-white);
   padding: 8px 14px;
   border-radius: 5px;
@@ -1819,7 +1824,7 @@ a {
   transition: background 0.15s;
 }
 .panel-ver-sitio:hover {
-  background: var(--cfl-blue-deep);
+  background: var(--cfl-navy-2);
 }
 .panel-nav {
   position: relative;
@@ -1835,16 +1840,22 @@ a {
 }
 .panel-nav-links {
   display: flex;
+  /* Envolver en vez de scrollear: con las 11 secciones del administrador los
+     links medían 1353px contra 1124px disponibles y "Consultas" quedaba
+     totalmente fuera de pantalla en todos los anchos. Con wrap pasan a dos
+     filas y ninguna sección se corta. */
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  overflow-x: auto;
+  gap: 0 6px;
 }
 .panel-nav-item {
   padding: 14px 18px;
   font-size: 14px;
   font-weight: 500;
   color: var(--cfl-ink);
-  opacity: 0.55;
+  /* 0.55 daba 3.76:1 contra el blanco del nav; con 0.70 el link inactivo
+     queda en ~5.5:1 (AA) y sigue destacando menos que el activo (opacity 1). */
+  opacity: 0.7;
   white-space: nowrap;
   cursor: default;
   text-decoration: none;
@@ -1873,6 +1884,32 @@ a.panel-nav-item:hover {
   opacity: 0.7;
   max-width: 640px;
   margin-bottom: 36px;
+}
+/* Cuando el lead va seguido del detalle colapsado, el lead resume y el
+   <details> aporta el texto largo: el margen grande sobra. */
+.panel-lead:has(+ .panel-lead-detalle) {
+  margin-bottom: 10px;
+}
+.panel-lead-detalle {
+  max-width: 640px;
+  margin-bottom: 36px;
+  font-size: 14px;
+}
+.panel-lead-detalle summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--cfl-blue-deep);
+  padding: 6px 0;
+}
+.panel-lead-detalle summary:focus-visible {
+  outline: 3px solid var(--cfl-blue);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.panel-lead-detalle p {
+  margin: 6px 0 0;
+  opacity: 0.8;
+  line-height: 1.55;
 }
 .panel-stats {
   display: grid;
@@ -2365,7 +2402,8 @@ a.panel-nav-item:hover {
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  /* 4px dejaba el DNI pegado al botón de editar (arriba del todo, sin aire). */
+  gap: 8px;
 }
 /* Diálogo de confirmación del panel (ConfirmDialog). */
 .dialogo-fondo {
@@ -2540,6 +2578,17 @@ a.panel-nav-item:hover {
 }
 .celda-acciones {
   white-space: nowrap;
+}
+/* La casilla no tiene espacios: sin el corte forzado, un email largo marca el
+   ancho mínimo de la columna y agranda el mínimo de toda la tabla. */
+.panel-table td[data-label="Email"] {
+  overflow-wrap: anywhere;
+}
+/* `white-space: nowrap` de `.celda-acciones` se hereda al mensaje de éxito:
+   con la frase completa del blanqueo la tabla se disparaba de 1122 a 1667px.
+   El texto vuelve a envolverse dentro de la celda. */
+.celda-acciones .td-sub {
+  white-space: normal;
 }
 .form-note {
   font-size: 13px;
@@ -3452,8 +3501,14 @@ a.panel-nav-item:hover {
   .form-actions .btn-ghost-dark {
     text-align: center;
   }
+}
 
-  /* Tablas del panel → tarjetas apiladas */
+/* Tablas del panel → tarjetas apiladas. El breakpoint va en 1020px y no en
+   680px: la tabla de usuarios necesita 961px y con el wrap del panel (viewport
+   − 58px de padding) el scroll horizontal aparecía entre 681 y 1018px, dejando
+   las columnas Estado y Acciones cortadas. Con tarjetas desde 1020px no hay
+   franja de scroll en ningún ancho. */
+@media (max-width: 1020px) {
   .panel-table-wrap {
     border: none;
     background: transparent;
