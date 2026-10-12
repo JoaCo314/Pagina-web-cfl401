@@ -20,6 +20,15 @@ function obtenerSecreto(): Uint8Array {
   if (!secreto) {
     throw new Error("Falta la variable AUTH_SECRET para firmar las sesiones.");
   }
+  // El secreto se usa para firmar JWT con HS256: si es corto, se puede forzar
+  // por fuerza bruta y falsificar sesiones de admin. 32+ caracteres (al menos
+  // 256 bits) es la longitud mínima razonable para HMAC.
+  if (secreto.length < 32) {
+    throw new Error(
+      "AUTH_SECRET es demasiado corta: usá al menos 32 caracteres " +
+        "(generala con `openssl rand -hex 32`)."
+    );
+  }
   return new TextEncoder().encode(secreto);
 }
 

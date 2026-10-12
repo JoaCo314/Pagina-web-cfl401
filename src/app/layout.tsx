@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans, Poppins } from "next/font/google";
+import {
+  DEFAULT_TITLE,
+  DESCRIPCION_SITIO,
+  NOMBRE_SITIO,
+  urlSitio,
+} from "@/lib/meta";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -14,9 +20,21 @@ const plex = IBM_Plex_Sans({
   variable: "--font-plex",
 });
 
+// Metadatos base de todo el sitio (SEO): el `template` de título hace que cada
+// página con `title: "Sección"` publique "Sección — CFL 401 Azul". La URL base
+// (metadataBase) habilita los enlaces absolutos de Open Graph.
 export const metadata: Metadata = {
-  title: "CFL 401 - Plataforma Web",
-  description: "Centro de Formación Laboral N° 401 - Plataforma de cursos",
+  metadataBase: new URL(urlSitio()),
+  title: { default: DEFAULT_TITLE, template: `%s — ${NOMBRE_SITIO}` },
+  description: DESCRIPCION_SITIO,
+  openGraph: {
+    type: "website",
+    locale: "es_AR",
+    siteName: NOMBRE_SITIO,
+    title: DEFAULT_TITLE,
+    description: DESCRIPCION_SITIO,
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

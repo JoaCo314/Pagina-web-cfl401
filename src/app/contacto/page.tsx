@@ -5,6 +5,12 @@ import { getSiteConfig } from "@/lib/siteConfig";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  title: "Contacto",
+  description:
+    "Escribinos por el formulario de contacto del CFL 401 Azul: dirección, teléfono, horarios y medios de consulta.",
+};
+
 // Creado por sofia-athos - Página /contacto funcional y editable desde panel/configuracion
 export default async function ContactoPage() {
   const config = await getSiteConfig().catch(() => null);

@@ -4,7 +4,9 @@ services:
     container_name: cfl401-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      # Obligatoria: sin una contraseña ya definida el contenedor arrancaría con
+      # una débil por defecto. `:?` hace que `docker compose up` falle si no está.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD es obligatoria (ver .env.example)}
       POSTGRES_DB: ${POSTGRES_DB:-cfl401}
     ports:
       # Solo accesible desde el host (loopback); no se expone al exterior.
@@ -24,7 +26,7 @@ services:
       target: init-runner
     container_name: cfl401-init
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-cfl401}?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?}@db:5432/${POSTGRES_DB:-cfl401}?schema=public
       # Las migraciones y el seed los corre este servicio una sola vez, antes de
       # que arranque web (que además espera a que init termine bien).
       # RUN_MIGRATIONS=false solo para este servicio: el entrypoint de web
@@ -56,8 +58,10 @@ services:
       retries: 10
       start_period: 40s
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-cfl401}?schema=public
-      AUTH_SECRET: ${AUTH_SECRET:-cfl401-dev-secret-cambiar-en-produccion}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?}@db:5432/${POSTGRES_DB:-cfl401}?schema=public
+      # Obligatoria: usada para firmar los JWT de sesión. Un default fijo
+      # permitiría forjar tokens. Generala con `openssl rand -hex 32`.
+      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET es obligatoria (ver .env.example)}
       # web no corre migraciones ni seed: de eso se encarga el servicio init.
       RUN_MIGRATIONS: "false"
       RUN_SEED: "false"

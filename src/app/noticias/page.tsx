@@ -3,7 +3,9 @@ import SiteFooter from "@/components/SiteFooter";
 import NoticiasList from "@/components/NoticiasList";
 
 export const metadata = {
-  title: "Noticias y Novedades — CFL 401 Azul",
+  title: "Noticias y Novedades",
+  description:
+    "Convocatorias, aperturas de inscripciones y actividades institucionales del CFL 401 Azul.",
 };
 
 export default function NoticiasPage() {

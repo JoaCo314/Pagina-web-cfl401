@@ -199,9 +199,13 @@ export async function validarListaDocentes(
 /// Valida y normaliza el cuerpo de alta/edición de un curso (RF-08/RF-09).
 /// `presentes` indica qué claves vino en el cuerpo (permite a la edición
 /// actualizar solo los campos enviados y preservar el resto).
+/// `actual` trae las fechas ya guardadas del curso en edición: cuando el PUT es
+/// parcial (manda una sola fecha), la coherencia del rango se evalúa contra la
+/// vigencia efectiva (la enviada + la que ya estaba).
 /// Docentes: solo se aceptan usuarios existentes, activos y con rol Docente.
 export async function validarDatosCurso(
-  input: unknown
+  input: unknown,
+  actual?: { fechaInicio: Date | null; fechaFin: Date | null }
 ): Promise<ResultadoCursoInput> {
   const fuente = (input ?? {}) as Record<string, unknown>;
   const presentes = Object.keys(fuente);
@@ -267,8 +271,16 @@ export async function validarDatosCurso(
   if (fechaFin.error) return { ok: false, error: fechaFin.error };
 
   // Un curso no puede terminar antes de empezar: sin esto se guardan periodos
-  // invertidos que después se muestran como "cerrado" en el sitio público.
-  if (fechaInicio.valor && fechaFin.valor && fechaFin.valor < fechaInicio.valor) {
+  // invertidos que después se muestran como "cerrado" en el sitio público. En
+  // edición parcial se usa la fecha efectiva (la enviada ahora + la que ya
+  // estaba guardada), no solo lo que llegó en el cuerpo.
+  const fechaInicioEfectiva = fechaInicio.valor ?? actual?.fechaInicio ?? null;
+  const fechaFinEfectiva = fechaFin.valor ?? actual?.fechaFin ?? null;
+  if (
+    fechaInicioEfectiva &&
+    fechaFinEfectiva &&
+    fechaFinEfectiva < fechaInicioEfectiva
+  ) {
     return {
       ok: false,
       error: "La fecha de fin no puede ser anterior a la fecha de inicio.",

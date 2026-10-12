@@ -16,22 +16,35 @@ const LIMITE_MAXIMO_NOTICIAS = 100;
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const limiteParam = Number(searchParams.get("limit"));
+    // Páginas (1-indexadas). `limit` se mantiene como alias de `porPagina`
+    // para el home (NoticiasHome), que pide solo las últimas 3.
+    const porPaginaParam = Number(searchParams.get("porPagina"));
+    const limitParam = Number(searchParams.get("limit"));
+    const paginaParam = Number(searchParams.get("pagina"));
+
+    const tamano =
+      Number.isInteger(porPaginaParam) && porPaginaParam > 0
+        ? porPaginaParam
+        : Number.isInteger(limitParam) && limitParam > 0
+          ? limitParam
+          : 12;
     // Tope duro: el endpoint es público y sin límite cualquiera puede pedir las
     // noticias enteras en una sola respuesta.
-    const take = Math.min(
-      Number.isInteger(limiteParam) && limiteParam > 0 ? limiteParam : 50,
-      LIMITE_MAXIMO_NOTICIAS
-    );
+    const porPagina = Math.min(tamano, LIMITE_MAXIMO_NOTICIAS);
+    const pagina = Number.isInteger(paginaParam) && paginaParam > 0 ? paginaParam : 1;
 
-    const noticias = await prisma.noticia.findMany({
-      where: { activo: true },
-      select: NOTICIA_SELECT,
-      orderBy: [{ fecha: "desc" }, { createdAt: "desc" }],
-      take,
-    });
+    const [noticias, total] = await Promise.all([
+      prisma.noticia.findMany({
+        where: { activo: true },
+        select: NOTICIA_SELECT,
+        orderBy: [{ fecha: "desc" }, { createdAt: "desc" }],
+        skip: (pagina - 1) * porPagina,
+        take: porPagina,
+      }),
+      prisma.noticia.count({ where: { activo: true } }),
+    ]);
 
-    return NextResponse.json({ noticias, total: noticias.length });
+    return NextResponse.json({ noticias, total, pagina, porPagina });
   } catch (err) {
     console.error("[API] Error interno:", err);
     return NextResponse.json(

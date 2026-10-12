@@ -100,7 +100,13 @@ export async function PUT(
 
   const existente = await prisma.curso.findUnique({
     where: { id: cursoId },
-    select: { id: true, imagenUrl: true, docentes: { select: { docenteId: true } } },
+    select: {
+      id: true,
+      imagenUrl: true,
+      fechaInicio: true,
+      fechaFin: true,
+      docentes: { select: { docenteId: true } },
+    },
   });
   if (!existente) {
     return NextResponse.json(
@@ -132,7 +138,13 @@ export async function PUT(
     );
   }
 
-  const resultado = await validarDatosCurso(body);
+  // Se le pasan las fechas guardadas al validador: así un PUT parcial que solo
+  // manda `fechaFin` se compara contra la `fechaInicio` persistida y no puede
+  // dejar un rango invertido.
+  const resultado = await validarDatosCurso(body, {
+    fechaInicio: existente.fechaInicio,
+    fechaFin: existente.fechaFin,
+  });
   if (!resultado.ok) {
     return NextResponse.json({ error: resultado.error }, { status: 400 });
   }

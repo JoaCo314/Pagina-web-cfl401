@@ -53,17 +53,21 @@ export async function PATCH(
       rol: { select: { nombre: true } },
     },
   });
-  if (!existente) {
-    return NextResponse.json(
-      { error: "El usuario no existe." },
-      { status: 404 }
-    );
-  }
-
+  // Orden deliberado para no revelar cuentas fuera del alcance del usuario:
+  // primero se decide si "podría" gestionarla, y solo después si existe. Así un
+  // Preceptor recibe 403 tanto por un ID inexistente como por una cuenta de
+  // Administrador/Preceptor: no hay forma de distinguir cuál es cuál.
   if (!puedeGestionarUsuario(user, existente)) {
     return NextResponse.json(
       { error: "No tenés permiso para realizar esta acción." },
       { status: 403 }
+    );
+  }
+
+  if (!existente) {
+    return NextResponse.json(
+      { error: "El usuario no existe." },
+      { status: 404 }
     );
   }
 
@@ -110,6 +114,12 @@ export async function PATCH(
       );
     }
     const contrasenaTemporal = contrasenaTemporalDesdeDni(existente.dni);
+    if (!tienePermiso(user, PERMISOS.USUARIOS_DESACTIVAR)) {
+      return NextResponse.json(
+        { error: "No tenés permiso para blanquear contraseñas." },
+        { status: 403 }
+      );
+    }
     try {
       const usuario = await prisma.usuario.update({
         where: { id: usuarioId },

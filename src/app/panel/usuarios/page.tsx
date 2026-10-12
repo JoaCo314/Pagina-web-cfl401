@@ -11,10 +11,23 @@ import PanelShell from "@/components/auth/PanelShell";
 import ToggleUsuario from "@/components/panel/ToggleUsuario";
 import BlanquearContrasena from "@/components/panel/BlanquearContrasena";
 import EditarDniUsuario from "@/components/panel/EditarDniUsuario";
+import NavPaginacion from "@/components/panel/NavPaginacion";
 
 export const dynamic = "force-dynamic";
 
-export default async function UsuariosPanelPage() {
+const CANTIDAD_POR_PAGINA = 25;
+
+function paginaValida(valor: string | undefined, totalPaginas: number): number {
+  const numero = Number(valor);
+  if (!Number.isInteger(numero) || numero < 1) return 1;
+  return Math.min(numero, totalPaginas);
+}
+
+export default async function UsuariosPanelPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ pagina?: string }>;
+}) {
   const user = await getCurrentUser();
 
   if (!user) {
@@ -30,8 +43,17 @@ export default async function UsuariosPanelPage() {
     redirect("/panel");
   }
 
+  const { pagina: paginaParam } = await searchParams;
+  const donde = filtroUsuariosVisibles(user);
+  const totalUsuarios = await prisma.usuario.count({ where: donde });
+  const totalPaginas = Math.max(
+    1,
+    Math.ceil(totalUsuarios / CANTIDAD_POR_PAGINA)
+  );
+  const pagina = paginaValida(paginaParam, totalPaginas);
+
   const usuarios = await prisma.usuario.findMany({
-    where: filtroUsuariosVisibles(user),
+    where: donde,
     select: {
       id: true,
       nombre: true,
@@ -49,9 +71,13 @@ export default async function UsuariosPanelPage() {
     // que Prisma puede indistinguirlos: el desempate por id hace el orden
     // estable y evita que dos filas con el mismo apellido salten de lugar.
     orderBy: [{ rol: { nivel: "desc" } }, { apellido: "asc" }, { nombre: "asc" }, { id: "asc" }],
+    skip: (pagina - 1) * CANTIDAD_POR_PAGINA,
+    take: CANTIDAD_POR_PAGINA,
   });
   const secciones = obtenerSeccionesPanel(user);
   const soloDocentes = alcance === "docentes";
+  const construirHref = (p: number) =>
+    p <= 1 ? "/panel/usuarios" : `/panel/usuarios?pagina=${p}`;
 
   return (
     <PanelShell user={user} secciones={secciones}>
@@ -170,6 +196,13 @@ export default async function UsuariosPanelPage() {
           </table>
         </div>
       )}
+
+      <NavPaginacion
+        pagina={pagina}
+        totalPaginas={totalPaginas}
+        construirHref={construirHref}
+        etiqueta={soloDocentes ? "Paginación de docentes" : "Paginación de usuarios"}
+      />
     </PanelShell>
   );
 }

@@ -34,6 +34,12 @@ const limitador = crearLimitador({
   duracionMs: 15 * 60 * 1000,
 });
 
+/// Hash de una contraseña inventada, con el mismo coste que las reales. Se usa
+/// cuando el email no existe (o la cuenta está desactivada): bcrypt corre igual
+/// contra este hash, así el tiempo de respuesta no delata si la cuenta existe.
+const HASH_DUMMY =
+  "$2b$10$awpPVJH0BlLhj8mYSThRC.1v16tHmykk4kir6sUKmVHPqbxruqs2y";
+
 export async function POST(request: NextRequest) {
   let body: unknown;
   try {
@@ -76,10 +82,13 @@ export async function POST(request: NextRequest) {
     select: USUARIO_SELECT,
   });
 
+  // bcrypt se ejecuta siempre, contra el hash real o el dummy, antes de decidir.
+  // Si se cortocircuitara antes de comparar, un atacante mediría cuándo falta la
+  // cuenta por la diferencia de tiempo y así enumeraría los emails existentes.
+  const hashAContrastar = usuario?.activo ? usuario.passwordHash : HASH_DUMMY;
+  const contrasenaCorrecta = verificarPassword(password, hashAContrastar);
   const credencialesValidas =
-    usuario !== null &&
-    usuario.activo &&
-    verificarPassword(password, usuario.passwordHash);
+    usuario !== null && usuario.activo && contrasenaCorrecta;
 
   if (!usuario || !credencialesValidas) {
     limitador.registrarFallo(identidad, ip);

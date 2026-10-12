@@ -1001,6 +1001,16 @@ a {
   max-width: 860px;
   margin: 0 auto;
 }
+/* Botón "Ver más publicaciones" cuando el listado está paginado. */
+.noticias-mas {
+  display: flex;
+  justify-content: center;
+  margin-top: 28px;
+}
+.noticias-mas .btn-primary:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
 .noticia-card {
   display: flex;
   flex-direction: column;
@@ -2018,6 +2028,26 @@ a.panel-nav-item:hover {
 }
 .panel-vacio {
   margin-top: 14px;
+}
+
+/* Navegación de páginas de los listados del panel. El enlace en el límite
+   queda `aria-disabled` (sin interacción ni cambio de layout) en lugar de
+   ocultarse, para no mover el foco del teclado. */
+.paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 22px;
+  flex-wrap: wrap;
+}
+.paginacion-info {
+  font-size: 13px;
+  color: var(--cfl-navy-1);
+}
+.paginacion a[aria-disabled="true"] {
+  pointer-events: none;
+  opacity: 0.55;
 }
 
 /* ── Footer ──────────────────────────────────────────────── */

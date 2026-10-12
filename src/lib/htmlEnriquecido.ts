@@ -26,6 +26,65 @@ export const ETIQUETAS_HTML_PERMITIDAS = [
   "pre",
 ] as const;
 
+/// Opciones de saneo compartidas entre "al guardar" y "al leer". Mantenerlas en
+/// un solo objeto evita que la sanitización de escritura y la de lectura se
+/// desincronicen (que una permita algo que la otra no vuelve a filtrar).
+const OPCIONES_SANITIZACION: sanitizeHtml.IOptions = {
+  allowedTags: [...ETIQUETAS_HTML_PERMITIDAS],
+  allowedAttributes: {
+    a: ["href", "target", "rel"],
+    span: ["style"],
+    ...(["h2", "h3", "h4", "p", "ul", "ol", "li", "blockquote", "code", "pre"].reduce(
+      (acc, etiqueta) => ({ ...acc, [etiqueta]: [] }),
+      {}
+    )),
+  },
+  // Solo se permiten estas propiedades dentro de `span` (las que produce el
+  // editor): `color` para el picker y los estilos de formato que Firefox y
+  // Chrome escriben como CSS en vez de `<b>/<i>/<u>`. El resto se descarta.
+  allowedStyles: {
+    span: {
+      color: [/^#[0-9a-fA-F]{3,8}$/, /^rgb\([\d\s,]+\)$/, /^rgba\([\d\s,\.]+\)$/, /^inherit$/],
+      "font-weight": [/^bold$/],
+      "font-style": [/^italic$/],
+      "text-decoration-line": [/^underline$/, /^line-through$/],
+      "text-decoration": [/^underline$/, /^line-through$/],
+    },
+  },
+  allowedSchemes: ["http", "https", "mailto"],
+  transformTags: {
+    b: () => ({ tagName: "strong", attribs: {} }),
+    i: () => ({ tagName: "em", attribs: {} }),
+    // Firefox/Chrome separan párrafos con `<div>` dentro de contenteditable;
+    // se convierten a `<p>` para que el guardado sea semántico y el render
+    // público coincida con lo que se vio en el editor.
+    div: () => ({ tagName: "p", attribs: {} }),
+    span: (_nombre, atributos): { tagName: "span"; attribs: Record<string, string> } => {
+      const estilo = (atributos.style || "").toLowerCase();
+      const color = /(?:^|;)\s*color\s*:\s*([^;]+)/.exec(estilo)?.[1]?.trim();
+      if (color) {
+        // Conservar el `span` con su `style` original: `allowedStyles` filtra
+        // y mantiene color + negrita/cursiva/subrayado si vienen juntos.
+        return { tagName: "span", attribs: { style: atributos.style || "" } };
+      }
+      if (/\bfont-weight\b/.test(estilo)) return { tagName: "span", attribs: { style: "font-weight: bold" } };
+      if (/\bfont-style\b/.test(estilo)) return { tagName: "span", attribs: { style: "font-style: italic" } };
+      if (estilo.includes("underline")) return { tagName: "span", attribs: { style: "text-decoration-line: underline" } };
+      if (estilo.includes("line-through")) return { tagName: "span", attribs: { style: "text-decoration-line: line-through" } };
+      // `span` sin estilo relevante: se descarta conservando el texto interior.
+      return { tagName: "span", attribs: {} };
+    },
+    a: (nombre, atributos) => ({
+      tagName: "a",
+      attribs: {
+        ...atributos,
+        rel: "noopener noreferrer",
+        ...(atributos.target === "_blank" ? {} : { target: "_blank" }),
+      },
+    }),
+  },
+};
+
 /// Sanitiza el HTML que envía el editor del panel antes de persistir. Devuelve
 /// el HTML limpio, o `null` si el campo venía vacío/ausente.
 export function limpiarHtmlEnriquecido(
@@ -40,61 +99,7 @@ export function limpiarHtmlEnriquecido(
   const texto = valor.trim();
   if (!texto) return { valor: null };
 
-  const htmlLimpio = sanitizeHtml(texto, {
-    allowedTags: [...ETIQUETAS_HTML_PERMITIDAS],
-    allowedAttributes: {
-      a: ["href", "target", "rel"],
-      span: ["style"],
-      ...(["h2", "h3", "h4", "p", "ul", "ol", "li", "blockquote", "code", "pre"].reduce(
-        (acc, etiqueta) => ({ ...acc, [etiqueta]: [] }),
-        {}
-      )),
-    },
-    // Solo se permiten estas propiedades dentro de `span` (las que produce el
-    // editor): `color` para el picker y los estilos de formato que Firefox y
-    // Chrome escriben como CSS en vez de `<b>/<i>/<u>`. El resto se descarta.
-    allowedStyles: {
-      span: {
-        color: [/^#[0-9a-fA-F]{3,8}$/, /^rgb\([\d\s,]+\)$/, /^rgba\([\d\s,\.]+\)$/, /^inherit$/],
-        "font-weight": [/^bold$/],
-        "font-style": [/^italic$/],
-        "text-decoration-line": [/^underline$/, /^line-through$/],
-        "text-decoration": [/^underline$/, /^line-through$/],
-      },
-    },
-    allowedSchemes: ["http", "https", "mailto"],
-    transformTags: {
-      b: () => ({ tagName: "strong", attribs: {} }),
-      i: () => ({ tagName: "em", attribs: {} }),
-      // Firefox/Chrome separan párrafos con `<div>` dentro de contenteditable;
-      // se convierten a `<p>` para que el guardado sea semántico y el render
-      // público coincida con lo que se vio en el editor.
-      div: () => ({ tagName: "p", attribs: {} }),
-      span: (_nombre, atributos): { tagName: "span"; attribs: Record<string, string> } => {
-        const estilo = (atributos.style || "").toLowerCase();
-        const color = /(?:^|;)\s*color\s*:\s*([^;]+)/.exec(estilo)?.[1]?.trim();
-        if (color) {
-          // Conservar el `span` con su `style` original: `allowedStyles` filtra
-          // y mantiene color + negrita/cursiva/subrayado si vienen juntos.
-          return { tagName: "span", attribs: { style: atributos.style || "" } };
-        }
-        if (/\bfont-weight\b/.test(estilo)) return { tagName: "span", attribs: { style: "font-weight: bold" } };
-        if (/\bfont-style\b/.test(estilo)) return { tagName: "span", attribs: { style: "font-style: italic" } };
-        if (estilo.includes("underline")) return { tagName: "span", attribs: { style: "text-decoration-line: underline" } };
-        if (estilo.includes("line-through")) return { tagName: "span", attribs: { style: "text-decoration-line: line-through" } };
-        // `span` sin estilo relevante: se descarta conservando el texto interior.
-        return { tagName: "span", attribs: {} };
-      },
-      a: (nombre, atributos) => ({
-        tagName: "a",
-        attribs: {
-          ...atributos,
-          rel: "noopener noreferrer",
-          ...(atributos.target === "_blank" ? {} : { target: "_blank" }),
-        },
-      }),
-    },
-  });
+  const htmlLimpio = sanitizeHtml(texto, OPCIONES_SANITIZACION);
 
   if (htmlLimpio.length > max) {
     return {
@@ -104,4 +109,14 @@ export function limpiarHtmlEnriquecido(
   }
 
   return { valor: htmlLimpio };
+}
+
+/// Saneo de lectura: vuelve a filtrar el HTML antes de renderizarlo en el
+/// servidor (SSR). Es la segunda barrera, por si un registro quedó legítimo en
+/// el pasado pero ya no cumple las reglas actuales, o por si la base se
+/// modificó por otra vía. Los componentes que renderizan HTML en el navegador
+/// lo sanean con DOMPurify; la defensa de lectura no puede depender de que el
+/// navegador lo haga porque en SSR el HTML sale tal cual.
+export function sanitizarHtmlLectura(html: string): string {
+  return sanitizeHtml(html, OPCIONES_SANITIZACION);
 }

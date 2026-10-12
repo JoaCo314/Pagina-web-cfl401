@@ -8,10 +8,11 @@ import {
 import { prisma } from "@/lib/prisma";
 import PanelShell from "@/components/auth/PanelShell";
 import MarcarConsultaLeida from "@/components/panel/MarcarConsultaLeida";
+import NavPaginacion from "@/components/panel/NavPaginacion";
 
 export const dynamic = "force-dynamic";
 
-const CANTIDAD_POR_PAGINA = 50;
+const CANTIDAD_POR_PAGINA = 25;
 
 const formatoFecha = new Intl.DateTimeFormat("es-AR", {
   dateStyle: "medium",
@@ -19,10 +20,16 @@ const formatoFecha = new Intl.DateTimeFormat("es-AR", {
   timeZone: "America/Argentina/Buenos_Aires",
 });
 
+function paginaValida(valor: string | undefined, totalPaginas: number): number {
+  const numero = Number(valor);
+  if (!Number.isInteger(numero) || numero < 1) return 1;
+  return Math.min(numero, totalPaginas);
+}
+
 export default async function ConsultasPanelPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filtro?: string }>;
+  searchParams: Promise<{ filtro?: string; pagina?: string }>;
 }) {
   const user = await getCurrentUser();
   if (!user) redirect("/panel/login");
@@ -31,17 +38,35 @@ export default async function ConsultasPanelPage({
   // personales y ambos roles las responden.
   if (!tienePermiso(user, PERMISOS.CONSULTAS_VER)) redirect("/panel");
 
-  const { filtro } = await searchParams;
+  const { filtro, pagina: paginaParam } = await searchParams;
   const soloNuevas = filtro === "nuevas";
+  const donde = soloNuevas ? { leido: false } : undefined;
 
-  const [mensajes, totalNuevas] = await Promise.all([
-    prisma.mensajeContacto.findMany({
-      where: soloNuevas ? { leido: false } : undefined,
-      orderBy: { createdAt: "desc" },
-      take: CANTIDAD_POR_PAGINA,
-    }),
+  const [totalFiltradas, totalNuevas] = await Promise.all([
+    prisma.mensajeContacto.count({ where: donde }),
     prisma.mensajeContacto.count({ where: { leido: false } }),
   ]);
+
+  const totalPaginas = Math.max(
+    1,
+    Math.ceil(totalFiltradas / CANTIDAD_POR_PAGINA)
+  );
+  const pagina = paginaValida(paginaParam, totalPaginas);
+
+  const mensajes = await prisma.mensajeContacto.findMany({
+    where: donde,
+    orderBy: { createdAt: "desc" },
+    skip: (pagina - 1) * CANTIDAD_POR_PAGINA,
+    take: CANTIDAD_POR_PAGINA,
+  });
+
+  const construirHref = (p: number) => {
+    const params = new URLSearchParams();
+    if (soloNuevas) params.set("filtro", "nuevas");
+    if (p > 1) params.set("pagina", String(p));
+    const query = params.toString();
+    return query ? `/panel/consultas?${query}` : "/panel/consultas";
+  };
 
   return (
     <PanelShell user={user} secciones={obtenerSeccionesPanel(user)}>
@@ -79,7 +104,8 @@ export default async function ConsultasPanelPage({
             : "Todavía no llegó ninguna consulta por el formulario de contacto."}
         </p>
       ) : (
-        <ul className="consultas-lista">
+        <>
+          <ul className="consultas-lista">
           {mensajes.map((m) => (
             <li
               key={m.id}
@@ -124,13 +150,14 @@ export default async function ConsultasPanelPage({
               </div>
             </li>
           ))}
-        </ul>
-      )}
-
-      {mensajes.length === CANTIDAD_POR_PAGINA && (
-        <p className="form-note">
-          Se muestran las {CANTIDAD_POR_PAGINA} consultas más recientes.
-        </p>
+          </ul>
+          <NavPaginacion
+            pagina={pagina}
+            totalPaginas={totalPaginas}
+            construirHref={construirHref}
+            etiqueta="Paginación de consultas"
+          />
+        </>
       )}
     </PanelShell>
   );

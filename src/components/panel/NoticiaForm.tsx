@@ -184,7 +184,7 @@ export default function NoticiaForm({
         etiqueta="Imagen de la noticia (opcional)"
       />
 
-      <div className="form-field form-field-full">
+      <label className="form-field form-field-full">
         <span>Resumen (opcional)</span>
         <textarea
           rows={2}
@@ -192,7 +192,7 @@ export default function NoticiaForm({
           onChange={(e) => setCampo("resumen", e.target.value)}
           placeholder="Bajada breve que se muestra en la tarjeta del listado"
         />
-      </div>
+      </label>
 
       <div className="form-field form-field-full">
         <span>

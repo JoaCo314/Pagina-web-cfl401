@@ -169,11 +169,11 @@ export function filtroUsuariosVisibles(
 /// Preceptor blanquee la contraseña de un Administrador pasando su ID a mano.
 export function puedeGestionarUsuario(
   usuario: UsuarioSesion | null | undefined,
-  objetivo: { id: number; rol: { nombre: string } }
+  objetivo: { id: number; rol: { nombre: string } } | null
 ): boolean {
   const alcance = alcanceUsuarios(usuario);
   if (alcance === "todos") return true;
-  if (alcance === "docentes") return objetivo.rol.nombre === ROLES.DOCENTE;
+  if (alcance === "docentes") return objetivo?.rol?.nombre === ROLES.DOCENTE;
   return false;
 }
 

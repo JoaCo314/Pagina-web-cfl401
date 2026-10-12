@@ -376,7 +376,7 @@ export default function CursoForm({
         </small>
       </label>
 
-      <div className="form-field form-field-full">
+      <label className="form-field form-field-full">
         <span>Descripción</span>
         <textarea
           rows={3}
@@ -384,7 +384,7 @@ export default function CursoForm({
           onChange={(e) => setCampo("descripcion", e.target.value)}
           placeholder="Descripción breve del curso"
         />
-      </div>
+      </label>
 
       <div className="form-field form-field-full">
         <EditorTextoEnriquecido
@@ -396,7 +396,7 @@ export default function CursoForm({
         />
       </div>
 
-      <div className="form-field form-field-full">
+      <label className="form-field form-field-full">
         <span>Información adicional</span>
         <textarea
           rows={2}
@@ -404,7 +404,7 @@ export default function CursoForm({
           onChange={(e) => setCampo("informacionAdicional", e.target.value)}
           placeholder="Ej: cupos limitados, requisitos extra, materiales"
         />
-      </div>
+      </label>
 
       {puedeAsignarDocentes && (() => {
         // Solo se ofrecen docentes activos para agregar. Los que ya están
