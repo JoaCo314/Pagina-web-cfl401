@@ -1,5 +1,6 @@
 import {
   TAMANO_MAXIMO_IMAGEN,
+  TAMANO_MAXIMO_IMAGEN_MB,
   TIPOS_IMAGEN_PERMITIDOS,
 } from "@/lib/imagenesConstantes";
 import { fetchConTimeout, TimeoutError } from "@/lib/fetchTimeout";
@@ -29,7 +30,7 @@ export function validarArchivoImagen(archivo: File): string | null {
     return "El archivo de imagen está vacío.";
   }
   if (archivo.size > TAMANO_MAXIMO_IMAGEN) {
-    return "La imagen no puede superar los 5 MB.";
+    return `La imagen no puede superar los ${TAMANO_MAXIMO_IMAGEN_MB} MB.`;
   }
   return null;
 }

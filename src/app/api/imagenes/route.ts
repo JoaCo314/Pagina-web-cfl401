@@ -1,21 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getCurrentUser, type UsuarioSesion } from "@/lib/auth/session";
 import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
 import {
   TAMANO_MAXIMO_IMAGEN,
+  TAMANO_MAXIMO_IMAGEN_MB,
   TIPOS_IMAGEN_PERMITIDOS,
   urlImagenInterna,
 } from "@/lib/imagenes";
 
 export const dynamic = "force-dynamic";
 
-/// Quienes pueden subir y administrar imágenes (cursos/noticias) sin datos:
-/// Administrador y Preceptor.
-async function puedeAdministrarImagenes(): Promise<boolean> {
-  const user = await getCurrentUser();
-  if (!user) return false;
+/// Quienes pueden subir y administrar imágenes (cursos/noticias): Administrador
+/// y Preceptor. Recibe el usuario ya resuelto para no volver a consultar la
+/// sesión en cada handler.
+function puedeAdministrarImagenes(user: UsuarioSesion): boolean {
   return (
     tienePermiso(user, PERMISOS.CURSOS_CREAR) ||
     tienePermiso(user, PERMISOS.NOTICIAS_CREAR)
@@ -32,7 +32,7 @@ export async function GET() {
     return NextResponse.json({ error: "No autorizado." }, { status: 401 });
   }
 
-  if (!(await puedeAdministrarImagenes())) {
+  if (!puedeAdministrarImagenes(user)) {
     return NextResponse.json(
       { error: "No tenés permiso para realizar esta acción." },
       { status: 403 }
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No autorizado." }, { status: 401 });
   }
 
-  if (!(await puedeAdministrarImagenes())) {
+  if (!puedeAdministrarImagenes(user)) {
     return NextResponse.json(
       { error: "No tenés permiso para realizar esta acción." },
       { status: 403 }
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
 
   if (archivo.size > TAMANO_MAXIMO_IMAGEN) {
     return NextResponse.json(
-      { error: "La imagen no puede superar los 5 MB." },
+      { error: `La imagen no puede superar los ${TAMANO_MAXIMO_IMAGEN_MB} MB.` },
       { status: 400 }
     );
   }

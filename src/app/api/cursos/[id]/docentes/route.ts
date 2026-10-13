@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
 import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
-import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
+import { PERMISOS, tienePermiso, puedeGestionarCurso } from "@/lib/auth/autorizacion";
 import { CURSO_SELECT, validarListaDocentes } from "@/lib/cursoAdmin";
 
 export const dynamic = "force-dynamic";
@@ -39,6 +39,16 @@ export async function GET(
     select: CURSO_SELECT,
   });
   if (!curso) {
+    return NextResponse.json(
+      { error: "El curso solicitado no existe." },
+      { status: 404 }
+    );
+  }
+
+  // RF-16: un Docente solo consulta los cursos que tiene asignados. Se responde
+  // 404 (y no 403) para no revelar la existencia de cursos ajenos. Administrador
+  // y Preceptor siguen viendo cualquier curso, incluidos los inactivos.
+  if (!puedeGestionarCurso(user, curso)) {
     return NextResponse.json(
       { error: "El curso solicitado no existe." },
       { status: 404 }

@@ -299,3 +299,20 @@ model MensajeContacto {
   @@index([createdAt])
   @@map("mensajes_contacto")
 }
+
+/// Contadores de los limitadores de tasa (login, cambio de contraseña propia y
+/// formulario público de contacto). Viven en la base para que el bloqueo se
+/// comparta entre réplicas y sobreviva a un reinicio; antes estaban en memoria
+/// del proceso y con varias instancias cada una contaba por separado.
+/// `ambito` es el espacio de nombres de cada limitador; `clave` la identidad
+/// (email) o la IP.
+model IntentoRateLimit {
+  ambito         String
+  clave          String
+  fallidos       Int       @default(0)
+  bloqueadoHasta DateTime?
+  updatedAt      DateTime  @updatedAt
+
+  @@id([ambito, clave])
+  @@map("rate_limit_intentos")
+}

@@ -9,3 +9,9 @@ export const TIPOS_IMAGEN_PERMITIDOS = [
 ] as const;
 
 export const TAMANO_MAXIMO_IMAGEN = 5 * 1024 * 1024;
+
+/// El mismo tope expresado en MB redondeados, para los mensajes de error: así
+/// nunca se desincroniza si se cambia `TAMANO_MAXIMO_IMAGEN`.
+export const TAMANO_MAXIMO_IMAGEN_MB = Math.round(
+  TAMANO_MAXIMO_IMAGEN / (1024 * 1024)
+);

@@ -10,9 +10,21 @@ export const DESCRIPCION_SITIO =
   "Centro de Formación Laboral N° 401 de Azul (Buenos Aires). Cursos de formación profesional gratuitos y con validez oficial, noticias e inscripciones.";
 
 /// URL base del sitio para metadatos, sitemap y robots. En producción se define
-/// `SITE_URL` (ej: https://cfl401.ejemplo.edu.ar); por defecto apunta al local.
+/// `SITE_URL` (ej: https://cfl401.ejemplo.edu.ar). Si falta no se rompe, pero se
+/// avisa por log: en producción el fallback a localhost haría que los metadatos
+/// y el sitemap apunten a una dirección que no existe.
 export function urlSitio(): string {
-  return (process.env.SITE_URL ?? "http://localhost:4088").replace(/\/+$/, "");
+  const configurada = process.env.SITE_URL?.trim();
+  if (!configurada) {
+    if (process.env.NODE_ENV === "production") {
+      console.warn(
+        "[meta] Falta SITE_URL: el sitemap, robots y los metadatos usarán " +
+          "http://localhost:4088. Definila con la URL pública del sitio."
+      );
+    }
+    return "http://localhost:4088";
+  }
+  return configurada.replace(/\/+$/, "");
 }
 
 /// Convierte HTML del panel en una descripción de texto plano (una línea) para

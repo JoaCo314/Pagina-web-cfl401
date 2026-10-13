@@ -23,7 +23,9 @@ export type NoticiaInputNormalizado = {
   contenidoHtml: string | null | undefined;
   fecha: Date;
   imagenUrl: string | null;
-  activo: boolean;
+  /// `undefined` cuando el cuerpo no trae `activo`: en el alta se usa el valor
+  /// por defecto de la base (activa) y en la edición se preserva el actual.
+  activo: boolean | undefined;
 };
 
 export type ResultadoNoticiaInput =
@@ -149,7 +151,7 @@ export function validarDatosNoticia(input: unknown): ResultadoNoticiaInput {
       contenidoHtml,
       fecha: fecha.valor as Date,
       imagenUrl: imagenUrl.valor,
-      activo: activo === true,
+      activo,
     },
   };
 }

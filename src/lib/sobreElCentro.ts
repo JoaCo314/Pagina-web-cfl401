@@ -79,7 +79,9 @@ export function esEstadistica(v: unknown): v is Estadistica {
 export function esFotoGaleria(v: unknown): v is FotoGaleria {
   if (!v || typeof v !== "object") return false;
   const f = v as Record<string, unknown>;
-  return typeof f.url === "string";
+  // Se re-valida la URL también al leer: una foto con un esquema no permitido
+  // (p. ej. `javascript:`) que haya quedado en la base no se renderiza.
+  return typeof f.url === "string" && validarImagenUrl(f.url).valor !== null;
 }
 
 export function leerHitos(valor: unknown): Hito[] | null {

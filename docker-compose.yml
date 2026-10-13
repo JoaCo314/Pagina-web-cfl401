@@ -85,5 +85,27 @@ services:
             - .next
             - .git
 
+  # Respaldo manual de la base. No corre en el arranque normal (perfil
+  # "backup"): se ejecuta a demanda y deja un dump comprimido en ./backups.
+  #
+  #   docker compose --profile backup run --rm backup
+  backup:
+    image: postgres:16-alpine
+    container_name: cfl401-backup
+    profiles: ['backup']
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER:-postgres}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD es obligatoria (ver .env.example)}
+      PGDATABASE: ${POSTGRES_DB:-cfl401}
+      BACKUP_DIR: /backups
+    volumes:
+      - ./backups:/backups
+      - ./scripts/backup-db.sh:/usr/local/bin/backup-db.sh:ro
+    entrypoint: ['sh', '/usr/local/bin/backup-db.sh']
+
 volumes:
   postgres_data:

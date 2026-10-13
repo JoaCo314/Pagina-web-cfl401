@@ -5,15 +5,15 @@ COPY package.json package-lock.json* ./
 RUN npm ci
 
 
-# Dependencias de runtime: sin eslint, tailwind ni typescript. La imagen final
-# igual necesita el cliente de Prisma, el CLI para las migraciones y tsx para el
-# seed, así que se agregan sobre las de producción.
+# Dependencias de runtime: sin eslint, tailwind ni typescript. El CLI de Prisma
+# (migraciones) y tsx (seed) son dependencias de producción en package.json, así
+# que `npm ci --omit=dev` ya los instala desde el lockfile: antes se hacía un
+# `npm install` aparte por fuera del lockfile y el build no era reproducible.
 FROM node:24-alpine AS prod-deps
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-RUN npm ci --omit=dev \
-  && npm install --no-save --omit=dev prisma@7.10.0 tsx@4.23.13
+RUN npm ci --omit=dev
 
 
 FROM node:24-alpine AS builder

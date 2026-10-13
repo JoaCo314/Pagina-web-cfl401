@@ -426,7 +426,9 @@ Felicitamos a todos los egresados y los invitamos a continuar su formación en l
   for (const cat of categoriasSemilla) {
     const categoria = await prisma.categoriaPregunta.upsert({
       where: { nombre: cat.nombre },
-      update: { orden: 1 },
+      // No se pisa `orden` en las categorías ya existentes: el seed es de
+      // arranque, no un reseteo. Solo se define al crearlas.
+      update: {},
       create: { nombre: cat.nombre, orden: 1 },
     });
     totalCategorias += 1;

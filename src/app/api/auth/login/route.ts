@@ -26,9 +26,9 @@ const USUARIO_SELECT = {
 
 /// Control de intentos fallidos (anti fuerza bruta). Dos contadores
 /// independientes: por cuenta (email) y por IP de origen (anti password
-/// spraying). Ver `src/lib/auth/rateLimit.ts` para el alcance del estado en
-/// memoria.
+/// spraying). El estado se guarda en la base (ver `src/lib/auth/rateLimit.ts`).
 const limitador = crearLimitador({
+  nombre: "login",
   maxIntentos: 5,
   maxIntentosPorIp: 20,
   duracionMs: 15 * 60 * 1000,
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
 
   const ip = ipCliente(request);
   const identidad = email.trim().toLowerCase();
-  const limite = limitador.chequear(identidad, ip);
+  const limite = await limitador.chequear(identidad, ip);
   if (!limite.permitido) {
     return NextResponse.json(
       {
@@ -91,14 +91,14 @@ export async function POST(request: NextRequest) {
     usuario !== null && usuario.activo && contrasenaCorrecta;
 
   if (!usuario || !credencialesValidas) {
-    limitador.registrarFallo(identidad, ip);
+    await limitador.registrarFallo(identidad, ip);
     return NextResponse.json(
       { error: "Credenciales inválidas. Verificá los datos ingresados." },
       { status: 401 }
     );
   }
 
-  limitador.limpiar(identidad, ip);
+  await limitador.limpiar(identidad, ip);
 
   const token = await crearTokenSesion(usuario.id, usuario.versionSesion);
   const cookieStore = await cookies();

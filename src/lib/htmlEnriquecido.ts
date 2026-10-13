@@ -1,4 +1,5 @@
 import sanitizeHtml from "sanitize-html";
+import { ETIQUETAS_HTML_PERMITIDAS } from "@/lib/htmlEnriquecidoConfig";
 
 /// Etiquetas y atributos que el editor enriquecido puede guardar. Todo lo que
 /// no esté acá se descarta en el servidor (RF-17: sanitización server-side).
@@ -6,25 +7,11 @@ import sanitizeHtml from "sanitize-html";
 /// (en vez de `strong`/`em`) y también puede emitir `span` con `style`;
 /// `transformTags` los normaliza ANTES del filtro de etiquetas permitidas,
 /// así el formato se conserva y el texto se guarda siempre con `<strong>`/`<em>`.
-export const ETIQUETAS_HTML_PERMITIDAS = [
-  "p",
-  "br",
-  "strong",
-  "em",
-  "u",
-  "s",
-  "span",
-  "h2",
-  "h3",
-  "h4",
-  "ul",
-  "ol",
-  "li",
-  "blockquote",
-  "a",
-  "code",
-  "pre",
-] as const;
+///
+/// La lista de etiquetas vive en `htmlEnriquecidoConfig.ts` para compartirla con
+/// el saneo de DOMPurify del componente cliente. Acá se reexporta por
+/// compatibilidad con los importadores existentes.
+export { ETIQUETAS_HTML_PERMITIDAS };
 
 /// Opciones de saneo compartidas entre "al guardar" y "al leer". Mantenerlas en
 /// un solo objeto evita que la sanitización de escritura y la de lectura se

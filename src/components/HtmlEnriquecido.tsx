@@ -1,6 +1,18 @@
 "use client";
 
 import DOMPurify from "dompurify";
+import {
+  ATRIBUTOS_HTML_PERMITIDOS,
+  ETIQUETAS_HTML_PERMITIDAS,
+} from "@/lib/htmlEnriquecidoConfig";
+
+/// Allowlist de saneo para el render en el navegador, alineada con la del
+/// servidor (`htmlEnriquecido.ts`): mismas etiquetas y atributos, así el saneo
+/// de escritura y el de lectura no permiten cosas distintas.
+const CONFIG_DOMPURIFY = {
+  ALLOWED_TAGS: [...ETIQUETAS_HTML_PERMITIDAS],
+  ALLOWED_ATTR: [...ATRIBUTOS_HTML_PERMITIDOS],
+};
 
 /// Renderiza contenido enriquecido del panel de forma segura. Si hay HTML
 /// guardado (`html`) se sanea con DOMPurify (además del saneo server-side ya
@@ -15,7 +27,9 @@ export default function HtmlEnriquecido({
   textoPlano?: string | null;
   className?: string;
 }) {
-  const htmlLimpio = html?.trim() ? DOMPurify.sanitize(html) : null;
+  const htmlLimpio = html?.trim()
+    ? DOMPurify.sanitize(html, CONFIG_DOMPURIFY)
+    : null;
   const clases = ["contenido-enriquecido", className].filter(Boolean).join(" ");
 
   if (htmlLimpio) {
