@@ -91,7 +91,7 @@ npm run dev
 | `DATABASE_URL` | URL de conexión que usa Prisma | `postgresql://postgres:postgres@localhost:5432/cfl401?schema=public` |
 | `AUTH_SECRET` | Secreto para firmar las sesiones (JWT) | solo hay fallback de desarrollo |
 | `OPENAI_API_KEY` | Clave privada para habilitar el chat institucional | vacía (chat sin habilitar) |
-| `OPENAI_MODEL` | Modelo de OpenAI usado por el chat | `gpt-5.4-mini` |
+| `OPENAI_MODEL` | Modelo de OpenAI usado por el chat | `gpt-6-luna` |
 | `RUN_SEED` | Ejecuta el seed de datos de prueba al arrancar | `false` |
 | `RUN_MIGRATIONS` | El entrypoint del contenedor `web` aplica migraciones | `false` en Compose |
 | `TRUST_PROXY` | Lee la IP real de `x-forwarded-for` | `false` |
@@ -116,11 +116,20 @@ las variables. Con Compose, luego de construir la nueva versión, ejecutá
 La clave se usa únicamente en el servidor; no se debe subir a GitHub ni usar con
 el prefijo `NEXT_PUBLIC_`. Sin clave, el chat ofrece cursos y contacto sin llamar a OpenAI.
 
-La conversación se mantiene en memoria del navegador mientras la página está
-montada; no se guarda en la base ni en almacenamiento del navegador. Se envían a
+El chat permanece montado al navegar entre páginas públicas. Conserva hasta 20
+intercambios completos en `localStorage` (`cfl401.chat.v1`) durante 24 horas desde
+la última respuesta exitosa, incluso al recargar o cerrar el navegador. Abrir o
+leer el chat no renueva el vencimiento. “Nueva conversación” borra también ese
+historial; los datos vencidos o inválidos se descartan automáticamente al cargar
+el chat o al cumplirse el plazo mientras está abierto. Si el navegador bloquea
+el almacenamiento, el chat sigue funcionando en memoria. No se guardan borradores
+ni errores en `localStorage`, y la conversación no se guarda en la base. Se envían a
 OpenAI la consulta, hasta cuatro intercambios anteriores y el contexto público,
 con `store: false`. Esto no equivale a una política de retención cero de OpenAI.
 Las respuestas con IA pueden contener errores; no realizan reservas ni inscripciones.
+El modelo predeterminado es [GPT-6 Luna](https://developers.openai.com/api/docs/models/gpt-6-luna)
+con razonamiento `low`. Si el hosting ya tiene `OPENAI_MODEL` configurado, actualizalo
+a `gpt-6-luna` para que esa variable no siga seleccionando el modelo anterior.
 
 El endpoint limita mensajes a 1000 caracteres, el historial a 12 000 caracteres,
 el cuerpo a 24 000 bytes y el contexto institucional a 80 000 caracteres. Incluye
@@ -135,7 +144,7 @@ un timeout de 25 segundos y no reintenta automáticamente las llamadas cobradas.
 
 Implementación basada en la [documentación oficial de OpenAI](https://developers.openai.com/api/docs/quickstart)
 y la [Responses API](https://developers.openai.com/api/docs/guides/text).
-Las pruebas del endpoint, la vigencia de cursos y los límites se ejecutan con
+Las pruebas del endpoint, el historial con vencimiento, la vigencia de cursos y los límites se ejecutan con
 `npm run test:chat`; usan datos y respuestas simulados, sin API key real ni consumo.
 
 ### Sobre `AUTH_SECRET`

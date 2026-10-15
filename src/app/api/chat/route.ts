@@ -51,10 +51,10 @@ export async function POST(request: NextRequest) {
     try {
       const contexto = await obtenerContextoChat();
       const client = new OpenAI({ apiKey, timeout: 25_000, maxRetries: 0 });
-      const modelo = process.env.OPENAI_MODEL?.trim() || "gpt-5.4-mini";
+      const modelo = process.env.OPENAI_MODEL?.trim() || "gpt-6-luna";
       const respuesta = await client.responses.create({
         model: modelo,
-        ...(modelo === "gpt-5.4-mini" ? { reasoning: { effort: "low" as const } } : {}),
+        ...(["gpt-6-luna", "gpt-5.4-mini"].includes(modelo) ? { reasoning: { effort: "low" as const } } : {}),
         instructions: INSTRUCCIONES_CHAT,
         input: [
           { role: "developer", content: `Contexto institucional actualizado (JSON):\n${contexto}` },

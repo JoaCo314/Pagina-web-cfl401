@@ -59,7 +59,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-cfl401}?schema=public
       AUTH_SECRET: ${AUTH_SECRET:-cfl401-dev-secret-cambiar-en-produccion}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5.4-mini}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-6-luna}
       # web no corre migraciones ni seed: de eso se encarga el servicio init.
       RUN_MIGRATIONS: "false"
       RUN_SEED: "false"

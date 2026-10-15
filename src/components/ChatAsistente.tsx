@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { MAX_PREGUNTA, type MensajeChat } from "@/lib/chat/validacion";
+import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
+import { MAX_PREGUNTA } from "@/lib/chat/validacion";
+import { almacenHistorialChat, CLAVE_HISTORIAL_CHAT, historialChatServidor } from "@/lib/chat/historial";
 import styles from "./ChatAsistente.module.css";
 
 // Renderiza solo enlaces internos conocidos; el resto se muestra como texto.
@@ -19,7 +20,10 @@ function contenidoConEnlaces(texto: string): ReactNode[] {
 
 export default function ChatAsistente() {
   const [abierto, setAbierto] = useState(false);
-  const [mensajes, setMensajes] = useState<MensajeChat[]>([]);
+  const historialGuardado = useSyncExternalStore(
+    almacenHistorialChat.suscribir, almacenHistorialChat.leer, historialChatServidor,
+  );
+  const mensajes = historialGuardado.mensajes;
   const [consulta, setConsulta] = useState("");
   const [pendiente, setPendiente] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +39,24 @@ export default function ChatAsistente() {
     historial.current?.scrollTo({ top: historial.current.scrollHeight });
   }, [mensajes, pendiente, error, abierto]);
   useEffect(() => () => solicitud.current?.abort(), []);
+  useEffect(() => {
+    const sincronizar = (event: StorageEvent) => {
+      if (event.key === CLAVE_HISTORIAL_CHAT || event.key === null) almacenHistorialChat.restaurar();
+    };
+    const revisarVencimiento = () => almacenHistorialChat.expirar();
+    window.addEventListener("storage", sincronizar);
+    window.addEventListener("focus", revisarVencimiento);
+    return () => {
+      window.removeEventListener("storage", sincronizar);
+      window.removeEventListener("focus", revisarVencimiento);
+    };
+  }, []);
+  useEffect(() => {
+    if (!historialGuardado.expiraEn) return;
+    const timer = window.setTimeout(() => almacenHistorialChat.expirar(),
+      Math.max(0, historialGuardado.expiraEn - Date.now()));
+    return () => window.clearTimeout(timer);
+  }, [historialGuardado.expiraEn]);
 
   function cerrar() {
     setAbierto(false);
@@ -51,7 +73,8 @@ export default function ChatAsistente() {
     setError(null);
     // Hasta cuatro intercambios previos y la pregunta actual; se conservan
     // pares completos dentro del presupuesto que valida el servidor.
-    let anteriores = mensajes.slice(-8);
+    const historialAlEnviar = almacenHistorialChat.leer();
+    let anteriores = historialAlEnviar.mensajes.slice(-8);
     while (anteriores.reduce((total, m) => total + m.content.length, pregunta.length) > 12_000) {
       anteriores = anteriores.slice(2);
     }
@@ -66,7 +89,9 @@ export default function ChatAsistente() {
       if (!response.ok || typeof datos.respuesta !== "string") {
         throw new Error(typeof datos.error === "string" ? datos.error : "No se pudo responder la consulta. Intentá nuevamente.");
       }
-      setMensajes((previos) => [...previos.slice(-38),
+      // No revivir una conversación borrada o vencida mientras llegaba la respuesta.
+      if (almacenHistorialChat.leer() !== historialAlEnviar) return;
+      almacenHistorialChat.guardar([...historialAlEnviar.mensajes,
         { role: "user", content: pregunta }, { role: "assistant", content: datos.respuesta }]);
       setConsulta("");
     } catch (err) {
@@ -122,10 +147,10 @@ export default function ChatAsistente() {
               }} />
             <div className={styles.acciones}>
               <button type="button" className={styles.reiniciar} disabled={pendiente !== null || mensajes.length === 0}
-                onClick={() => { setMensajes([]); setError(null); setConsulta(""); entrada.current?.focus(); }}>Nueva conversación</button>
+                onClick={() => { almacenHistorialChat.borrar(); setError(null); setConsulta(""); entrada.current?.focus(); }}>Nueva conversación</button>
               <button type="submit" className={styles.enviar} disabled={pendiente !== null || !consulta.trim()}>{pendiente ? "Consultando…" : "Enviar"}</button>
             </div>
-            <p id="chat-descripcion" className={styles.aviso}>Asistente con IA. Puede cometer errores. Tu consulta se envía a OpenAI; evitá compartir datos personales.</p>
+            <p id="chat-descripcion" className={styles.aviso}>Asistente con IA. Puede cometer errores. El historial se guarda en este navegador por 24 horas. Tu consulta se envía a OpenAI; evitá compartir datos personales.</p>
           </form>
         </section>
       )}

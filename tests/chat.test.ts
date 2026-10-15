@@ -76,6 +76,8 @@ test("contexto y endpoint con base y OpenAI simulados", async (t) => {
     { titulo: "Inscripción", contenido: "Documentación", contenidoHtml: "<p>Guía vigente</p>" },
   ]);
   const claveAnterior = process.env.OPENAI_API_KEY;
+  const modeloAnterior = process.env.OPENAI_MODEL;
+  delete process.env.OPENAI_MODEL;
   const proxyAnterior = process.env.TRUST_PROXY;
   process.env.TRUST_PROXY = "true";
   let numero = 0;
@@ -89,6 +91,7 @@ test("contexto y endpoint con base y OpenAI simulados", async (t) => {
   }
   const pregunta = { mensajes: [{ role: "user", content: "¿Hay Electricidad?" }] };
   let llamadas = 0;
+  let modeloEsperado = "gpt-6-luna";
   let modo: "ok" | "error" | "incompleta" | "lenta" = "ok";
   let liberar: (() => void) | undefined;
   const espera = new Promise<void>((resolve) => { liberar = resolve; });
@@ -97,6 +100,7 @@ test("contexto y endpoint con base y OpenAI simulados", async (t) => {
     const body = JSON.parse(String(init.body));
     assert.equal(body.store, false);
     assert.equal(body.max_output_tokens, 1600);
+    assert.equal(body.model, modeloEsperado);
     assert.equal(body.reasoning.effort, "low");
     assert.match(body.input[0].content, /Electricidad/);
     assert.doesNotMatch(body.input[0].content, /privado@example/);
@@ -169,6 +173,17 @@ test("contexto y endpoint con base y OpenAI simulados", async (t) => {
       modo = "incompleta";
       assert.equal((await POST(request(pregunta))).status, 503);
     });
+    await t.test("permite sobrescribir el modelo desde el servidor", async () => {
+      modo = "ok";
+      modeloEsperado = "gpt-5.4-mini";
+      process.env.OPENAI_MODEL = modeloEsperado;
+      try {
+        assert.equal((await POST(request(pregunta))).status, 200);
+      } finally {
+        delete process.env.OPENAI_MODEL;
+        modeloEsperado = "gpt-6-luna";
+      }
+    });
     await t.test("no envía contexto desactualizado si falla la base", async () => {
       cursosMock.mock.mockImplementationOnce(async () => { throw new Error("Base no disponible"); });
       const antes = llamadas;
@@ -203,6 +218,8 @@ test("contexto y endpoint con base y OpenAI simulados", async (t) => {
     else process.env.OPENAI_API_KEY = claveAnterior;
     if (proxyAnterior === undefined) delete process.env.TRUST_PROXY;
     else process.env.TRUST_PROXY = proxyAnterior;
+    if (modeloAnterior === undefined) delete process.env.OPENAI_MODEL;
+    else process.env.OPENAI_MODEL = modeloAnterior;
     mock.restoreAll();
     restaurar.forEach((restablecer) => restablecer());
     await prisma.$disconnect();

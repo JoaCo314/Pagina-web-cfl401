@@ -7,7 +7,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "test:chat": "tsx --test tests/chat.test.ts",
+    "test:chat": "tsx --test tests/chat.test.ts tests/chat-historial.test.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
