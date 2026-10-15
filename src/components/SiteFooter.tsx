@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { getSiteConfig } from "@/lib/siteConfig";
+import ChatAsistente from "@/components/ChatAsistente";
 
 // Creado por sofia-athos: footer editable desde panel/configuracion
 export default async function SiteFooter() {
   const config = await getSiteConfig().catch(() => null);
   return (
+    <>
     <footer className="site-footer">
       <div className="wrap">
         <div className="foot-grid">
@@ -54,5 +56,7 @@ export default async function SiteFooter() {
         </div>
       </div>
     </footer>
+    <ChatAsistente />
+    </>
   );
 }
