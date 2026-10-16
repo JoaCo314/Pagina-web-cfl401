@@ -5,6 +5,7 @@ import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { SeccionPanel } from "@/lib/auth/autorizacion";
+import CampanaNotificaciones from "@/components/panel/CampanaNotificaciones";
 
 type UsuarioSesion = {
   id: number;
@@ -79,6 +80,7 @@ export default function PanelShell({
               </strong>
               <span>{user.rol.nombre}</span>
             </div>
+            <CampanaNotificaciones />
             <Link href="/panel/mis-datos" className="panel-ver-sitio">
               Mis datos
             </Link>

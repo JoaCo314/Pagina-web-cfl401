@@ -59,6 +59,7 @@ model Usuario {
   rolId     Int
   rol       Rol      @relation(fields: [rolId], references: [id])
   cursosAsignados CursoDocente[]
+  notificaciones  Notificacion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -362,4 +363,25 @@ model IntentoRateLimit {
 
   @@id([ambito, clave])
   @@map("rate_limit_intentos")
+}
+
+/// Aviso interno (in-app) para una cuenta del panel. Por ahora se usa para
+/// avisarle a un docente cuando lo asignan a un curso; el registro se borra en
+/// cascada si se elimina la cuenta.
+model Notificacion {
+  id        Int      @id @default(autoincrement())
+  usuarioId Int
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  /// Tipo de aviso: por ahora `curso_asignado`.
+  tipo      String   @default("curso_asignado")
+  /// Texto que ve la persona.
+  mensaje   String
+  /// Ruta interna del panel a la que conviene ir (opcional).
+  url       String?
+  leida     Boolean  @default(false)
+  leidaEn   DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([usuarioId, leida])
+  @@map("notificaciones")
 }

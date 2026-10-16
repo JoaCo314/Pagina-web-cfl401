@@ -6,6 +6,7 @@ import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import { PERMISOS, tienePermiso, puedeGestionarCurso } from "@/lib/auth/autorizacion";
 import { CURSO_SELECT, validarListaDocentes } from "@/lib/cursoAdmin";
 import { ipCliente } from "@/lib/auth/rateLimit";
+import { notificarCursoAsignado } from "@/lib/notificaciones";
 import {
   ACCIONES_AUDITORIA,
   RECURSOS_AUDITORIA,
@@ -98,7 +99,7 @@ export async function PUT(
 
   const existente = await prisma.curso.findUnique({
     where: { id: cursoId },
-    select: { id: true },
+    select: { id: true, docentes: { select: { docenteId: true } } },
   });
   if (!existente) {
     return NextResponse.json(
@@ -153,6 +154,16 @@ export async function PUT(
       detalle: { cantidad: norm.ids.length },
       ip: ipCliente(request),
     });
+
+    // Aviso in-app solo a los docentes recién sumados (no a los que ya estaban).
+    const previos = new Set(existente.docentes.map((d) => d.docenteId));
+    const nuevos = norm.ids.filter((docenteId) => !previos.has(docenteId));
+    if (nuevos.length > 0) {
+      await notificarCursoAsignado(nuevos, {
+        id: cursoId,
+        nombre: curso?.nombre ?? String(cursoId),
+      });
+    }
 
     return NextResponse.json({ curso });
   } catch (err) {

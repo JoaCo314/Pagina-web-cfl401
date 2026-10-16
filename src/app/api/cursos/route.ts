@@ -9,6 +9,7 @@ import {
   validarDatosCurso,
 } from "@/lib/cursoAdmin";
 import { ipCliente } from "@/lib/auth/rateLimit";
+import { notificarCursoAsignado } from "@/lib/notificaciones";
 import {
   ACCIONES_AUDITORIA,
   RECURSOS_AUDITORIA,
@@ -140,6 +141,14 @@ export async function POST(request: NextRequest) {
       },
       ip: ipCliente(request),
     });
+
+    // Aviso in-app a los docentes que quedaron asignados en el alta.
+    if (docenteIds.length > 0) {
+      await notificarCursoAsignado(docenteIds, {
+        id: curso.id,
+        nombre: curso.nombre,
+      });
+    }
 
     return NextResponse.json({ curso }, { status: 201 });
   } catch (err) {

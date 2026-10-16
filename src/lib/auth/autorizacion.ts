@@ -189,6 +189,7 @@ export function puedeGestionarUsuario(
 export type SeccionPanel = {
   clave:
     | "inicio"
+    | "notificaciones"
     | "cursos"
     | "usuarios"
     | "guia"
@@ -218,6 +219,14 @@ export function obtenerSeccionesPanel(
       titulo: "Resumen",
       descripcion: "Resumen del panel y atajos.",
       href: "/panel",
+    },
+    {
+      // Disponible para cualquier cuenta autenticada: los avisos in-app (por
+      // ejemplo, la asignación a un curso) los recibe cualquier rol.
+      clave: "notificaciones",
+      titulo: "Notificaciones",
+      descripcion: "Avisos internos de la cuenta.",
+      href: "/panel/notificaciones",
     },
   ];
 

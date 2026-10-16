@@ -11,6 +11,7 @@ import {
 import { CURSO_SELECT, validarDatosCurso } from "@/lib/cursoAdmin";
 import { borrarImagenPorUrl } from "@/lib/imagenes";
 import { ipCliente } from "@/lib/auth/rateLimit";
+import { notificarCursoAsignado } from "@/lib/notificaciones";
 import {
   ACCIONES_AUDITORIA,
   RECURSOS_AUDITORIA,
@@ -245,6 +246,17 @@ export async function PUT(
         detalle: { cantidad: docenteIds.length },
         ip: ipCliente(request),
       });
+
+      // Aviso in-app solo a los docentes que no estaban asignados antes, para no
+      // repetir la notificación en cada guardado.
+      const previos = new Set(existente.docentes.map((d) => d.docenteId));
+      const nuevos = docenteIds.filter((docenteId) => !previos.has(docenteId));
+      if (nuevos.length > 0) {
+        await notificarCursoAsignado(nuevos, {
+          id: cursoId,
+          nombre: curso?.nombre ?? String(cursoId),
+        });
+      }
     }
 
     return NextResponse.json({ curso });

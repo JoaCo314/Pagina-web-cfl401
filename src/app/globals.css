@@ -1840,6 +1840,111 @@ a {
 .panel-ver-sitio:hover {
   background: var(--cfl-navy-2);
 }
+.panel-campana {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 5px;
+  font-size: 16px;
+  line-height: 1;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+.panel-campana:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+.panel-campana-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #d64545;
+  color: var(--cfl-white);
+  font-size: 10.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Notificaciones (panel) ──────────────────────────────── */
+.notif-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 14px 0 8px;
+}
+.notif-resumen {
+  margin: 0;
+  font-size: 14px;
+  color: var(--cfl-navy-1);
+}
+.notif-lista {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--cfl-white);
+  border: 1px solid rgba(18, 42, 69, 0.12);
+  border-radius: 8px;
+}
+.notif-item.no-leida {
+  border-color: var(--cfl-blue);
+  background: #f4f9ff;
+}
+.notif-cuerpo {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.notif-punto {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: var(--cfl-blue);
+}
+.notif-mensaje {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--cfl-navy);
+}
+.notif-link {
+  color: inherit;
+  text-decoration: none;
+}
+.notif-link:hover {
+  text-decoration: underline;
+}
+.notif-fecha {
+  display: block;
+  margin-top: 3px;
+  font-size: 12.5px;
+  opacity: 0.6;
+}
+.notif-item .link-accion {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
 .panel-nav {
   position: relative;
   background: var(--cfl-white);
