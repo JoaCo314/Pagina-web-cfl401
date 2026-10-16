@@ -60,21 +60,34 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { email, password } = (body ?? {}) as Record<string, unknown>;
+  const { email, identificador, password } = (body ?? {}) as Record<
+    string,
+    unknown
+  >;
+  // El acceso admite correo electrónico o DNI. Se acepta el campo
+  // `identificador` (nombre nuevo) y, por compatibilidad, el campo `email`.
+  const entradaRaw = typeof identificador === "string" ? identificador : email;
   if (
-    typeof email !== "string" ||
+    typeof entradaRaw !== "string" ||
     typeof password !== "string" ||
-    !email.trim() ||
+    !entradaRaw.trim() ||
     !password
   ) {
     return NextResponse.json(
-      { error: "Ingresá tu correo electrónico y tu contraseña." },
+      { error: "Ingresá tu correo electrónico o DNI y tu contraseña." },
       { status: 400 }
     );
   }
 
+  // Si trae «@» se trata como correo; si no, como DNI (se descartan puntos y
+  // espacios). La clave del limitador usa esa misma normalización.
+  const entrada = entradaRaw.trim();
+  const esCorreo = entrada.includes("@");
+  const identidad = esCorreo
+    ? entrada.toLowerCase()
+    : entrada.replace(/\D/g, "");
+
   const ip = ipCliente(request);
-  const identidad = email.trim().toLowerCase();
   const limite = await limitador.chequear(identidad, ip);
   if (!limite.permitido) {
     return NextResponse.json(
@@ -86,10 +99,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const usuario = await prisma.usuario.findUnique({
-    where: { email: identidad },
-    select: USUARIO_SELECT,
-  });
+  const usuario = esCorreo
+    ? await prisma.usuario.findUnique({
+        where: { email: identidad },
+        select: USUARIO_SELECT,
+      })
+    : await prisma.usuario.findUnique({
+        where: { dni: identidad },
+        select: USUARIO_SELECT,
+      });
 
   // Cuenta bloqueada por intentos fallidos previos: se corta antes de comparar
   // la contraseña con un mensaje claro, para que quien la conoce sepa que el
