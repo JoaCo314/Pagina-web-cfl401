@@ -2050,6 +2050,10 @@ a.panel-nav-item:hover {
   pointer-events: none;
   opacity: 0.55;
 }
+.paginacion button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 
 /* ── Footer ──────────────────────────────────────────────── */
 .site-footer {
