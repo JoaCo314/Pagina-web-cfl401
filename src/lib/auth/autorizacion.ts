@@ -16,6 +16,9 @@ export const PERMISOS = {
   USUARIOS_CREAR_PRECEPTOR: "usuarios:crear_preceptor",
   USUARIOS_CREAR_DOCENTE: "usuarios:crear_docente",
   USUARIOS_DESACTIVAR: "usuarios:desactivar",
+  /// Eliminar una cuenta de forma definitiva. Es irreversible, así que queda
+  /// reservado al Administrador y solo sobre cuentas ya desactivadas (RF-15).
+  USUARIOS_ELIMINAR: "usuarios:eliminar",
   GUIA_EDITAR: "guia:editar",
   NOTICIAS_CREAR: "noticias:crear",
   NOTICIAS_EDITAR: "noticias:editar",
@@ -65,6 +68,7 @@ const PERMISOS_POR_ROL: Record<
     PERMISOS.USUARIOS_CREAR_PRECEPTOR,
     PERMISOS.USUARIOS_CREAR_DOCENTE,
     PERMISOS.USUARIOS_DESACTIVAR,
+    PERMISOS.USUARIOS_ELIMINAR,
     PERMISOS.GUIA_EDITAR,
     PERMISOS.NOTICIAS_CREAR,
     PERMISOS.NOTICIAS_EDITAR,

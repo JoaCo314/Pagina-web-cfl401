@@ -6,11 +6,14 @@ import {
   alcanceUsuarios,
   filtroUsuariosVisibles,
   obtenerSeccionesPanel,
+  PERMISOS,
+  tienePermiso,
 } from "@/lib/auth/autorizacion";
 import { prisma } from "@/lib/prisma";
 import PanelShell from "@/components/auth/PanelShell";
 import ToggleUsuario from "@/components/panel/ToggleUsuario";
 import BlanquearContrasena from "@/components/panel/BlanquearContrasena";
+import EliminarUsuario from "@/components/panel/EliminarUsuario";
 import EditarDniUsuario from "@/components/panel/EditarDniUsuario";
 import NavPaginacion from "@/components/panel/NavPaginacion";
 
@@ -78,6 +81,7 @@ export default async function UsuariosPanelPage({
   });
   const secciones = obtenerSeccionesPanel(user);
   const soloDocentes = alcance === "docentes";
+  const puedeEliminar = tienePermiso(user, PERMISOS.USUARIOS_ELIMINAR);
   const construirHref = (p: number) =>
     p <= 1 ? "/panel/usuarios" : `/panel/usuarios?pagina=${p}`;
 
@@ -109,6 +113,13 @@ export default async function UsuariosPanelPage({
               persona vuelva a entrar hay que reactivarla con el botón «Activar»:
               al hacerlo también se levanta el bloqueo.
             </p>
+            {puedeEliminar && (
+              <p>
+                Una cuenta inactiva se puede dar de baja definitiva con el botón
+                «Eliminar». Es irreversible y no se puede eliminar una cuenta que
+                todavía tenga cursos asignados.
+              </p>
+            )}
           </details>
         </div>
         <Link href="/panel/usuarios/nuevo" className="btn-primary btn-sm">
@@ -213,6 +224,13 @@ export default async function UsuariosPanelPage({
                         nombre={nombre}
                         esPropio={esPropio}
                       />
+                      {!u.activo && !esPropio && puedeEliminar && (
+                        <EliminarUsuario
+                          usuarioId={u.id}
+                          nombre={nombre}
+                          cursosAsignados={u._count.cursosAsignados}
+                        />
+                      )}
                     </td>
                   </tr>
                 );

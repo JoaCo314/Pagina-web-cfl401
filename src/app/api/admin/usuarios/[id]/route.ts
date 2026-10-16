@@ -362,3 +362,133 @@ export async function PATCH(
     );
   }
 }
+
+/// Eliminación definitiva de una cuenta (RF-15). Reglas:
+///   - Solo el Administrador (permiso USUARIOS_ELIMINAR): es irreversible.
+///   - La cuenta tiene que estar desactivada primero (RF-15): obliga a pasar por
+///     el paso reversible antes de borrar, para evitar bajas por accidente.
+///   - No se puede eliminar la propia cuenta.
+///   - Si todavía tiene cursos asignados se rechaza: primero hay que
+///     reasignarlos, así no quedan cursos sin docente por un borrado.
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  const usuarioId = Number(id);
+  if (!Number.isInteger(usuarioId) || usuarioId <= 0) {
+    return NextResponse.json(
+      { error: "ID de usuario inválido" },
+      { status: 400 }
+    );
+  }
+
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  }
+
+  const existente = await prisma.usuario.findUnique({
+    where: { id: usuarioId },
+    select: {
+      id: true,
+      nombre: true,
+      apellido: true,
+      email: true,
+      activo: true,
+      rol: { select: { nombre: true } },
+      _count: { select: { cursosAsignados: true } },
+    },
+  });
+
+  // Mismo orden que en el resto del endpoint: alcance antes que existencia para
+  // no revelar cuentas fuera del alcance del usuario.
+  if (!puedeGestionarUsuario(user, existente)) {
+    return NextResponse.json(
+      { error: "No tenés permiso para realizar esta acción." },
+      { status: 403 }
+    );
+  }
+
+  if (!existente) {
+    return NextResponse.json(
+      { error: "El usuario no existe." },
+      { status: 404 }
+    );
+  }
+
+  if (!tienePermiso(user, PERMISOS.USUARIOS_ELIMINAR)) {
+    return NextResponse.json(
+      { error: "No tenés permiso para eliminar cuentas." },
+      { status: 403 }
+    );
+  }
+
+  const bloqueado = respuestaSiContrasenaTemporal(user);
+  if (bloqueado) return bloqueado;
+
+  if (usuarioId === user.id) {
+    return NextResponse.json(
+      { error: "No podés eliminar tu propia cuenta." },
+      { status: 400 }
+    );
+  }
+
+  if (existente.activo) {
+    return NextResponse.json(
+      {
+        error:
+          "Primero desactivá la cuenta: solo se pueden eliminar usuarios inactivos.",
+      },
+      { status: 409 }
+    );
+  }
+
+  if (existente._count.cursosAsignados > 0) {
+    return NextResponse.json(
+      {
+        error:
+          "La cuenta todavía tiene cursos asignados. Reasigná esos cursos a otro docente antes de eliminarla.",
+      },
+      { status: 409 }
+    );
+  }
+
+  try {
+    await prisma.usuario.delete({ where: { id: usuarioId } });
+
+    // El registro de auditoría guarda un snapshot del email/nombre como texto,
+    // así que sigue siendo legible después de borrar la cuenta (no hay FK).
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.ELIMINAR,
+      recurso: RECURSOS_AUDITORIA.USUARIO,
+      recursoId: usuarioId,
+      resumen: `Usuario «${existente.nombre} ${existente.apellido}»`,
+      detalle: { rol: existente.rol.nombre, email: existente.email },
+      ip: ipCliente(request),
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2003"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "No se puede eliminar: la cuenta tiene registros asociados. Reasignalos antes de intentar de nuevo.",
+        },
+        { status: 409 }
+      );
+    }
+    console.error("[API] Error interno:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno. Intentá nuevamente." },
+      { status: 500 }
+    );
+  }
+}
