@@ -2337,6 +2337,9 @@ a.panel-nav-item:hover {
   font-size: 12.5px;
   margin-top: 3px;
 }
+.panel-table .td-vacio {
+  opacity: 0.45;
+}
 .imagenes-grid-wrap {
   display: flex;
   flex-direction: column;

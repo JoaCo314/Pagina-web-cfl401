@@ -31,6 +31,7 @@ export const USUARIO_SELECT = {
   apellido: true,
   dni: true,
   email: true,
+  telefono: true,
   activo: true,
   debeCambiarContrasena: true,
   rol: { select: { nombre: true, nivel: true } },

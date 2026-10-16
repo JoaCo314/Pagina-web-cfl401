@@ -64,6 +64,7 @@ export default async function UsuariosPanelPage({
       apellido: true,
       dni: true,
       email: true,
+      telefono: true,
       activo: true,
       bloqueada: true,
       debeCambiarContrasena: true,
@@ -120,6 +121,11 @@ export default async function UsuariosPanelPage({
                 todavía tenga cursos asignados.
               </p>
             )}
+            <p>
+              El teléfono de contacto lo carga cada persona desde su propia
+              cuenta («Mis datos», en la cabecera del panel). Acá aparece solo
+              para poder comunicarse con la persona; no se publica en el sitio.
+            </p>
           </details>
         </div>
         <Link href="/panel/usuarios/nuevo" className="btn-primary btn-sm">
@@ -137,14 +143,15 @@ export default async function UsuariosPanelPage({
           <table className="panel-table">
             <caption className="sr-only">
               {soloDocentes
-                ? "Docentes del centro, con su DNI, estado y acciones"
-                : "Usuarios del centro, con su DNI, rol, estado y acciones"}
+                ? "Docentes del centro, con su DNI, teléfono, estado y acciones"
+                : "Usuarios del centro, con su DNI, teléfono, rol, estado y acciones"}
             </caption>
             <thead>
               <tr>
                 <th scope="col">Nombre</th>
                 <th scope="col">DNI</th>
                 <th scope="col">Email</th>
+                <th scope="col">Teléfono</th>
                 {!soloDocentes && <th scope="col">Rol</th>}
                 <th scope="col">Estado</th>
                 {/* Título visible en escritorio (antes era sr-only y la columna
@@ -174,6 +181,16 @@ export default async function UsuariosPanelPage({
                       />
                     </td>
                     <td data-label="Email">{u.email}</td>
+                    {/* El teléfono lo carga cada persona desde su propia cuenta
+                        ("Mis datos") y acá se muestra solo al personal del
+                        centro: nunca se publica en el sitio. */}
+                    <td data-label="Teléfono">
+                      {u.telefono || (
+                        <span className="td-vacio" title="Sin teléfono cargado">
+                          —
+                        </span>
+                      )}
+                    </td>
                     {!soloDocentes && <td data-label="Rol">{u.rol.nombre}</td>}
                     <td data-label="Estado">
                       <span

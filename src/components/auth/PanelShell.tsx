@@ -1,3 +1,4 @@
+// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
@@ -78,6 +79,9 @@ export default function PanelShell({
               </strong>
               <span>{user.rol.nombre}</span>
             </div>
+            <Link href="/panel/mis-datos" className="panel-ver-sitio">
+              Mis datos
+            </Link>
             <Link href="/" className="panel-ver-sitio">
               Ver sitio ↗
             </Link>

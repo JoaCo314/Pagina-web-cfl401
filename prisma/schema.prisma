@@ -52,6 +52,10 @@ model Usuario {
   bloqueada Boolean  @default(false)
   /// Momento en que se aplicó el bloqueo automático (para el detalle del panel).
   bloqueadaEn DateTime?
+  /// Teléfono de contacto de la persona (opcional). Lo carga el propio usuario
+  /// desde "Mis datos" y lo ven Administrador y Preceptor en el listado del
+  /// panel, solo para comunicación directa: nunca se muestra en el sitio público.
+  telefono  String?
   rolId     Int
   rol       Rol      @relation(fields: [rolId], references: [id])
   cursosAsignados CursoDocente[]
