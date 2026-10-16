@@ -15,16 +15,16 @@ import {
   RECURSOS_AUDITORIA,
   registrarAuditoria,
 } from "@/lib/auditoria";
-import { USUARIO_SELECT } from "@/lib/usuariosAdmin";
-import { REGEX_DNI } from "@/lib/validaciones";
+import { USUARIO_SELECT, limpiarObligatorio } from "@/lib/usuariosAdmin";
+import { esEmailValido, REGEX_DNI } from "@/lib/validaciones";
 
 export const dynamic = "force-dynamic";
 
 /// Edición básica de usuario (RF-15): desactivar o reactivar una cuenta,
-/// corregir su DNI y blanquear su contraseña. El Administrador puede hacerlo
-/// sobre cualquier cuenta; el Preceptor solo sobre cuentas con rol Docente. La
-/// desactivación impide iniciar sesión y revoca las sesiones activas
-/// (getCurrentUser filtra por `activo`).
+/// corregir el DNI, editar nombre, apellido y email, y blanquear la contraseña.
+/// El Administrador puede hacerlo sobre cualquier cuenta; el Preceptor solo
+/// sobre cuentas con rol Docente. La desactivación impide iniciar sesión y
+/// revoca las sesiones activas (getCurrentUser filtra por `activo`).
 ///
 /// El blanqueo nunca recibe una contraseña escrita por el administrador: la
 /// contraseña temporal siempre se deriva del DNI (últimos 4 dígitos) y la
@@ -56,6 +56,7 @@ export async function PATCH(
       nombre: true,
       apellido: true,
       dni: true,
+      email: true,
       bloqueada: true,
       debeCambiarContrasena: true,
       rol: { select: { nombre: true } },
@@ -220,6 +221,68 @@ export async function PATCH(
     }
   }
 
+  // Datos de identidad editables desde el panel (RF-15): nombre, apellido y
+  // email. El DNI tiene su propio editor rápido (por eso se valida por separado).
+  // Se registran los nombres de los campos tocados para la auditoría, pero no
+  // los valores (son datos personales).
+  const camposEditados: string[] = [];
+
+  if (fuente.nombre !== undefined) {
+    const nombreCampo = limpiarObligatorio(fuente.nombre, "El nombre", 100);
+    if (nombreCampo.error) {
+      return NextResponse.json({ error: nombreCampo.error }, { status: 400 });
+    }
+    if (nombreCampo.valor !== existente.nombre) {
+      cambios.nombre = nombreCampo.valor;
+      camposEditados.push("nombre");
+    }
+  }
+
+  if (fuente.apellido !== undefined) {
+    const apellidoCampo = limpiarObligatorio(
+      fuente.apellido,
+      "El apellido",
+      100
+    );
+    if (apellidoCampo.error) {
+      return NextResponse.json({ error: apellidoCampo.error }, { status: 400 });
+    }
+    if (apellidoCampo.valor !== existente.apellido) {
+      cambios.apellido = apellidoCampo.valor;
+      camposEditados.push("apellido");
+    }
+  }
+
+  if (fuente.email !== undefined) {
+    const emailCampo = limpiarObligatorio(fuente.email, "El email", 200);
+    if (emailCampo.error) {
+      return NextResponse.json({ error: emailCampo.error }, { status: 400 });
+    }
+    const email = emailCampo.valor.toLowerCase();
+    if (!esEmailValido(email)) {
+      return NextResponse.json(
+        { error: "El email no tiene un formato válido." },
+        { status: 400 }
+      );
+    }
+    if (email !== existente.email) {
+      // La unicidad del email es case-insensitive en la base; para dar un 409
+      // claro se busca ignorando mayúsculas antes de intentar el update.
+      const emailEnUso = await prisma.usuario.findFirst({
+        where: { email: { equals: email, mode: "insensitive" } },
+        select: { id: true },
+      });
+      if (emailEnUso) {
+        return NextResponse.json(
+          { error: "Ya existe un usuario con ese email." },
+          { status: 409 }
+        );
+      }
+      cambios.email = email;
+      camposEditados.push("email");
+    }
+  }
+
   if (Object.keys(cambios).length === 0) {
     return NextResponse.json(
       { error: "No se enviaron campos para actualizar." },
@@ -234,7 +297,7 @@ export async function PATCH(
       select: USUARIO_SELECT,
     });
 
-    const nombre = `Usuario «${existente.nombre} ${existente.apellido}»`;
+    const nombre = `Usuario «${usuario.nombre} ${usuario.apellido}»`;
     if (cambios.activo !== undefined) {
       await registrarAuditoria({
         usuario: user,
@@ -267,14 +330,30 @@ export async function PATCH(
         ip: ipCliente(request),
       });
     }
+    if (camposEditados.length > 0) {
+      await registrarAuditoria({
+        usuario: user,
+        accion: ACCIONES_AUDITORIA.EDITAR,
+        recurso: RECURSOS_AUDITORIA.USUARIO,
+        recursoId: usuarioId,
+        resumen: nombre,
+        // Solo los nombres de los campos: los valores son datos personales.
+        detalle: { campos: camposEditados.join(", ") },
+        ip: ipCliente(request),
+      });
+    }
 
     return NextResponse.json({ usuario });
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-      return NextResponse.json(
-        { error: "Ya existe un usuario con ese DNI." },
-        { status: 409 }
-      );
+      const objetivo = err.meta?.target;
+      const campos = Array.isArray(objetivo)
+        ? objetivo.map(String)
+        : [String(objetivo ?? "")];
+      const mensaje = campos.includes("email")
+        ? "Ya existe un usuario con ese email."
+        : "Ya existe un usuario con ese DNI.";
+      return NextResponse.json({ error: mensaje }, { status: 409 });
     }
     console.error("[API] Error interno:", err);
     return NextResponse.json(

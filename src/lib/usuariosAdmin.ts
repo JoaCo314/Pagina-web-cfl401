@@ -1,3 +1,4 @@
+// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import {
   PERMISOS,
   tienePermiso,
@@ -51,7 +52,7 @@ export type ResultadoDatosUsuario =
   | { ok: true; datos: UsuarioInputNormalizado }
   | { ok: false; error: string };
 
-function limpiarObligatorio(
+export function limpiarObligatorio(
   valor: unknown,
   etiqueta: string,
   max: number

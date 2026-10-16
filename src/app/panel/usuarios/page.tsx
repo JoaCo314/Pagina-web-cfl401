@@ -192,6 +192,14 @@ export default async function UsuariosPanelPage({
                       )}
                     </td>
                     <td data-label="Acciones" className="celda-acciones">
+                      <span className="acciones-usuario">
+                        <Link
+                          href={`/panel/usuarios/${u.id}/editar`}
+                          className="link-accion"
+                        >
+                          Editar datos
+                        </Link>
+                      </span>
                       <ToggleUsuario
                         usuarioId={u.id}
                         nombre={nombre}
