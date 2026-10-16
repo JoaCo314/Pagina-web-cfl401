@@ -2515,6 +2515,37 @@ a.panel-nav-item:hover {
   user-select: none;
 }
 /* Consultas del formulario de contacto. */
+/* ── Filtros del listado de usuarios (panel) ─────────────── */
+.filtros-usuarios {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0 0 18px;
+}
+.filtros-usuarios .filtro-buscar {
+  flex: 1 1 260px;
+}
+.filtros-usuarios .filtro-rol {
+  flex: 0 1 200px;
+}
+.filtros-usuarios input[type="search"],
+.filtros-usuarios select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid rgba(18, 42, 69, 0.2);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--cfl-white);
+  color: var(--cfl-navy);
+}
+.filtros-usuarios input[type="search"]:focus,
+.filtros-usuarios select:focus {
+  outline: 2px solid var(--cfl-blue);
+  outline-offset: 1px;
+}
+
 .filtros-consultas {
   display: flex;
   gap: 8px;

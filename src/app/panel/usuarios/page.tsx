@@ -9,6 +9,7 @@ import {
   PERMISOS,
   tienePermiso,
 } from "@/lib/auth/autorizacion";
+import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import PanelShell from "@/components/auth/PanelShell";
 import ToggleUsuario from "@/components/panel/ToggleUsuario";
@@ -30,7 +31,7 @@ function paginaValida(valor: string | undefined, totalPaginas: number): number {
 export default async function UsuariosPanelPage({
   searchParams,
 }: {
-  searchParams: Promise<{ pagina?: string }>;
+  searchParams: Promise<{ pagina?: string; q?: string; rol?: string }>;
 }) {
   const user = await getCurrentUser();
 
@@ -47,8 +48,38 @@ export default async function UsuariosPanelPage({
     redirect("/panel");
   }
 
-  const { pagina: paginaParam } = await searchParams;
-  const donde = filtroUsuariosVisibles(user);
+  const { pagina: paginaParam, q, rol } = await searchParams;
+  const esAdministrador = alcance === "todos";
+  const busqueda = (q ?? "").trim();
+
+  // El filtro por rol solo tiene sentido para el Administrador (el Preceptor ya
+  // ve únicamente docentes); se valida contra la lista real de roles.
+  const roles = esAdministrador
+    ? await prisma.rol.findMany({
+        orderBy: { nivel: "desc" },
+        select: { nombre: true },
+      })
+    : [];
+  const rolFiltro =
+    esAdministrador && rol && roles.some((r) => r.nombre === rol)
+      ? rol
+      : undefined;
+
+  const donde: Prisma.UsuarioWhereInput = {
+    ...filtroUsuariosVisibles(user),
+    ...(rolFiltro ? { rol: { nombre: rolFiltro } } : {}),
+    ...(busqueda
+      ? {
+          OR: [
+            { nombre: { contains: busqueda, mode: "insensitive" } },
+            { apellido: { contains: busqueda, mode: "insensitive" } },
+            { email: { contains: busqueda, mode: "insensitive" } },
+            { dni: { contains: busqueda } },
+          ],
+        }
+      : {}),
+  };
+
   const totalUsuarios = await prisma.usuario.count({ where: donde });
   const totalPaginas = Math.max(
     1,
@@ -83,8 +114,15 @@ export default async function UsuariosPanelPage({
   const secciones = obtenerSeccionesPanel(user);
   const soloDocentes = alcance === "docentes";
   const puedeEliminar = tienePermiso(user, PERMISOS.USUARIOS_ELIMINAR);
-  const construirHref = (p: number) =>
-    p <= 1 ? "/panel/usuarios" : `/panel/usuarios?pagina=${p}`;
+  const hayFiltro = Boolean(busqueda || rolFiltro);
+  const construirHref = (p: number) => {
+    const params = new URLSearchParams();
+    if (busqueda) params.set("q", busqueda);
+    if (rolFiltro) params.set("rol", rolFiltro);
+    if (p > 1) params.set("pagina", String(p));
+    const query = params.toString();
+    return query ? `/panel/usuarios?${query}` : "/panel/usuarios";
+  };
 
   return (
     <PanelShell user={user} secciones={secciones}>
@@ -133,10 +171,53 @@ export default async function UsuariosPanelPage({
         </Link>
       </div>
 
+      {/* Búsqueda libre (nombre, apellido, email o DNI) y, solo para el
+          Administrador, filtro por rol. Es un form GET: funciona sin JS y deja
+          los criterios en la URL para poder compartirla o recargarla. */}
+      <form
+        className="filtros-usuarios"
+        method="get"
+        action="/panel/usuarios"
+        role="search"
+      >
+        <label className="filtro-buscar">
+          <span className="sr-only">Buscar usuario</span>
+          <input
+            type="search"
+            name="q"
+            defaultValue={busqueda}
+            maxLength={100}
+            placeholder="Buscar por nombre, apellido, email o DNI"
+          />
+        </label>
+        {esAdministrador && (
+          <label className="filtro-rol">
+            <span className="sr-only">Filtrar por rol</span>
+            <select name="rol" defaultValue={rolFiltro ?? ""}>
+              <option value="">Todos los roles</option>
+              {roles.map((r) => (
+                <option key={r.nombre} value={r.nombre}>
+                  {r.nombre}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <button type="submit" className="btn-primary btn-sm">
+          Buscar
+        </button>
+        {hayFiltro && (
+          <Link href="/panel/usuarios" className="btn-ghost-dark btn-sm">
+            Limpiar
+          </Link>
+        )}
+      </form>
+
       {usuarios.length === 0 ? (
         <p className="panel-vacio">
-          Todavía no hay {soloDocentes ? "docentes" : "usuarios"} cargados. Creá
-          el primero desde “Nuevo usuario”.
+          {hayFiltro
+            ? "No hay cuentas que coincidan con la búsqueda o el filtro elegido."
+            : `Todavía no hay ${soloDocentes ? "docentes" : "usuarios"} cargados. Creá el primero desde “Nuevo usuario”.`}
         </p>
       ) : (
         <div className="panel-table-wrap">
