@@ -45,6 +45,13 @@ model Usuario {
   /// así todos los tokens anteriores dejan de validar y hay que volver a entrar.
   versionSesion Int      @default(1)
   activo    Boolean  @default(true)
+  /// true cuando la cuenta se bloqueó sola tras demasiados intentos fallidos de
+  /// inicio de sesión. A diferencia de `activo=false` (una baja manual), este
+  /// bloqueo lo aplica el sistema y solo lo revierte un Administrador o
+  /// Preceptor desde el panel; sirve para distinguir el motivo en el listado.
+  bloqueada Boolean  @default(false)
+  /// Momento en que se aplicó el bloqueo automático (para el detalle del panel).
+  bloqueadaEn DateTime?
   rolId     Int
   rol       Rol      @relation(fields: [rolId], references: [id])
   cursosAsignados CursoDocente[]

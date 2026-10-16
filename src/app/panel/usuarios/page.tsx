@@ -1,3 +1,4 @@
+// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
@@ -61,6 +62,7 @@ export default async function UsuariosPanelPage({
       dni: true,
       email: true,
       activo: true,
+      bloqueada: true,
       debeCambiarContrasena: true,
       rol: { select: { nombre: true, nivel: true } },
       // Para poder avisar cuántos cursos quedan colgados si se desactiva una
@@ -95,11 +97,17 @@ export default async function UsuariosPanelPage({
               efectos de la baja) iba en el lead como párrafos sueltos y quedaba
               como un muro de texto arriba de la tabla. Ahora está colapsado. */}
           <details className="panel-lead-detalle">
-            <summary>¿Cómo funcionan las contraseñas y los permisos?</summary>
+            <summary>¿Cómo funcionan las contraseñas, los bloqueos y los permisos?</summary>
             <p>
               {soloDocentes
                 ? "Las cuentas de administradores y preceptores las administra el administrador del centro: acá solo aparecen los docentes."
                 : "El blanqueo siempre genera la contraseña temporal con los últimos 4 dígitos del DNI y la persona tiene que cambiarla al ingresar. Si corregís el DNI de una cuenta que todavía tiene la contraseña temporal, la temporal se vuelve a calcular con el DNI nuevo. Un usuario desactivado pierde el acceso al panel inmediatamente."}
+            </p>
+            <p>
+              Si alguien falla la contraseña 5 veces seguidas, la cuenta se
+              bloquea sola y aparece con la etiqueta «Bloqueada». Para que esa
+              persona vuelva a entrar hay que reactivarla con el botón «Activar»:
+              al hacerlo también se levanta el bloqueo.
             </p>
           </details>
         </div>
@@ -162,6 +170,14 @@ export default async function UsuariosPanelPage({
                       >
                         {u.activo ? "Activo" : "Inactivo"}
                       </span>
+                      {u.bloqueada && (
+                        <span
+                          className="badge-estado bloqueada"
+                          title="Se bloqueó sola tras demasiados intentos fallidos de inicio de sesión. Reactivá la cuenta para desbloquearla."
+                        >
+                          Bloqueada
+                        </span>
+                      )}
                       {u.debeCambiarContrasena && (
                         <span
                           className="badge-estado pendiente"
@@ -180,6 +196,7 @@ export default async function UsuariosPanelPage({
                         usuarioId={u.id}
                         nombre={nombre}
                         activo={u.activo}
+                        bloqueada={u.bloqueada}
                         esPropio={esPropio}
                         cursosAsignados={u._count.cursosAsignados}
                       />

@@ -1,3 +1,4 @@
+// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 "use client";
 
 import { useState } from "react";
@@ -9,12 +10,14 @@ export default function ToggleUsuario({
   usuarioId,
   nombre,
   activo,
+  bloqueada = false,
   esPropio,
   cursosAsignados = 0,
 }: {
   usuarioId: number;
   nombre: string;
   activo: boolean;
+  bloqueada?: boolean;
   esPropio: boolean;
   cursosAsignados?: number;
 }) {
@@ -92,7 +95,9 @@ export default function ToggleUsuario({
                     } sin docente activo: sacale la asignación o asignale otro docente para que no queden sin cubrir.`
                   : ""
               }`
-            : `${nombre} va a poder volver a entrar al panel con su contraseña actual.`
+            : bloqueada
+              ? `${nombre} estaba bloqueado por demasiados intentos fallidos de inicio de sesión. Al reactivarlo va a poder volver a entrar al panel con su contraseña actual.`
+              : `${nombre} va a poder volver a entrar al panel con su contraseña actual.`
         }
         onCancelar={() => setConfirmar(false)}
         onConfirmar={alternar}

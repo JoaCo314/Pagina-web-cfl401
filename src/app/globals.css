@@ -2433,6 +2433,11 @@ a.panel-nav-item:hover {
   color: var(--cfl-warn-fg);
   margin-left: 6px;
 }
+.badge-estado.bloqueada {
+  background: var(--cfl-warn-bg);
+  color: var(--cfl-warn-fg);
+  margin-left: 6px;
+}
 .acciones-usuario {
   display: inline-flex;
   flex-direction: column;

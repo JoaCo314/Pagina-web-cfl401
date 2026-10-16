@@ -56,6 +56,7 @@ export async function PATCH(
       nombre: true,
       apellido: true,
       dni: true,
+      bloqueada: true,
       debeCambiarContrasena: true,
       rol: { select: { nombre: true } },
     },
@@ -181,6 +182,12 @@ export async function PATCH(
       );
     }
     cambios.activo = fuente.activo;
+    // Si se reactiva una cuenta que había quedado bloqueada por intentos
+    // fallidos, se limpia también el bloqueo: es la única forma de levantarlo.
+    if (fuente.activo === true) {
+      cambios.bloqueada = false;
+      cambios.bloqueadaEn = null;
+    }
   }
 
   if (fuente.dni !== undefined) {
@@ -237,6 +244,10 @@ export async function PATCH(
         recurso: RECURSOS_AUDITORIA.USUARIO,
         recursoId: usuarioId,
         resumen: nombre,
+        detalle:
+          cambios.activo && existente.bloqueada
+            ? { desbloqueo: "por intentos fallidos" }
+            : undefined,
         ip: ipCliente(request),
       });
     }

@@ -1,3 +1,4 @@
+// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -64,7 +65,7 @@ async function sumarFallo(
   clave: string,
   maximo: number,
   duracionMs: number
-): Promise<void> {
+): Promise<boolean> {
   const actual = await leer(ambito, clave);
   const fallidos = actual.fallidos + 1;
   const bloquear = fallidos >= maximo;
@@ -77,6 +78,7 @@ async function sumarFallo(
     create: { ambito, clave, ...datos },
     update: datos,
   });
+  return bloquear;
 }
 
 async function estado(
@@ -170,14 +172,27 @@ export function crearLimitador({
         return { permitido: true, restantes: maxIntentos, esperaSegundos: 0 };
       }
     },
-    async registrarFallo(identidad: string, ip?: string): Promise<void> {
+    /// Devuelve `bloqueoCuenta: true` cuando este fallo alcanzó el máximo para
+    /// la identidad y el contador acaba de bloquearse. El login lo usa para
+    /// aplicar el bloqueo permanente de la cuenta (no solo el temporal).
+    async registrarFallo(
+      identidad: string,
+      ip?: string
+    ): Promise<{ bloqueoCuenta: boolean }> {
       try {
-        await sumarFallo(ambitoCuenta, identidad, maxIntentos, duracionMs);
+        const bloqueoCuenta = await sumarFallo(
+          ambitoCuenta,
+          identidad,
+          maxIntentos,
+          duracionMs
+        );
         if (usarIp() && ip !== undefined) {
           await sumarFallo(ambitoIp, ip, maxIntentosPorIp!, duracionMs);
         }
+        return { bloqueoCuenta };
       } catch (err) {
         console.error("[rateLimit] No se pudo registrar el fallo:", err);
+        return { bloqueoCuenta: false };
       }
     },
     async limpiar(identidad: string, ip?: string): Promise<void> {
