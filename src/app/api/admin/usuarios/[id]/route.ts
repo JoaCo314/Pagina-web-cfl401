@@ -1,3 +1,4 @@
+// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -8,6 +9,12 @@ import {
   contrasenaTemporalDesdeDni,
   hashPassword,
 } from "@/lib/auth/password";
+import { ipCliente } from "@/lib/auth/rateLimit";
+import {
+  ACCIONES_AUDITORIA,
+  RECURSOS_AUDITORIA,
+  registrarAuditoria,
+} from "@/lib/auditoria";
 import { USUARIO_SELECT } from "@/lib/usuariosAdmin";
 import { REGEX_DNI } from "@/lib/validaciones";
 
@@ -132,6 +139,16 @@ export async function PATCH(
         select: USUARIO_SELECT,
       });
 
+      await registrarAuditoria({
+        usuario: user,
+        accion: ACCIONES_AUDITORIA.BLANQUEAR,
+        recurso: RECURSOS_AUDITORIA.USUARIO,
+        recursoId: usuarioId,
+        resumen: `Usuario «${existente.nombre} ${existente.apellido}»`,
+        detalle: { contrasena: "temporal (últimos 4 del DNI)" },
+        ip: ipCliente(request),
+      });
+
       return NextResponse.json({ usuario });
     } catch (err) {
       console.error("[API] Error interno:", err);
@@ -209,6 +226,36 @@ export async function PATCH(
       data: cambios,
       select: USUARIO_SELECT,
     });
+
+    const nombre = `Usuario «${existente.nombre} ${existente.apellido}»`;
+    if (cambios.activo !== undefined) {
+      await registrarAuditoria({
+        usuario: user,
+        accion: cambios.activo
+          ? ACCIONES_AUDITORIA.ACTIVAR
+          : ACCIONES_AUDITORIA.DESACTIVAR,
+        recurso: RECURSOS_AUDITORIA.USUARIO,
+        recursoId: usuarioId,
+        resumen: nombre,
+        ip: ipCliente(request),
+      });
+    }
+    if (cambios.dni !== undefined) {
+      await registrarAuditoria({
+        usuario: user,
+        accion: ACCIONES_AUDITORIA.EDITAR,
+        recurso: RECURSOS_AUDITORIA.USUARIO,
+        recursoId: usuarioId,
+        resumen: nombre,
+        // No se guarda el DNI (dato personal): solo se deja constancia del
+        // cambio de identidad y de si la contraseña temporal se recalculó.
+        detalle: {
+          campo: "dni",
+          contrasenaTemporalRecalculada: Boolean(cambios.passwordHash),
+        },
+        ip: ipCliente(request),
+      });
+    }
 
     return NextResponse.json({ usuario });
   } catch (err) {

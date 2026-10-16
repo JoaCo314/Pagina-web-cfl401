@@ -1,3 +1,4 @@
+// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -5,6 +6,12 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
 import { validarCategoriaPregunta } from "@/lib/preguntasFrecuentes";
+import { ipCliente } from "@/lib/auth/rateLimit";
+import {
+  ACCIONES_AUDITORIA,
+  RECURSOS_AUDITORIA,
+  registrarAuditoria,
+} from "@/lib/auditoria";
 
 export const dynamic = "force-dynamic";
 
@@ -92,6 +99,16 @@ export async function PUT(
       select: { id: true, nombre: true, orden: true, activo: true },
     });
 
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.EDITAR,
+      recurso: RECURSOS_AUDITORIA.CATEGORIA_PREGUNTA,
+      recursoId: categoriaId,
+      resumen: `Categoría de preguntas «${categoria.nombre}»`,
+      detalle: { nombre: categoria.nombre, activo: categoria.activo },
+      ip: ipCliente(request),
+    });
+
     return NextResponse.json({ categoria });
   } catch (err) {
     console.error("[API] Error interno:", err);
@@ -158,6 +175,17 @@ export async function DELETE(
 
   try {
     await prisma.categoriaPregunta.delete({ where: { id: categoriaId } });
+
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.ELIMINAR,
+      recurso: RECURSOS_AUDITORIA.CATEGORIA_PREGUNTA,
+      recursoId: categoriaId,
+      resumen: `Categoría de preguntas «${existente.nombre}»`,
+      detalle: { preguntasEliminadas: existente._count.preguntas },
+      ip: ipCliente(request),
+    });
+
     return NextResponse.json({ eliminado: true, preguntas: existente._count.preguntas });
   } catch (err) {
     console.error("[API] Error interno:", err);

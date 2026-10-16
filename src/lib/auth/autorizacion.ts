@@ -1,3 +1,4 @@
+// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import type { UsuarioSesion } from "@/lib/auth/session";
 import { ROLES } from "@/lib/auth/roles";
 
@@ -25,6 +26,9 @@ export const PERMISOS = {
   /// Consultas que llegan por el formulario público de /contacto. Administrador
   /// y Preceptor la leen desde el panel para poder responderle a quien escribió.
   CONSULTAS_VER: "consultas:ver",
+  /// Registro de acciones administrativas (auditoría). Exclusivo del
+  /// Administrador: muestra quién creó, editó o borró qué, y no se puede editar.
+  AUDITORIA_VER: "auditoria:ver",
 } as const;
 
 export type Permiso = (typeof PERMISOS)[keyof typeof PERMISOS];
@@ -69,6 +73,7 @@ const PERMISOS_POR_ROL: Record<
     PERMISOS.PREGUNTAS_FAQS_EDITAR,
     PERMISOS.SITE_CONFIG_EDITAR,
     PERMISOS.CONSULTAS_VER,
+    PERMISOS.AUDITORIA_VER,
   ],
   [ROLES.PRECEPTOR]: [
     PERMISOS.CURSOS_VER,
@@ -189,6 +194,7 @@ export type SeccionPanel = {
     | "faqs"
     | "contacto"
     | "configuracion"
+    | "auditoria"
     | "consultas";
   titulo: string;
   descripcion: string;
@@ -300,6 +306,15 @@ export function obtenerSeccionesPanel(
       titulo: "Configuración del sitio",
       descripcion: "Banner azul, logo, footer, mapa de ubicación y demás textos del sitio.",
       href: "/panel/configuracion",
+    });
+  }
+
+  if (tienePermiso(usuario, PERMISOS.AUDITORIA_VER)) {
+    secciones.push({
+      clave: "auditoria",
+      titulo: "Auditoría",
+      descripcion: "Registro de acciones administrativas: quién hizo qué y cuándo.",
+      href: "/panel/auditoria",
     });
   }
 

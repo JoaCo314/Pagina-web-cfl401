@@ -1,3 +1,4 @@
+// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -9,6 +10,12 @@ import {
 } from "@/lib/auth/autorizacion";
 import { CURSO_SELECT, validarDatosCurso } from "@/lib/cursoAdmin";
 import { borrarImagenPorUrl } from "@/lib/imagenes";
+import { ipCliente } from "@/lib/auth/rateLimit";
+import {
+  ACCIONES_AUDITORIA,
+  RECURSOS_AUDITORIA,
+  registrarAuditoria,
+} from "@/lib/auditoria";
 
 export const dynamic = "force-dynamic";
 
@@ -218,6 +225,28 @@ export async function PUT(
       await borrarImagenPorUrl(existente.imagenUrl);
     }
 
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.EDITAR,
+      recurso: RECURSOS_AUDITORIA.CURSO,
+      recursoId: cursoId,
+      resumen: `Curso «${curso?.nombre ?? cursoId}»`,
+      detalle: data,
+      ip: ipCliente(request),
+    });
+
+    if (reasignarDocentes) {
+      await registrarAuditoria({
+        usuario: user,
+        accion: ACCIONES_AUDITORIA.ASIGNAR_DOCENTES,
+        recurso: RECURSOS_AUDITORIA.CURSO,
+        recursoId: cursoId,
+        resumen: `Curso «${curso?.nombre ?? cursoId}»`,
+        detalle: { cantidad: docenteIds.length },
+        ip: ipCliente(request),
+      });
+    }
+
     return NextResponse.json({ curso });
   } catch (err) {
     console.error("[API] Error interno:", err);
@@ -281,6 +310,15 @@ export async function DELETE(
     });
 
     await borrarImagenPorUrl(existente.imagenUrl);
+
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.ELIMINAR,
+      recurso: RECURSOS_AUDITORIA.CURSO,
+      recursoId: cursoEliminado.id,
+      resumen: `Curso «${cursoEliminado.nombre}»`,
+      ip: ipCliente(request),
+    });
 
     return NextResponse.json({ eliminado: true, curso: cursoEliminado });
   } catch (err) {

@@ -1,3 +1,4 @@
+// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -13,6 +14,12 @@ import {
   contrasenaTemporalDesdeDni,
   hashPassword,
 } from "@/lib/auth/password";
+import { ipCliente } from "@/lib/auth/rateLimit";
+import {
+  ACCIONES_AUDITORIA,
+  RECURSOS_AUDITORIA,
+  registrarAuditoria,
+} from "@/lib/auditoria";
 import {
   NOMBRE_ROL_A_PERMISO_CREAR,
   USUARIO_SELECT,
@@ -156,6 +163,16 @@ export async function POST(request: NextRequest) {
 
     // No se devuelve la contraseña temporal: quien da de alta ya conoce el DNI
     // que ingresó y puede leer los últimos 4 dígitos de la columna DNI.
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.CREAR,
+      recurso: RECURSOS_AUDITORIA.USUARIO,
+      recursoId: usuario.id,
+      resumen: `Usuario «${usuario.nombre} ${usuario.apellido}»`,
+      detalle: { rol, email, activo: activo ?? true },
+      ip: ipCliente(request),
+    });
+
     return NextResponse.json({ usuario }, { status: 201 });
   } catch (err) {
     if (

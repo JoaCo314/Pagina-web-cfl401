@@ -1,3 +1,4 @@
+// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -298,6 +299,41 @@ model MensajeContacto {
   @@index([leido])
   @@index([createdAt])
   @@map("mensajes_contacto")
+}
+
+/// Registro de acciones administrativas (quién hizo qué y cuándo). Es de solo
+/// lectura: no se edita ni se borra desde el panel, y su vista está reservada al
+/// Administrador. `usuarioEmail` y `usuarioNombre` se guardan en el momento de la
+/// acción (snapshot) para que el registro siga siendo legible si la cuenta luego
+/// se elimina. Nunca se guarda el contenido completo de los textos largos ni
+/// contraseñas/hashes: solo un resumen y los campos afectados.
+model AuditoriaAccion {
+  id Int @id @default(autoincrement())
+  /// Cuenta que ejecutó la acción. Puede ser nula si la sesión ya no existe.
+  usuarioId Int?
+  usuarioEmail String?
+  usuarioNombre String?
+  /// Rol con el que operaba al momento de la acción.
+  rol String?
+  /// Verbos cortos: crear, editar, eliminar, activar, desactivar, blanquear,
+  /// asignar_docentes, marcar_leida, bloquear.
+  accion String
+  /// Módulo recurso: usuario, curso, noticia, pregunta, categoria_pregunta,
+  /// guia, sobre_el_centro, site_config, imagen, consulta.
+  recurso String
+  recursoId Int?
+  /// Texto legible del registro afectado (ej: `Curso «Electricidad»`).
+  resumen String?
+  /// Campos afectados y sus valores nuevos, resumidos. No incluye datos
+  /// sensibles (nunca passwordHash ni la contraseña temporal).
+  detalle Json?
+  ip String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([recurso])
+  @@index([usuarioId])
+  @@map("auditoria_acciones")
 }
 
 /// Contadores de los limitadores de tasa (login, cambio de contraseña propia y

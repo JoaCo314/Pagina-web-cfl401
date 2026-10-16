@@ -1,3 +1,4 @@
+// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -7,6 +8,12 @@ import {
   PREGUNTA_SELECT,
   validarPreguntaFrecuente,
 } from "@/lib/preguntasFrecuentes";
+import { ipCliente } from "@/lib/auth/rateLimit";
+import {
+  ACCIONES_AUDITORIA,
+  RECURSOS_AUDITORIA,
+  registrarAuditoria,
+} from "@/lib/auditoria";
 
 export const dynamic = "force-dynamic";
 
@@ -96,6 +103,16 @@ export async function PUT(
       select: PREGUNTA_SELECT,
     });
 
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.EDITAR,
+      recurso: RECURSOS_AUDITORIA.PREGUNTA,
+      recursoId: preguntaId,
+      resumen: `Pregunta «${pregunta.pregunta}»`,
+      detalle: data,
+      ip: ipCliente(request),
+    });
+
     return NextResponse.json({ pregunta });
   } catch (err) {
     console.error("[API] Error interno:", err);
@@ -149,6 +166,16 @@ export async function DELETE(
 
   try {
     await prisma.preguntaFrecuente.delete({ where: { id: preguntaId } });
+
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.ELIMINAR,
+      recurso: RECURSOS_AUDITORIA.PREGUNTA,
+      recursoId: preguntaId,
+      resumen: `Pregunta «${existente.pregunta}»`,
+      ip: ipCliente(request),
+    });
+
     return NextResponse.json({ eliminado: true });
   } catch (err) {
     console.error("[API] Error interno:", err);

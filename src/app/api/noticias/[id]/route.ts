@@ -1,3 +1,4 @@
+// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -5,6 +6,12 @@ import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
 import { NOTICIA_SELECT, validarDatosNoticia } from "@/lib/noticiaAdmin";
 import { borrarImagenPorUrl } from "@/lib/imagenes";
+import { ipCliente } from "@/lib/auth/rateLimit";
+import {
+  ACCIONES_AUDITORIA,
+  RECURSOS_AUDITORIA,
+  registrarAuditoria,
+} from "@/lib/auditoria";
 
 export const dynamic = "force-dynamic";
 
@@ -131,6 +138,16 @@ export async function PUT(
       await borrarImagenPorUrl(existente.imagenUrl);
     }
 
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.EDITAR,
+      recurso: RECURSOS_AUDITORIA.NOTICIA,
+      recursoId: noticiaId,
+      resumen: `Noticia «${noticia.titulo}»`,
+      detalle: data,
+      ip: ipCliente(request),
+    });
+
     return NextResponse.json({ noticia });
   } catch (err) {
     console.error("[API] Error interno:", err);
@@ -190,6 +207,15 @@ export async function DELETE(
     });
 
     await borrarImagenPorUrl(existente.imagenUrl);
+
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.ELIMINAR,
+      recurso: RECURSOS_AUDITORIA.NOTICIA,
+      recursoId: noticiaEliminada.id,
+      resumen: `Noticia «${noticiaEliminada.titulo}»`,
+      ip: ipCliente(request),
+    });
 
     return NextResponse.json({ eliminado: true, noticia: noticiaEliminada });
   } catch (err) {

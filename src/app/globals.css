@@ -1,3 +1,4 @@
+/* Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401). */
 @import "tailwindcss";
 
 /* ── Design tokens (from mockup) ─────────────────────────── */
@@ -2510,6 +2511,42 @@ a.panel-nav-item:hover {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+/* ── Auditoría (panel) ───────────────────────────────────── */
+.auditoria-filtros {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 18px 0 22px;
+}
+.auditoria-accion {
+  display: block;
+  font-weight: 600;
+}
+.auditoria-resumen {
+  margin: 0;
+  font-size: 13.5px;
+}
+.auditoria-sin-dato {
+  opacity: 0.55;
+}
+.auditoria-detalle summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--cfl-blue);
+  margin-top: 6px;
+}
+.auditoria-detalle pre {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  background: #f2f7fd;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
 }
 .consultas-lista {
   display: flex;

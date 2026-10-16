@@ -1,9 +1,16 @@
+// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
 import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
 import { referenciasImagen } from "@/lib/imagenes";
+import { ipCliente } from "@/lib/auth/rateLimit";
+import {
+  ACCIONES_AUDITORIA,
+  RECURSOS_AUDITORIA,
+  registrarAuditoria,
+} from "@/lib/auditoria";
 
 export const dynamic = "force-dynamic";
 
@@ -104,6 +111,16 @@ export async function DELETE(
     }
 
     await prisma.imagen.delete({ where: { id: imagenId } });
+
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.ELIMINAR,
+      recurso: RECURSOS_AUDITORIA.IMAGEN,
+      recursoId: imagenId,
+      resumen: `Imagen #${imagenId}`,
+      ip: ipCliente(request),
+    });
+
     return NextResponse.json({ eliminado: true });
   } catch (err) {
     if (

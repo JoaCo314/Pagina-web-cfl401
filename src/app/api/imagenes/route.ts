@@ -1,3 +1,4 @@
+// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, type UsuarioSesion } from "@/lib/auth/session";
@@ -9,6 +10,12 @@ import {
   TIPOS_IMAGEN_PERMITIDOS,
   urlImagenInterna,
 } from "@/lib/imagenes";
+import { ipCliente } from "@/lib/auth/rateLimit";
+import {
+  ACCIONES_AUDITORIA,
+  RECURSOS_AUDITORIA,
+  registrarAuditoria,
+} from "@/lib/auditoria";
 
 export const dynamic = "force-dynamic";
 
@@ -138,6 +145,16 @@ export async function POST(request: NextRequest) {
         datos: bytes,
       },
       select: { id: true, nombre: true, mimeType: true, tamano: true },
+    });
+
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.CREAR,
+      recurso: RECURSOS_AUDITORIA.IMAGEN,
+      recursoId: imagen.id,
+      resumen: `Imagen «${imagen.nombre}»`,
+      detalle: { mimeType: imagen.mimeType, tamano: imagen.tamano },
+      ip: ipCliente(request),
     });
 
     return NextResponse.json(
