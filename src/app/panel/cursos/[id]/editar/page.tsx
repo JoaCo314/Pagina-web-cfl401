@@ -7,7 +7,7 @@ import {
   puedeGestionarCurso,
 } from "@/lib/auth/autorizacion";
 import { prisma } from "@/lib/prisma";
-import { CURSO_SELECT, obtenerDocentesAsignables } from "@/lib/cursoAdmin";
+import { CURSO_SELECT, obtenerCategoriasCurso, obtenerDocentesAsignables } from "@/lib/cursoAdmin";
 import PanelShell from "@/components/auth/PanelShell";
 import CursoForm from "@/components/panel/CursoForm";
 import type { CursoFormInicial } from "@/components/panel/CursoForm";
@@ -45,6 +45,8 @@ export default async function EditarCursoPage({
     return notFound();
   }
 
+  const categorias = await obtenerCategoriasCurso(curso.categoriaId);
+
   // RF-09/RF-16: el Docente puede editar únicamente los cursos que le fueron
   // asignados; Administrador y Preceptor editan cualquier curso. El selector
   // de docentes queda oculto para el Docente (puedeAsignarDocentes=false).
@@ -69,7 +71,7 @@ export default async function EditarCursoPage({
     enlaceInscripcion: curso.enlaceInscripcion,
     programaContenidos: curso.programaContenidos,
     programaContenidosHtml: curso.programaContenidosHtml,
-    categoria: curso.categoria,
+    categoriaId: curso.categoriaId,
     emoji: curso.emoji,
     cupos: curso.cupos,
     imagenUrl: curso.imagenUrl,
@@ -91,6 +93,7 @@ export default async function EditarCursoPage({
       </p>
       <CursoForm
         docentes={docentes}
+        categorias={categorias}
         inicial={inicial}
         puedeAsignarDocentes={tienePermiso(
           user,

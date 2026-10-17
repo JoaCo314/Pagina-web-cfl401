@@ -50,7 +50,7 @@ export async function GET(
         enlaceInscripcion: true,
         programaContenidos: true,
         programaContenidosHtml: true,
-        categoria: true,
+        categoria: { select: { id: true, nombre: true } },
         emoji: true,
         cupos: true,
         imagenUrl: true,

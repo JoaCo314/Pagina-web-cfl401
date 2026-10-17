@@ -20,7 +20,7 @@ type Curso = {
   id: number;
   nombre: string;
   descripcion: string | null;
-  categoria: string | null;
+  categoria: { id: number; nombre: string } | null;
   emoji: string | null;
   cupos: number | null;
   modalidad: string | null;
@@ -45,7 +45,7 @@ function CourseCard({ curso }: { curso: Curso }) {
       )}
       <div className="course-top">
         <div className="course-icon">
-          {iconoCurso(curso.emoji, curso.categoria)}
+          {iconoCurso(curso.emoji, curso.categoria?.nombre)}
         </div>
         {curso.cupos !== null && (
           <span className={`cupos${cuposBajos ? " pocos" : ""}`}>
@@ -104,7 +104,7 @@ export default function CourseCatalog() {
     const termino = busqueda.trim().toLowerCase();
     return categorias.flatMap((c) =>
       c.cursos.filter((curso) => {
-        const cumpleRubro = rubro === "" || curso.categoria === rubro;
+        const cumpleRubro = rubro === "" || curso.categoria?.nombre === rubro;
         const cumpleBusqueda =
           termino === "" ||
           curso.nombre.toLowerCase().includes(termino) ||

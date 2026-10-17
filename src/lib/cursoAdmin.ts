@@ -16,7 +16,8 @@ export const CURSO_SELECT = {
   enlaceInscripcion: true,
   programaContenidos: true,
   programaContenidosHtml: true,
-  categoria: true,
+  categoriaId: true,
+  categoria: { select: { id: true, nombre: true } },
   emoji: true,
   cupos: true,
   imagenUrl: true,
@@ -43,7 +44,7 @@ export type CursoInputNormalizado = {
   enlaceInscripcion: string | null;
   programaContenidos: string | null;
   programaContenidosHtml: string | null | undefined;
-  categoria: string | null;
+  categoriaId: number | null;
   emoji: string | null;
   cupos: number | null;
   imagenUrl: string | null;
@@ -70,6 +71,27 @@ export async function obtenerDocentesAsignables(): Promise<DocenteAsignable[]> {
     where: { rol: { nombre: "Docente" } },
     select: { id: true, nombre: true, apellido: true, email: true, activo: true },
     orderBy: [{ apellido: "asc" }, { nombre: "asc" }],
+  });
+}
+
+export type CategoriaCursoOpcion = {
+  id: number;
+  nombre: string;
+  activo: boolean;
+};
+
+/// Categorías que ofrece el selector del formulario de curso. Se listan las
+/// activas; si la categoría que ya tenía el curso está inactiva, se incluye
+/// igual (para no perderla al guardar una edición).
+export async function obtenerCategoriasCurso(
+  incluirId?: number | null
+): Promise<CategoriaCursoOpcion[]> {
+  return prisma.categoriaCurso.findMany({
+    where: incluirId
+      ? { OR: [{ activo: true }, { id: incluirId }] }
+      : { activo: true },
+    select: { id: true, nombre: true, activo: true },
+    orderBy: [{ orden: "asc" }, { nombre: "asc" }],
   });
 }
 
@@ -138,6 +160,29 @@ function parsearCupos(
     return { error: "Cupos debe ser un número entero mayor o igual a 0.", valor: null };
   }
   return { valor: numero };
+}
+
+/// Categoría/rubro del curso: es opcional, pero si viene tiene que referenciar
+/// una categoría existente (entidad CategoriaCurso, no texto libre). Una cadena
+/// vacía o nula deja el curso sin categoría.
+async function validarCategoriaCurso(
+  valor: unknown
+): Promise<{ error?: string; valor: number | null }> {
+  if (valor === undefined || valor === null || valor === "") {
+    return { valor: null };
+  }
+  const id = Number(valor);
+  if (!Number.isInteger(id) || id <= 0) {
+    return { error: "La categoría elegida no es válida.", valor: null };
+  }
+  const categoria = await prisma.categoriaCurso.findUnique({
+    where: { id },
+    select: { id: true },
+  });
+  if (!categoria) {
+    return { error: "La categoría seleccionada no existe.", valor: null };
+  }
+  return { valor: id };
 }
 
 /// Emoji/ícono opcional del curso. Se guarda tal cual si viene; si está vacío,
@@ -240,7 +285,8 @@ export async function validarDatosCurso(
   } else {
     programaContenidosHtml = undefined;
   }
-  const categoria = limpiarTexto(fuente.categoria);
+  const categoriaId = await validarCategoriaCurso(fuente.categoriaId);
+  if (categoriaId.error) return { ok: false, error: categoriaId.error };
   const emoji = parsearEmoji(fuente.emoji);
   const imagenUrl = validarImagenUrl(fuente.imagenUrl);
   const informacionAdicional = limpiarTexto(fuente.informacionAdicional);
@@ -252,7 +298,6 @@ export async function validarDatosCurso(
     ["horarios", horarios],
     ["mesesCursada", mesesCursada],
     ["programaContenidos", programaContenidos],
-    ["categoria", categoria],
     ["emoji", emoji],
     ["imagenUrl", imagenUrl],
     ["informacionAdicional", informacionAdicional],
@@ -327,7 +372,7 @@ export async function validarDatosCurso(
       enlaceInscripcion: enlaceInscripcion.valor,
       programaContenidos: programaContenidos.valor,
       programaContenidosHtml,
-      categoria: categoria.valor,
+      categoriaId: categoriaId.valor,
       emoji: emoji.valor,
       cupos: cupos.valor,
       imagenUrl: imagenUrl.valor,

@@ -68,6 +68,23 @@ model Usuario {
   @@map("usuarios")
 }
 
+/// Categoría/rubro que agrupa la oferta educativa (RF-08). Es una entidad y no
+/// texto libre: el formulario de curso la elige de un selector, así no se
+/// duplican rubros por diferencias de tipeo. `activo` la oculta del selector
+/// pero no da de baja los cursos que ya la usan.
+model CategoriaCurso {
+  id        Int      @id @default(autoincrement())
+  nombre    String   @unique
+  orden     Int?
+  activo    Boolean  @default(true)
+  cursos    Curso[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("categorias_cursos")
+}
+
 /// Curso de la oferta educativa. Información mínima según sección 7 del documento
 /// (nombre, descripción, modalidad, horarios, meses de cursada, fecha de inicio,
 /// docente y programa/contenidos), más campos opcionales sugeridos.
@@ -86,7 +103,8 @@ model Curso {
   /// HTML ya sanitizado del editor enriquecido del panel. Si viene, se renderiza
   /// en el detalle público; si no, se usa `programaContenidos` en texto plano.
   programaContenidosHtml String?
-  categoria String?
+  categoriaId Int?
+  categoria   CategoriaCurso? @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
   /// Emoji/ícono opcional cargado desde el panel. Si viene vacío, el sitio usa
   /// uno automático según la categoría (iconoCurso con fallback a iconoCategoria).
   emoji     String?
@@ -100,6 +118,7 @@ model Curso {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([categoriaId])
   @@map("cursos")
 }
 

@@ -8,6 +8,9 @@ export const PERMISOS = {
   CURSOS_EDITAR: "cursos:editar",
   CURSOS_ELIMINAR: "cursos:eliminar",
   CURSOS_ASIGNAR_DOCENTES: "cursos:asignar_docentes",
+  /// Administración del catálogo de categorías/rubros de cursos (entidad
+  /// separada del curso). La usan Administrador y Preceptor.
+  CURSOS_CATEGORIAS: "cursos:categorias",
   USUARIOS_VER: "usuarios:ver",
   USUARIOS_VER_TODOS: "usuarios:ver_todos",
   USUARIOS_GESTIONAR_DOCENTES: "usuarios:gestionar_docentes",
@@ -61,6 +64,7 @@ const PERMISOS_POR_ROL: Record<
     PERMISOS.CURSOS_EDITAR,
     PERMISOS.CURSOS_ELIMINAR,
     PERMISOS.CURSOS_ASIGNAR_DOCENTES,
+    PERMISOS.CURSOS_CATEGORIAS,
     PERMISOS.USUARIOS_VER,
     PERMISOS.USUARIOS_VER_TODOS,
     PERMISOS.USUARIOS_CREAR,
@@ -85,6 +89,7 @@ const PERMISOS_POR_ROL: Record<
     PERMISOS.CURSOS_EDITAR,
     PERMISOS.CURSOS_ELIMINAR,
     PERMISOS.CURSOS_ASIGNAR_DOCENTES,
+    PERMISOS.CURSOS_CATEGORIAS,
     PERMISOS.USUARIOS_VER,
     PERMISOS.USUARIOS_CREAR,
     PERMISOS.USUARIOS_CREAR_DOCENTE,
@@ -191,6 +196,7 @@ export type SeccionPanel = {
     | "inicio"
     | "notificaciones"
     | "cursos"
+    | "categorias-cursos"
     | "usuarios"
     | "guia"
     | "noticias"
@@ -242,6 +248,15 @@ export function obtenerSeccionesPanel(
         href: "/panel/cursos",
       });
     }
+  }
+
+  if (tienePermiso(usuario, PERMISOS.CURSOS_CATEGORIAS)) {
+    secciones.push({
+      clave: "categorias-cursos",
+      titulo: "Categorías de cursos",
+      descripcion: "Alta y edición de los rubros que agrupan la oferta educativa.",
+      href: "/panel/categorias-cursos",
+    });
   }
 
   if (tienePermiso(usuario, PERMISOS.USUARIOS_VER)) {

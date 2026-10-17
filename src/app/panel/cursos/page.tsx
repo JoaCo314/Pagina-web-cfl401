@@ -71,7 +71,7 @@ export default async function CursosPanelPage() {
                       {curso.horarios ? ` · ${curso.horarios}` : ""}
                     </small>
                   </td>
-                  <td data-label="Categoría">{curso.categoria ?? "—"}</td>
+                  <td data-label="Categoría">{curso.categoria?.nombre ?? "—"}</td>
                   <td data-label="Modalidad">{curso.modalidad ?? "—"}</td>
                   <td data-label="Docentes">
                     {curso.docentes.length > 0

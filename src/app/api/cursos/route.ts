@@ -25,12 +25,15 @@ export async function GET(request: NextRequest) {
     const groupBy = searchParams.get("groupBy");
 
     const cursos = await prisma.curso.findMany({
-      where: { activo: true, ...(categoria ? { categoria } : {}) },
+      where: {
+        activo: true,
+        ...(categoria ? { categoria: { nombre: categoria } } : {}),
+      },
       select: {
         id: true,
         nombre: true,
         descripcion: true,
-        categoria: true,
+        categoria: { select: { id: true, nombre: true } },
         emoji: true,
         cupos: true,
         modalidad: true,
@@ -45,13 +48,13 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: [{ categoria: "asc" }, { nombre: "asc" }],
+      orderBy: [{ categoria: { nombre: "asc" } }, { nombre: "asc" }],
     });
 
     if (groupBy === "categoria") {
       const grupos = new Map<string, (typeof cursos)[number][]>();
       for (const curso of cursos) {
-        const clave = curso.categoria ?? "Sin categoría";
+        const clave = curso.categoria?.nombre ?? "Sin categoría";
         const lista = grupos.get(clave) ?? [];
         lista.push(curso);
         grupos.set(clave, lista);
@@ -135,7 +138,7 @@ export async function POST(request: NextRequest) {
       recursoId: curso.id,
       resumen: `Curso «${curso.nombre}»`,
       detalle: {
-        categoria: curso.categoria,
+        categoria: curso.categoria?.nombre ?? null,
         activo: curso.activo,
         docentes: docenteIds.length,
       },

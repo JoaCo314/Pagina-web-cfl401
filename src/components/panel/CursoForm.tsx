@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { DocenteAsignable } from "@/lib/cursoAdmin";
+import type { DocenteAsignable, CategoriaCursoOpcion } from "@/lib/cursoAdmin";
 import EditorTextoEnriquecido from "@/components/panel/EditorTextoEnriquecido";
 import { extraerTextoPlano, valorInicialEditor } from "@/lib/htmlEnriquecidoUtil";
 import CampoImagen from "@/components/panel/CampoImagen";
@@ -26,7 +26,7 @@ export type CursoFormInicial = {
   enlaceInscripcion: string | null;
   programaContenidos: string | null;
   programaContenidosHtml: string | null;
-  categoria: string | null;
+  categoriaId: number | null;
   emoji: string | null;
   cupos: number | null;
   imagenUrl: string | null;
@@ -37,10 +37,12 @@ export type CursoFormInicial = {
 
 export default function CursoForm({
   docentes,
+  categorias,
   inicial,
   puedeAsignarDocentes = true,
 }: {
   docentes: DocenteAsignable[];
+  categorias: CategoriaCursoOpcion[];
   inicial?: CursoFormInicial;
   puedeAsignarDocentes?: boolean;
 }) {
@@ -62,7 +64,8 @@ export default function CursoForm({
       inicial?.programaContenidosHtml,
       inicial?.programaContenidos
     ),
-    categoria: inicial?.categoria ?? "",
+    categoriaId:
+      inicial?.categoriaId != null ? String(inicial.categoriaId) : "",
     emoji: inicial?.emoji ?? "",
     cupos: inicial?.cupos != null ? String(inicial.cupos) : "",
     informacionAdicional: inicial?.informacionAdicional ?? "",
@@ -265,12 +268,24 @@ export default function CursoForm({
 
       <label className="form-field">
         <span>Categoría / rubro</span>
-        <input
-          type="text"
-          value={datos.categoria}
-          onChange={(e) => setCampo("categoria", e.target.value)}
-          placeholder="Ej: Informática"
-        />
+        <select
+          value={datos.categoriaId}
+          onChange={(e) => setCampo("categoriaId", e.target.value)}
+        >
+          <option value="">Sin categoría</option>
+          {categorias.map((categoria) => (
+            <option key={categoria.id} value={categoria.id}>
+              {categoria.nombre}
+              {categoria.activo ? "" : " (inactiva)"}
+            </option>
+          ))}
+        </select>
+        {categorias.length === 0 && (
+          <small className="form-hint">
+            Todavía no hay categorías cargadas. Creá una en «Categorías de
+            cursos» para poder asignarla.
+          </small>
+        )}
       </label>
 
       <label className="form-field">

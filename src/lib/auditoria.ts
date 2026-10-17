@@ -19,6 +19,7 @@ export const ACCIONES_AUDITORIA = {
 export const RECURSOS_AUDITORIA = {
   USUARIO: "usuario",
   CURSO: "curso",
+  CATEGORIA_CURSO: "categoria_curso",
   NOTICIA: "noticia",
   PREGUNTA: "pregunta",
   CATEGORIA_PREGUNTA: "categoria_pregunta",
@@ -49,6 +50,7 @@ export const ETIQUETAS_ACCION: Record<string, string> = {
 export const ETIQUETAS_RECURSO: Record<string, string> = {
   [RECURSOS_AUDITORIA.USUARIO]: "Usuarios",
   [RECURSOS_AUDITORIA.CURSO]: "Cursos",
+  [RECURSOS_AUDITORIA.CATEGORIA_CURSO]: "Categorías de cursos",
   [RECURSOS_AUDITORIA.NOTICIA]: "Noticias",
   [RECURSOS_AUDITORIA.PREGUNTA]: "Preguntas frecuentes",
   [RECURSOS_AUDITORIA.CATEGORIA_PREGUNTA]: "Categorías de preguntas",
