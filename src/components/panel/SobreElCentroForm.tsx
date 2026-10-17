@@ -1,3 +1,4 @@
+// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 "use client";
 
 import { FormEvent, useRef, useState } from "react";
@@ -43,6 +44,36 @@ const INICIAL: SobreFormInicial = {
   galeria: [],
   activo: true,
 };
+
+/// Reordena una lista moviendo el ítem de la posición `desde` a `hasta`
+/// (usado por el arrastrar y soltar de hitos y galería).
+function mover<T>(lista: T[], desde: number, hasta: number): T[] {
+  const copia = [...lista];
+  const [item] = copia.splice(desde, 1);
+  copia.splice(hasta, 0, item);
+  return copia;
+}
+
+/// Icono de asa de arrastre (seis puntos), sin depender de emojis.
+function IconoArrastre() {
+  return (
+    <svg
+      width="12"
+      height="16"
+      viewBox="0 0 12 16"
+      fill="currentColor"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {[2, 7, 12].map((y) => (
+        <g key={y}>
+          <circle cx="3" cy={y} r="1.4" />
+          <circle cx="9" cy={y} r="1.4" />
+        </g>
+      ))}
+    </svg>
+  );
+}
 
 export default function SobreElCentroForm({
   inicial,
@@ -114,6 +145,32 @@ export default function SobreElCentroForm({
     if (url && fotosNuevasRef.current.delete(url)) {
       void eliminarImagenHuerfana(url);
     }
+  }
+
+  // Arrastrar y soltar para reordenar: el índice de origen vive en un ref (el
+  // estado no se actualiza a tiempo entre dragstart y drop).
+  const origenHitoRef = useRef<number | null>(null);
+  const origenFotoRef = useRef<number | null>(null);
+  const [sobreHito, setSobreHito] = useState<number | null>(null);
+  const [sobreFoto, setSobreFoto] = useState<number | null>(null);
+
+  function soltarHito(destino: number) {
+    const origen = origenHitoRef.current;
+    origenHitoRef.current = null;
+    setSobreHito(null);
+    if (origen === null || origen === destino) return;
+    setDatos((prev) => ({ ...prev, hitos: mover(prev.hitos, origen, destino) }));
+  }
+
+  function soltarFoto(destino: number) {
+    const origen = origenFotoRef.current;
+    origenFotoRef.current = null;
+    setSobreFoto(null);
+    if (origen === null || origen === destino) return;
+    setDatos((prev) => ({
+      ...prev,
+      galeria: mover(prev.galeria, origen, destino),
+    }));
   }
 
   async function agregarFoto() {
@@ -272,7 +329,38 @@ export default function SobreElCentroForm({
           ) : (
             <div className="filas-dinamicas">
               {datos.hitos.map((hito, i) => (
-                <div key={i} className="fila-dinamica fila-hito">
+                <div
+                  key={i}
+                  className={`fila-dinamica fila-hito${
+                    sobreHito === i ? " fila-sobre" : ""
+                  }`}
+                  onDragOver={(e) => {
+                    if (origenHitoRef.current === null) return;
+                    e.preventDefault();
+                    setSobreHito(i);
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    soltarHito(i);
+                  }}
+                >
+                  <button
+                    type="button"
+                    className="asa-arrastre"
+                    draggable
+                    title="Arrastrá para reordenar"
+                    aria-label={`Reordenar hito ${i + 1}`}
+                    onDragStart={(e) => {
+                      origenHitoRef.current = i;
+                      e.dataTransfer.effectAllowed = "move";
+                    }}
+                    onDragEnd={() => {
+                      origenHitoRef.current = null;
+                      setSobreHito(null);
+                    }}
+                  >
+                    <IconoArrastre />
+                  </button>
                   <input
                     type="text"
                     value={hito.anio}
@@ -425,7 +513,21 @@ export default function SobreElCentroForm({
           ) : (
             <div className="galeria-panel">
               {datos.galeria.map((foto, i) => (
-                <div key={i} className="galeria-panel-item">
+                <div
+                  key={i}
+                  className={`galeria-panel-item${
+                    sobreFoto === i ? " galeria-item-sobre" : ""
+                  }`}
+                  onDragOver={(e) => {
+                    if (origenFotoRef.current === null) return;
+                    e.preventDefault();
+                    setSobreFoto(i);
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    soltarFoto(i);
+                  }}
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={foto.url} alt="Vista previa de la galería" />
                   <input
@@ -435,13 +537,32 @@ export default function SobreElCentroForm({
                     placeholder="Leyenda (opcional)"
                     aria-label={`Leyenda de la foto ${i + 1}`}
                   />
-                  <button
-                    type="button"
-                    className="link-accion link-eliminar"
-                    onClick={() => quitarFoto(i)}
-                  >
-                    Quitar
-                  </button>
+                  <div className="galeria-panel-acciones">
+                    <button
+                      type="button"
+                      className="asa-arrastre"
+                      draggable
+                      title="Arrastrá para reordenar"
+                      aria-label={`Reordenar foto ${i + 1}`}
+                      onDragStart={(e) => {
+                        origenFotoRef.current = i;
+                        e.dataTransfer.effectAllowed = "move";
+                      }}
+                      onDragEnd={() => {
+                        origenFotoRef.current = null;
+                        setSobreFoto(null);
+                      }}
+                    >
+                      <IconoArrastre />
+                    </button>
+                    <button
+                      type="button"
+                      className="link-accion link-eliminar"
+                      onClick={() => quitarFoto(i)}
+                    >
+                      Quitar
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

@@ -2354,6 +2354,42 @@ a.panel-nav-item:hover {
   object-fit: cover;
   border-radius: 4px;
 }
+/* Asa de arrastre para reordenar hitos y fotos de la galería. */
+.asa-arrastre {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid rgba(18, 42, 69, 0.18);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--cfl-muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: grab;
+  user-select: none;
+}
+.asa-arrastre:hover {
+  color: var(--cfl-navy);
+  border-color: rgba(18, 42, 69, 0.35);
+}
+.asa-arrastre:active {
+  cursor: grabbing;
+}
+.fila-dinamica.fila-sobre,
+.galeria-panel-item.galeria-item-sobre {
+  border-color: var(--cfl-blue);
+  box-shadow: 0 0 0 2px var(--cfl-blue-light);
+}
+.galeria-panel-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
 .faqs-panel-list {
   display: flex;
   flex-direction: column;
