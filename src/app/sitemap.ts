@@ -1,3 +1,4 @@
+// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { urlSitio } from "@/lib/meta";
@@ -34,7 +35,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         select: { id: true, updatedAt: true },
       }),
       prisma.noticia.findMany({
-        where: { activo: true },
+        where: { activo: true, borrador: false },
         select: { id: true, updatedAt: true },
       }),
     ]);

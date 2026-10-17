@@ -1,3 +1,4 @@
+// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 "use client";
 
 import { FormEvent, useState } from "react";
@@ -20,7 +21,18 @@ export type NoticiaFormInicial = {
   fecha: string;
   imagenUrl: string | null;
   activo: boolean;
+  borrador: boolean;
 };
+
+/// Estado de publicación de la noticia. `borrador` nunca se muestra en el
+/// sitio; `inactiva` está publicada pero oculta (despublicada).
+type EstadoNoticia = "borrador" | "publicada" | "inactiva";
+
+function estadoInicial(inicial?: NoticiaFormInicial): EstadoNoticia {
+  if (!inicial) return "publicada";
+  if (inicial.borrador) return "borrador";
+  return inicial.activo ? "publicada" : "inactiva";
+}
 
 function hoyISO(): string {
   return new Date().toISOString().slice(0, 10);
@@ -57,7 +69,9 @@ export default function NoticiaForm({
       contenido: textoPlano.trim(),
     }));
   }
-  const [activo, setActivo] = useState(inicial?.activo ?? true);
+  const [estado, setEstado] = useState<EstadoNoticia>(
+    estadoInicial(inicial)
+  );
   const [estadoImagen, setEstadoImagen] = useState<EstadoImagen>({
     archivo: null,
     quitar: false,
@@ -122,7 +136,12 @@ export default function NoticiaForm({
         imagenSubida = subida.url;
       }
 
-      const body = { ...datos, imagenUrl: imagenUrl ?? "", activo };
+      const body = {
+        ...datos,
+        imagenUrl: imagenUrl ?? "",
+        activo: estado !== "inactiva",
+        borrador: estado === "borrador",
+      };
 
       const res = await fetch(
         esEdicion ? `/api/noticias/${inicial!.id}` : "/api/noticias",
@@ -212,16 +231,21 @@ export default function NoticiaForm({
         </small>
       </div>
 
-      {esEdicion && (
-        <label className="form-field form-field-full form-toggle">
-          <input
-            type="checkbox"
-            checked={activo}
-            onChange={(e) => setActivo(e.target.checked)}
-          />
-          <span>Noticia publicada (visible en el sitio público)</span>
-        </label>
-      )}
+      <label className="form-field form-field-full">
+        <span>Estado de la noticia</span>
+        <select
+          value={estado}
+          onChange={(e) => setEstado(e.target.value as EstadoNoticia)}
+        >
+          <option value="publicada">Publicada (visible en el sitio)</option>
+          <option value="borrador">Borrador (no se publica todavía)</option>
+          <option value="inactiva">Inactiva (despublicada y oculta)</option>
+        </select>
+        <small className="form-hint">
+          Un borrador nunca se muestra en el sitio público. Guardá como borrador
+          mientras la redactás y publicala cuando esté lista.
+        </small>
+      </label>
 
       {error && <p className="form-error">{error}</p>}
 
@@ -229,9 +253,11 @@ export default function NoticiaForm({
         <button type="submit" className="btn-primary btn-sm" disabled={enviando}>
           {enviando
             ? "Guardando…"
-            : esEdicion
-              ? "Guardar cambios"
-              : "Publicar noticia"}
+            : estado === "borrador"
+              ? "Guardar borrador"
+              : esEdicion
+                ? "Guardar cambios"
+                : "Publicar noticia"}
         </button>
         <a
           href="/panel/noticias"

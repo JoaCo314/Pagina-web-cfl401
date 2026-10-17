@@ -15,7 +15,8 @@ import {
 
 export const dynamic = "force-dynamic";
 
-/// Detalle público de una noticia: solo si está activa (RF-17).
+/// Detalle público de una noticia: solo si está publicada (activa y no en
+/// borrador) (RF-17).
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -32,7 +33,7 @@ export async function GET(
 
   try {
     const noticia = await prisma.noticia.findFirst({
-      where: { id: noticiaId, activo: true },
+      where: { id: noticiaId, activo: true, borrador: false },
       select: NOTICIA_SELECT,
     });
 
@@ -110,7 +111,7 @@ export async function PUT(
     return NextResponse.json({ error: resultado.error }, { status: 400 });
   }
 
-  const { activo, ...campos } = resultado.datos;
+  const { activo, borrador, ...campos } = resultado.datos;
   const presentes = new Set(resultado.presentes);
 
   const data: Record<string, unknown> = {};
@@ -121,6 +122,9 @@ export async function PUT(
   }
   if (presentes.has("activo") && activo !== undefined) {
     data.activo = activo;
+  }
+  if (presentes.has("borrador") && borrador !== undefined) {
+    data.borrador = borrador;
   }
 
   try {

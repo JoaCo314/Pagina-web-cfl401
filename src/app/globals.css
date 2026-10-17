@@ -2540,6 +2540,10 @@ a.panel-nav-item:hover {
   background: var(--cfl-warn-low-bg);
   color: var(--cfl-warn-low-fg);
 }
+.badge-estado.borrador {
+  background: var(--cfl-blue-light);
+  color: var(--cfl-blue-deep);
+}
 .badge-estado.pendiente {
   background: var(--cfl-warn-bg);
   color: var(--cfl-warn-fg);

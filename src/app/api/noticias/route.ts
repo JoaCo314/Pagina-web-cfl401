@@ -17,9 +17,10 @@ export const dynamic = "force-dynamic";
 /// Máximo de noticias que devuelve el listado público, sin importar el `limit`.
 const LIMITE_MAXIMO_NOTICIAS = 100;
 
-/// Listado público de noticias (RF-17). Solo se devuelven las activas, de la
-/// más reciente a la más antigua. El panel consulta Prisma directamente para
-/// incluir también las inactivas.
+/// Listado público de noticias (RF-17). Solo se devuelven las publicadas
+/// (activas y que no estén en borrador), de la más reciente a la más antigua.
+/// El panel consulta Prisma directamente para incluir también borradores e
+/// inactivas.
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -42,13 +43,13 @@ export async function GET(request: NextRequest) {
 
     const [noticias, total] = await Promise.all([
       prisma.noticia.findMany({
-        where: { activo: true },
+        where: { activo: true, borrador: false },
         select: NOTICIA_SELECT,
         orderBy: [{ fecha: "desc" }, { createdAt: "desc" }],
         skip: (pagina - 1) * porPagina,
         take: porPagina,
       }),
-      prisma.noticia.count({ where: { activo: true } }),
+      prisma.noticia.count({ where: { activo: true, borrador: false } }),
     ]);
 
     return NextResponse.json({ noticias, total, pagina, porPagina });
@@ -94,13 +95,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: resultado.error }, { status: 400 });
   }
 
-  const { activo, ...campos } = resultado.datos;
+  const { activo, borrador, ...campos } = resultado.datos;
 
   try {
     const noticia = await prisma.noticia.create({
       data: {
         ...campos,
         ...(activo === undefined ? {} : { activo }),
+        ...(borrador === undefined ? {} : { borrador }),
       },
       select: NOTICIA_SELECT,
     });
@@ -111,7 +113,7 @@ export async function POST(request: NextRequest) {
       recurso: RECURSOS_AUDITORIA.NOTICIA,
       recursoId: noticia.id,
       resumen: `Noticia «${noticia.titulo}»`,
-      detalle: { activo: noticia.activo },
+      detalle: { activo: noticia.activo, borrador: noticia.borrador },
       ip: ipCliente(request),
     });
 

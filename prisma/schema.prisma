@@ -164,6 +164,10 @@ model Noticia {
   fecha     DateTime
   imagenUrl String?
   activo    Boolean  @default(true)
+  /// Borrador de trabajo (RF-17): una noticia en borrador nunca se muestra en
+  /// el sitio público, aunque `activo` sea verdadero. Se publica al guardarla
+  /// con `borrador = false`.
+  borrador  Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

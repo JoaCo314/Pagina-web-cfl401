@@ -1,3 +1,4 @@
+// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
@@ -35,8 +36,8 @@ export default async function NoticiasPanelPage() {
         <div>
           <h1 className="panel-title">Noticias</h1>
           <p className="panel-lead">
-            Publicación y edición de las novedades institucionales. Los cambios
-            se publican en el sitio al instante.
+            Publicación y edición de las novedades institucionales. Podés
+            guardar una noticia como borrador y publicarla cuando esté lista.
           </p>
         </div>
         <Link href="/panel/noticias/nuevo" className="btn-primary btn-sm">
@@ -75,10 +76,18 @@ export default async function NoticiasPanelPage() {
                   <td data-label="Estado">
                     <span
                       className={`badge-estado ${
-                        noticia.activo ? "ok" : "off"
+                        noticia.borrador
+                          ? "borrador"
+                          : noticia.activo
+                            ? "ok"
+                            : "off"
                       }`}
                     >
-                      {noticia.activo ? "Publicada" : "Inactiva"}
+                      {noticia.borrador
+                        ? "Borrador"
+                        : noticia.activo
+                          ? "Publicada"
+                          : "Inactiva"}
                     </span>
                   </td>
                   <td data-label="">
