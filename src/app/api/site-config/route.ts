@@ -1,4 +1,4 @@
-// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 // Creado por sofia-athos - API editable para banner, logo, footer y contactos
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/session";

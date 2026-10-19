@@ -1,4 +1,4 @@
-// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { limpiarHtmlEnriquecido } from "@/lib/htmlEnriquecido";
 export { limpiarHtmlEnriquecido };
 import { validarImagenUrl } from "@/lib/imagenes";
