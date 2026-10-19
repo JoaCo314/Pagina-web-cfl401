@@ -81,6 +81,7 @@ export default function CursoForm({
   );
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [buscarDocente, setBuscarDocente] = useState("");
 
   function setCampo(campo: string, valor: string) {
     setDatos((prev) => ({ ...prev, [campo]: valor }));
@@ -433,6 +434,18 @@ export default function CursoForm({
           (d) => !d.activo && docenteIds.includes(d.id)
         );
 
+        // Con decenas de docentes el listado queda poco práctico: el filtro
+        // acota las opciones mostradas. Ignora mayúsculas y busca en nombre,
+        // apellido y correo.
+        const texto = buscarDocente.trim().toLowerCase();
+        const filtrados = texto
+          ? disponibles.filter((d) =>
+              `${d.nombre} ${d.apellido} ${d.email}`
+                .toLowerCase()
+                .includes(texto)
+            )
+          : disponibles;
+
         return (
           <div className="form-field form-field-full">
             <span>Docentes asignados</span>
@@ -442,34 +455,55 @@ export default function CursoForm({
                 para poder asignarlos.
               </p>
             ) : (
-              <div className="docentes-box">
-                {disponibles.map((docente) => {
-                  const asignado = docenteIds.includes(docente.id);
-                  return (
-                    <label
-                      key={docente.id}
-                      className={`docente-opt${asignado ? " activo" : ""}`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={asignado}
-                        onChange={() => alternarDocente(docente.id)}
-                      />
-                      <span>
-                        <strong>
-                          {docente.nombre} {docente.apellido}
-                        </strong>
-                        <small>{docente.email}</small>
-                        {!docente.activo && (
-                          <small className="docente-inactivo">
-                            Cuenta desactivada
-                          </small>
-                        )}
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
+              <>
+                <input
+                  type="search"
+                  className="docentes-buscar"
+                  value={buscarDocente}
+                  onChange={(e) => setBuscarDocente(e.target.value)}
+                  onKeyDown={(e) => {
+                    // Está dentro del formulario de alta/edición del curso:
+                    // Enter no tiene que mandar el form.
+                    if (e.key === "Enter") e.preventDefault();
+                  }}
+                  placeholder="Buscar por nombre, apellido o correo"
+                  aria-label="Buscar docente"
+                />
+                {filtrados.length === 0 ? (
+                  <p className="form-aviso">
+                    Ningún docente coincide con «{buscarDocente}».
+                  </p>
+                ) : (
+                  <div className="docentes-box">
+                    {filtrados.map((docente) => {
+                      const asignado = docenteIds.includes(docente.id);
+                      return (
+                        <label
+                          key={docente.id}
+                          className={`docente-opt${asignado ? " activo" : ""}`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={asignado}
+                            onChange={() => alternarDocente(docente.id)}
+                          />
+                          <span>
+                            <strong>
+                              {docente.nombre} {docente.apellido}
+                            </strong>
+                            <small>{docente.email}</small>
+                            {!docente.activo && (
+                              <small className="docente-inactivo">
+                                Cuenta desactivada
+                              </small>
+                            )}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
             )}
             {inactivosAsignados.length > 0 && (
               <p className="form-aviso">
