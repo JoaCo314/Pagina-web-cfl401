@@ -1,4 +1,4 @@
-// Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
@@ -12,10 +12,7 @@ import {
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import PanelShell from "@/components/auth/PanelShell";
-import ToggleUsuario from "@/components/panel/ToggleUsuario";
-import BlanquearContrasena from "@/components/panel/BlanquearContrasena";
-import EliminarUsuario from "@/components/panel/EliminarUsuario";
-import EditarDniUsuario from "@/components/panel/EditarDniUsuario";
+import AccionesUsuario from "@/components/panel/AccionesUsuario";
 import NavPaginacion from "@/components/panel/NavPaginacion";
 
 export const dynamic = "force-dynamic";
@@ -31,7 +28,12 @@ function paginaValida(valor: string | undefined, totalPaginas: number): number {
 export default async function UsuariosPanelPage({
   searchParams,
 }: {
-  searchParams: Promise<{ pagina?: string; q?: string; rol?: string }>;
+  searchParams: Promise<{
+    pagina?: string;
+    q?: string;
+    rol?: string;
+    estado?: string;
+  }>;
 }) {
   const user = await getCurrentUser();
 
@@ -48,9 +50,14 @@ export default async function UsuariosPanelPage({
     redirect("/panel");
   }
 
-  const { pagina: paginaParam, q, rol } = await searchParams;
+  const { pagina: paginaParam, q, rol, estado } = await searchParams;
   const esAdministrador = alcance === "todos";
   const busqueda = (q ?? "").trim();
+
+  // Filtro por estado: se aceptan solo los dos valores conocidos; cualquier
+  // otro valor de la URL se ignora y la tabla muestra todas las cuentas.
+  const estadoFiltro =
+    estado === "activos" || estado === "inactivos" ? estado : undefined;
 
   // El filtro por rol solo tiene sentido para el Administrador (el Preceptor ya
   // ve únicamente docentes); se valida contra la lista real de roles.
@@ -68,6 +75,11 @@ export default async function UsuariosPanelPage({
   const donde: Prisma.UsuarioWhereInput = {
     ...filtroUsuariosVisibles(user),
     ...(rolFiltro ? { rol: { nombre: rolFiltro } } : {}),
+    ...(estadoFiltro === "activos"
+      ? { activo: true }
+      : estadoFiltro === "inactivos"
+        ? { activo: false }
+        : {}),
     ...(busqueda
       ? {
           OR: [
@@ -114,11 +126,12 @@ export default async function UsuariosPanelPage({
   const secciones = obtenerSeccionesPanel(user);
   const soloDocentes = alcance === "docentes";
   const puedeEliminar = tienePermiso(user, PERMISOS.USUARIOS_ELIMINAR);
-  const hayFiltro = Boolean(busqueda || rolFiltro);
+  const hayFiltro = Boolean(busqueda || rolFiltro || estadoFiltro);
   const construirHref = (p: number) => {
     const params = new URLSearchParams();
     if (busqueda) params.set("q", busqueda);
     if (rolFiltro) params.set("rol", rolFiltro);
+    if (estadoFiltro) params.set("estado", estadoFiltro);
     if (p > 1) params.set("pagina", String(p));
     const query = params.toString();
     return query ? `/panel/usuarios?${query}` : "/panel/usuarios";
@@ -149,14 +162,14 @@ export default async function UsuariosPanelPage({
             <p>
               Si alguien falla la contraseña 5 veces seguidas, la cuenta se
               bloquea sola y aparece con la etiqueta «Bloqueada». Para que esa
-              persona vuelva a entrar hay que reactivarla con el botón «Activar»:
-              al hacerlo también se levanta el bloqueo.
+              persona vuelva a entrar hay que reactivarla desde el menú ⋮ de su
+              fila, con «Activar»: al hacerlo también se levanta el bloqueo.
             </p>
             {puedeEliminar && (
               <p>
-                Una cuenta inactiva se puede dar de baja definitiva con el botón
-                «Eliminar». Es irreversible y no se puede eliminar una cuenta que
-                todavía tenga cursos asignados.
+                Una cuenta inactiva se puede dar de baja definitiva desde el
+                menú ⋮ de su fila, con «Eliminar». Es irreversible y no se puede
+                eliminar una cuenta que todavía tenga cursos asignados.
               </p>
             )}
             <p>
@@ -203,6 +216,14 @@ export default async function UsuariosPanelPage({
             </select>
           </label>
         )}
+        <label className="filtro-estado">
+          <span className="sr-only">Filtrar por estado</span>
+          <select name="estado" defaultValue={estadoFiltro ?? ""}>
+            <option value="">Todos los estados</option>
+            <option value="activos">Solo cuentas activas</option>
+            <option value="inactivos">Solo cuentas inactivas</option>
+          </select>
+        </label>
         <button type="submit" className="btn-primary btn-sm">
           Buscar
         </button>
@@ -230,7 +251,6 @@ export default async function UsuariosPanelPage({
             <thead>
               <tr>
                 <th scope="col">Nombre</th>
-                <th scope="col">DNI</th>
                 <th scope="col">Email</th>
                 <th scope="col">Teléfono</th>
                 {!soloDocentes && <th scope="col">Rol</th>}
@@ -247,21 +267,29 @@ export default async function UsuariosPanelPage({
                 const esPropio = u.id === user.id;
                 return (
                   <tr key={u.id}>
+                    {/* Nombre y DNI juntos en la celda principal: el DNI va
+                        debajo, en un estilo secundario, y la etiqueta «Vos»
+                        marca la fila propia sin cambiar su layout. */}
                     <th scope="row" data-label="Nombre" className="celda-principal">
                       <strong>
                         {nombre}
-                        {esPropio && <span className="td-sub"> (vos)</span>}
+                        {esPropio && <span className="chip-vos">Vos</span>}
                       </strong>
+                      <span className="td-sub dni-valor">
+                        <span className="sr-only">DNI </span>
+                        {u.dni}
+                      </span>
                     </th>
-                    <td data-label="DNI">
-                      <EditarDniUsuario
-                        usuarioId={u.id}
-                        nombre={nombre}
-                        dni={u.dni}
-                        tieneTemporal={u.debeCambiarContrasena}
-                      />
+                    {/* El email se muestra en una sola línea con puntos
+                        suspensivos: un mail largo marcaba el ancho de la
+                        columna y forzaba cortes arbitrarios. El título deja ver
+                        el valor completo y el texto íntegro lo leen los
+                        lectores de pantalla. */}
+                    <td data-label="Email">
+                      <span className="corta-texto" title={u.email}>
+                        {u.email}
+                      </span>
                     </td>
-                    <td data-label="Email">{u.email}</td>
                     {/* El teléfono lo carga cada persona desde su propia cuenta
                         ("Mis datos") y acá se muestra solo al personal del
                         centro: nunca se publica en el sitio. */}
@@ -274,61 +302,51 @@ export default async function UsuariosPanelPage({
                     </td>
                     {!soloDocentes && <td data-label="Rol">{u.rol.nombre}</td>}
                     <td data-label="Estado">
-                      <span
-                        className={`badge-estado ${u.activo ? "ok" : "off"}`}
-                      >
-                        {u.activo ? "Activo" : "Inactivo"}
+                      <span className="estado-badges">
+                        {/* Un solo badge de estado principal: si la cuenta está
+                            bloqueada se muestra "Bloqueada" en lugar de
+                            "Activo/Inactivo" para no apilar etiquetas
+                            contradictorias. */}
+                        {u.bloqueada ? (
+                          <span
+                            className="badge-estado bloqueada"
+                            title="Se bloqueó sola tras demasiados intentos fallidos de inicio de sesión. Reactivá la cuenta para desbloquearla."
+                          >
+                            Bloqueada
+                          </span>
+                        ) : (
+                          <span
+                            className={`badge-estado ${u.activo ? "ok" : "off"}`}
+                          >
+                            {u.activo ? "Activo" : "Inactivo"}
+                          </span>
+                        )}
+                        {u.debeCambiarContrasena && (
+                          <span
+                            className="badge-estado pendiente"
+                            title={
+                              u.bloqueada
+                                ? "La cuenta está bloqueada y además tiene pendiente el cambio de contraseña"
+                                : u.activo
+                                  ? "Todavía tiene que cambiar la contraseña temporal"
+                                  : "La cuenta está inactiva y además tiene pendiente el cambio de contraseña"
+                            }
+                          >
+                            Contraseña temporal
+                          </span>
+                        )}
                       </span>
-                      {u.bloqueada && (
-                        <span
-                          className="badge-estado bloqueada"
-                          title="Se bloqueó sola tras demasiados intentos fallidos de inicio de sesión. Reactivá la cuenta para desbloquearla."
-                        >
-                          Bloqueada
-                        </span>
-                      )}
-                      {u.debeCambiarContrasena && (
-                        <span
-                          className="badge-estado pendiente"
-                          title={
-                            u.activo
-                              ? "Todavía tiene que cambiar la contraseña temporal"
-                              : "La cuenta está inactiva y además tiene pendiente el cambio de contraseña"
-                          }
-                        >
-                          Contraseña temporal
-                        </span>
-                      )}
                     </td>
                     <td data-label="Acciones" className="celda-acciones">
-                      <span className="acciones-usuario">
-                        <Link
-                          href={`/panel/usuarios/${u.id}/editar`}
-                          className="link-accion"
-                        >
-                          Editar datos
-                        </Link>
-                      </span>
-                      <ToggleUsuario
+                      <AccionesUsuario
                         usuarioId={u.id}
                         nombre={nombre}
                         activo={u.activo}
                         bloqueada={u.bloqueada}
                         esPropio={esPropio}
                         cursosAsignados={u._count.cursosAsignados}
+                        puedeEliminar={puedeEliminar}
                       />
-                      <BlanquearContrasena
-                        usuarioId={u.id}
-                        nombre={nombre}
-                        esPropio={esPropio}
-                      />
-                      {!u.activo && !esPropio && puedeEliminar && (
-                        <EliminarUsuario
-                          usuarioId={u.id}
-                          nombre={nombre}
-                          cursosAsignados={u._count.cursosAsignados}
-                        />
-                      )}
                     </td>
                   </tr>
                 );

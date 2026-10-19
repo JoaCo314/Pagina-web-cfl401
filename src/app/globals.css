@@ -1,4 +1,4 @@
-/* Creado por Joaquin Pernica para la pagina web del CFL 401 (Centro de Formacion Laboral 401). */
+/* Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401). */
 @import "tailwindcss";
 
 /* ── Design tokens (from mockup) ─────────────────────────── */
@@ -1435,10 +1435,13 @@ a {
 .auth-error:empty {
   display: none;
 }
+/* Salir de la cuenta: botón secundario que se pinta del mismo azul que el
+   aviso de contraseña temporal, pero sin envoltorio de párrafo. El color va
+   explícito porque antes lo heredaba de `.auth-note`. */
 .auth-submit-secondary {
   background: transparent;
-  border: 1px solid currentColor;
-  color: inherit;
+  border: 1px solid var(--cfl-blue-deep);
+  color: var(--cfl-blue-deep);
   padding: 9px 14px;
   border-radius: 6px;
   font: inherit;
@@ -2485,6 +2488,34 @@ a.panel-nav-item:hover {
 .panel-table .td-vacio {
   opacity: 0.45;
 }
+/* Celda principal del listado de usuarios: nombre + DNI juntos. */
+.panel-table .celda-principal {
+  min-width: 190px;
+}
+/* Etiqueta discreta que marca la fila del usuario que está mirando («Vos»),
+   junto al nombre y sin cambiar el layout de la fila. */
+.chip-vos {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--cfl-blue-light);
+  color: var(--cfl-blue-deep);
+  font-size: 11px;
+  font-weight: 700;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+/* Email (u otro texto largo) en una sola línea con puntos suspensivos: el
+   valor completo queda en el title y el texto íntegro lo leen los lectores
+   de pantalla. */
+.corta-texto {
+  display: block;
+  max-width: 30ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .imagenes-grid-wrap {
   display: flex;
   flex-direction: column;
@@ -2565,8 +2596,9 @@ a.panel-nav-item:hover {
   display: inline-block;
   font-size: 12px;
   font-weight: 700;
-  padding: 5px 10px;
+  padding: 4px 9px;
   border-radius: 12px;
+  white-space: nowrap;
 }
 .badge-estado.ok {
   background: var(--cfl-success-bg);
@@ -2583,19 +2615,100 @@ a.panel-nav-item:hover {
 .badge-estado.pendiente {
   background: var(--cfl-warn-bg);
   color: var(--cfl-warn-fg);
-  margin-left: 6px;
 }
 .badge-estado.bloqueada {
   background: var(--cfl-warn-bg);
   color: var(--cfl-warn-fg);
-  margin-left: 6px;
+}
+/* Contenedor de las etiquetas de estado de una fila (Activo/Bloqueada +
+   Contraseña temporal). El gap separa los badges sin depender de márgenes
+   sueltos, y el wrap evita que se solapen cuando la columna es angosta. */
+.estado-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
 }
 .acciones-usuario {
   display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  /* 10px de aire entre el botón «Editar» y el ⋮ del menú. El aviso de error
+     (basis 100%) baja a su propia línea debajo de las acciones. */
+  gap: 10px;
+}
+.acciones-usuario .form-error {
+  flex: 1 0 100%;
+  white-space: normal;
+}
+/* Botón ⋮ que abre el menú de acciones de la fila. */
+.mas-acciones {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--cfl-blue-deep);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.mas-acciones:hover {
+  background-color: color-mix(in srgb, var(--cfl-blue-deep) 10%, transparent);
+}
+.mas-acciones[aria-expanded="true"] {
+  background-color: color-mix(in srgb, var(--cfl-blue-deep) 16%, transparent);
+}
+/* Menú de acciones de una fila. Sus coordenadas las calcula AccionesUsuario y
+   va con position: fixed porque .panel-table-wrap tiene overflow-x: auto y
+   recortaría un menú posicionado dentro de la celda. Cerrado queda montado
+   con visibility: hidden para poder medirlo cuando se abre. */
+.menu-acciones {
+  position: fixed;
+  z-index: 50;
+  min-width: 216px;
+  padding: 6px;
+  display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  /* 4px dejaba el DNI pegado al botón de editar (arriba del todo, sin aire). */
-  gap: 8px;
+  gap: 2px;
+  background: var(--cfl-white);
+  border: 1px solid rgba(18, 42, 69, 0.12);
+  border-radius: 10px;
+  box-shadow: 0 14px 34px rgba(9, 20, 34, 0.2);
+}
+.menu-acciones [role="menuitem"] {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cfl-blue-deep);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.menu-acciones [role="menuitem"]:hover {
+  background-color: color-mix(in srgb, currentColor 10%, transparent);
+}
+/* Rojo para desactivar y eliminar; verde para reactivar; ámbar para
+   blanquear (es un aviso de atención, no una baja). */
+.menu-acciones [role="menuitem"].menu-item-peligro {
+  color: var(--cfl-warn-low-fg);
+}
+.menu-acciones [role="menuitem"].menu-item-ok {
+  color: var(--cfl-success);
+}
+.menu-acciones [role="menuitem"].menu-item-atencion {
+  color: var(--cfl-warn-fg);
 }
 /* Diálogo de confirmación del panel (ConfirmDialog). */
 .dialogo-fondo {
@@ -2637,6 +2750,11 @@ a.panel-nav-item:hover {
   gap: 10px;
   margin-top: 4px;
 }
+/* Aviso de error que los componentes de acción repiten dentro del diálogo
+   (ConfirmDialog): afuera quedaría tapado por el fondo oscuro. */
+.dialogo-mensaje .form-error {
+  margin-top: 10px;
+}
 .panel-nota-ok {
   display: flex;
   flex-direction: column;
@@ -2677,6 +2795,9 @@ a.panel-nav-item:hover {
 }
 .filtros-usuarios .filtro-rol {
   flex: 0 1 200px;
+}
+.filtros-usuarios .filtro-estado {
+  flex: 0 1 175px;
 }
 .filtros-usuarios input[type="search"],
 .filtros-usuarios select {
@@ -2804,59 +2925,14 @@ a.panel-nav-item:hover {
   white-space: nowrap;
   border: 0;
 }
-/* Edición del DNI dentro de la fila del listado de usuarios. */
+/* DNI bajo el nombre en la celda principal del listado de usuarios. */
 .dni-valor {
   display: block;
   font-variant-numeric: tabular-nums;
 }
-.dni-editor {
-  min-width: 150px;
-}
-.dni-campo {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.dni-campo input {
-  padding: 7px 9px;
-  border-radius: 6px;
-  border: 1px solid rgba(18, 42, 69, 0.22);
-  font-family: var(--font-plex), "IBM Plex Sans", sans-serif;
-  font-size: 14px;
-  background: var(--cfl-white);
-  max-width: 140px;
-}
-.dni-campo input:focus {
-  outline: 3px solid var(--cfl-blue);
-  outline-offset: 1px;
-  border-color: var(--cfl-blue);
-}
-.acciones-usuario-fila {
-  display: inline-flex;
-  /* 6px alcanzaban cuando Guardar/Cancelar eran botones. Como palabras con
-     píldora (sobresalen 9px por lado) necesitan el mismo aire de 18px para
-     que las píldoras no se crucen. */
-  gap: 20px;
-}
 .celda-acciones {
   white-space: nowrap;
-}
-/* Las dos columnas de acciones (Desactivar/Activar y Blanquear) van lado a
-   lado en la celda. Con la píldora del `.link-accion` (que sobresale 9px por
-   lado) sin separación se cruzaban los pills por 18px. */
-.celda-acciones > .acciones-usuario + .acciones-usuario {
-  margin-left: 22px;
-}
-/* La casilla no tiene espacios: sin el corte forzado, un email largo marca el
-   ancho mínimo de la columna y agranda el mínimo de toda la tabla. */
-.panel-table td[data-label="Email"] {
-  overflow-wrap: anywhere;
-}
-/* `white-space: nowrap` de `.celda-acciones` se hereda al mensaje de éxito:
-   con la frase completa del blanqueo la tabla se disparaba de 1122 a 1667px.
-   El texto vuelve a envolverse dentro de la celda. */
-.celda-acciones .td-sub {
-  white-space: normal;
+  text-align: right;
 }
 .form-note {
   font-size: 13px;
@@ -3046,6 +3122,25 @@ a.panel-nav-item:hover {
   border: 1px solid rgba(18, 42, 69, 0.15);
   border-radius: 6px;
   padding: 14px;
+}
+/* Filtro de búsqueda de docentes en la asignación de un curso: con decenas de
+   docentes el listado queda poco práctico. Va fuera de `.docentes-box` para no
+   formar parte del grid de opciones. */
+.docentes-buscar {
+  margin-top: 8px;
+  width: 100%;
+  max-width: 340px;
+  padding: 9px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(18, 42, 69, 0.22);
+  font: inherit;
+  font-size: 14px;
+  background: var(--cfl-white);
+}
+.docentes-buscar:focus {
+  outline: 3px solid var(--cfl-blue);
+  outline-offset: 1px;
+  border-color: var(--cfl-blue);
 }
 .docente-opt {
   display: flex;
@@ -3868,8 +3963,14 @@ a.panel-nav-item:hover {
     opacity: 0.55;
     margin-bottom: 4px;
   }
-  .panel-table .td-sub {
+  /* El subtexto va alineado como su celda: el DNI (dentro del <th> del
+     nombre) queda a la izquierda y los subtextos de las celdas <td> a la
+     derecha, como el resto del contenido de la tarjeta. */
+  .panel-table td .td-sub {
     text-align: right;
+  }
+  .corta-texto {
+    max-width: 100%;
   }
   .acciones-curso {
     justify-content: flex-end;
