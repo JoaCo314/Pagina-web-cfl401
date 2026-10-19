@@ -1,4 +1,4 @@
-# QA — Accesibilidad básica del sitio público (Tarea #27, RNF-07)
+﻿# QA — Accesibilidad básica del sitio público (Tarea #27, RNF-07)
 
 Fecha: 2026-09-17 · Branch `Joaquin`
 

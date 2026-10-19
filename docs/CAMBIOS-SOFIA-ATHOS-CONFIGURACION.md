@@ -1,7 +1,7 @@
 # Cambios — sofia-athos — Banner, Logo, Footer y Contacto
 
 **Autora:** sofia-athos (ATHOS1995) — Rama `sofia-athos` — No mergeado a `main`  
-**Fecha:** 2026-09-23 — Requerimiento Joaquín Vera [6:50-6:52 p.m., 22/9/2026]  
+**Fecha:** 2026-09-23 — Requerimiento del usuario [6:50-6:52 p.m., 22/9/2026]  
 **Branch base:** `origin/main` en `5b2f62c` (Merge #25)
 
 ## Problema

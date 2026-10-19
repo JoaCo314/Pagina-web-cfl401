@@ -1,4 +1,4 @@
-# QA — Responsive del sitio público (Tarea #25, RNF-02)
+﻿# QA — Responsive del sitio público (Tarea #25, RNF-02)
 
 Fecha: 2026-09-17 · Branch `Joaquin`
 

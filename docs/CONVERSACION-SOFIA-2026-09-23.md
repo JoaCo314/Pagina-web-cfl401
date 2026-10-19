@@ -11,7 +11,7 @@
 ### 2. Qué es Prisma (SQL vs NoSQL)
 - Prisma es ORM en `prisma/schema.prisma:1`. Modelos = tablas Postgres (`Curso`, `Noticia`, `SobreElCentro`, etc.). `prisma/seed.ts:60` inserta datos iniciales. En NoSQL guardás JSON libre; en SQL definís tabla primero y luego `npx prisma generate` + `migrate`.
 
-### 3. Requerimiento Joaquín (22/9 18:50-18:52)
+### 3. Requerimiento del usuario (22/9 18:50-18:52)
 - Banner azul editable (texto + imagen), logo editable, footer editable (debajo de "cfl 401 azul" y "contactos"), sección Contacto funcional y editable desde panel.
 
 ### 4. Implementación (solo en sofia-athos, commit 309560d feat(sofia-athos))

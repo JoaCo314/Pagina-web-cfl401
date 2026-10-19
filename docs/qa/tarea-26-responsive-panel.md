@@ -1,4 +1,4 @@
-# QA — Responsive del panel administrativo (Tarea #26, RNF-02)
+﻿# QA — Responsive del panel administrativo (Tarea #26, RNF-02)
 
 Fecha: 2026-09-17 · Branch `Joaquin`
 

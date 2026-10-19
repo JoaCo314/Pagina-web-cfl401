@@ -1,4 +1,4 @@
-# QA — Sección de Noticias (pública + panel) y tablero del panel con accesos directos
+﻿# QA — Sección de Noticias (pública + panel) y tablero del panel con accesos directos
 
 Fecha: 2026-09-17 · Branch `Joaquin`
 
