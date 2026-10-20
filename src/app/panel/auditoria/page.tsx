@@ -7,8 +7,10 @@ import {
   tienePermiso,
 } from "@/lib/auth/autorizacion";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
 import PanelShell from "@/components/auth/PanelShell";
 import NavPaginacion from "@/components/panel/NavPaginacion";
+import FiltrosAuditoria from "@/components/panel/FiltrosAuditoria";
 import {
   ETIQUETAS_ACCION,
   ETIQUETAS_RECURSO,
@@ -33,19 +35,66 @@ function paginaValida(valor: string | undefined, totalPaginas: number): number {
   return Math.min(numero, totalPaginas);
 }
 
+/// Convierte un `YYYY-MM-DD` en el instante UTC del comienzo del día en
+/// Argentina (UTC-3): con `fin` devuelve el comienzo del día siguiente, para
+/// usarlo como límite exclusivo e incluir toda la fecha final.
+function diaUtc(valor: string | undefined, fin: boolean): Date | null {
+  if (!valor || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return null;
+  const [anio, mes, dia] = valor.split("-").map(Number);
+  const fecha = new Date(Date.UTC(anio, mes - 1, dia + (fin ? 1 : 0), 3, 0, 0));
+  return Number.isNaN(fecha.getTime()) ? null : fecha;
+}
+
 /// Vista de auditoría. Es de solo lectura y exclusiva del Administrador: muestra
-/// quién ejecutó cada acción administrativa, cuándo y sobre qué recurso.
+/// quién ejecutó cada acción administrativa, cuándo y sobre qué recurso. Los
+/// filtros (búsqueda, sección, acción, rol, usuario y período) se combinan en
+/// el backend con condiciones AND y no alteran el orden histórico
+/// (fecha descendente).
 export default async function AuditoriaPanelPage({
   searchParams,
 }: {
-  searchParams: Promise<{ recurso?: string; accion?: string; pagina?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    recurso?: string;
+    accion?: string;
+    rol?: string;
+    usuario?: string;
+    desde?: string;
+    hasta?: string;
+    pagina?: string;
+  }>;
 }) {
   const user = await getCurrentUser();
   if (!user) redirect("/panel/login");
   exigirContrasenaActualizada(user);
   if (!tienePermiso(user, PERMISOS.AUDITORIA_VER)) redirect("/panel");
 
-  const { recurso, accion, pagina: paginaParam } = await searchParams;
+  const {
+    q,
+    recurso,
+    accion,
+    rol,
+    usuario,
+    desde,
+    hasta,
+    pagina: paginaParam,
+  } = await searchParams;
+
+  // Roles y usuarios salen de la base: los filtros nunca usan listas
+  // inventadas. El rol que usa la auditoría para filtrar es el registrado en
+  // cada acción (rol histórico del autor, columna `rol`).
+  const [roles, usuarios] = await Promise.all([
+    prisma.rol.findMany({ orderBy: { nivel: "desc" } }),
+    prisma.usuario.findMany({
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        rol: { select: { nombre: true } },
+      },
+      orderBy: [{ rol: { nivel: "desc" } }, { apellido: "asc" }, { nombre: "asc" }],
+    }),
+  ]);
 
   // Los filtros solo se aplican si coinciden con valores conocidos.
   const recursoFiltro =
@@ -54,11 +103,64 @@ export default async function AuditoriaPanelPage({
       : undefined;
   const accionFiltro =
     accion && accion in ETIQUETAS_ACCION ? accion : undefined;
+  const rolFiltro =
+    rol && roles.some((r) => r.nombre === rol) ? rol : undefined;
 
-  const donde = {
-    ...(recursoFiltro ? { recurso: recursoFiltro } : {}),
-    ...(accionFiltro ? { accion: accionFiltro } : {}),
-  };
+  // Un usuario concreto solo tiene sentido dentro de un rol elegido: si la
+  // URL lo trae coherente se aplica, si no se ignora.
+  let usuarioFiltro: number | null = null;
+  if (usuario && rolFiltro) {
+    const numero = Number(usuario);
+    if (
+      Number.isInteger(numero) &&
+      usuarios.some((u) => u.id === numero && u.rol.nombre === rolFiltro)
+    ) {
+      usuarioFiltro = numero;
+    }
+  }
+
+  const qLimpia = q?.trim().slice(0, 100) ?? "";
+  const inicio = diaUtc(desde, false);
+  const fin = diaUtc(hasta, true);
+  // Intervalo incoherente (desde posterior a hasta): no se aplica ninguna
+  // fecha y se avisa en la interfaz.
+  const rangoInvalido =
+    desde !== undefined &&
+    hasta !== undefined &&
+    inicio !== null &&
+    fin !== null &&
+    inicio >= fin;
+  const fechaDesde = rangoInvalido ? null : inicio;
+  const fechaHasta = rangoInvalido ? null : fin;
+
+  const condiciones: Prisma.AuditoriaAccionWhereInput[] = [];
+  if (recursoFiltro) condiciones.push({ recurso: recursoFiltro });
+  if (accionFiltro) condiciones.push({ accion: accionFiltro });
+  if (rolFiltro) condiciones.push({ rol: rolFiltro });
+  if (usuarioFiltro !== null) condiciones.push({ usuarioId: usuarioFiltro });
+  if (qLimpia) {
+    const contiene = (busqueda: string) => ({
+      contains: busqueda,
+      mode: "insensitive" as const,
+    });
+    condiciones.push({
+      OR: [
+        { usuarioNombre: contiene(qLimpia) },
+        { usuarioEmail: contiene(qLimpia) },
+        { resumen: contiene(qLimpia) },
+      ],
+    });
+  }
+  if (fechaDesde || fechaHasta) {
+    condiciones.push({
+      createdAt: {
+        ...(fechaDesde ? { gte: fechaDesde } : {}),
+        ...(fechaHasta ? { lt: fechaHasta } : {}),
+      },
+    });
+  }
+  const donde: Prisma.AuditoriaAccionWhereInput =
+    condiciones.length > 0 ? { AND: condiciones } : {};
 
   const totalFiltradas = await prisma.auditoriaAccion.count({ where: donde });
   const totalPaginas = Math.max(
@@ -74,14 +176,25 @@ export default async function AuditoriaPanelPage({
     take: CANTIDAD_POR_PAGINA,
   });
 
-  const construirHref = (
-    p: number,
-    r: string | undefined = recursoFiltro,
-    a: string | undefined = accionFiltro
-  ) => {
+  const hayFiltro = Boolean(
+    qLimpia ||
+      recursoFiltro ||
+      accionFiltro ||
+      rolFiltro ||
+      usuarioFiltro ||
+      fechaDesde ||
+      fechaHasta
+  );
+
+  const construirHref = (p: number) => {
     const params = new URLSearchParams();
-    if (r) params.set("recurso", r);
-    if (a) params.set("accion", a);
+    if (qLimpia) params.set("q", qLimpia);
+    if (recursoFiltro) params.set("recurso", recursoFiltro);
+    if (accionFiltro) params.set("accion", accionFiltro);
+    if (rolFiltro) params.set("rol", rolFiltro);
+    if (usuarioFiltro !== null) params.set("usuario", String(usuarioFiltro));
+    if (fechaDesde) params.set("desde", desde as string);
+    if (fechaHasta) params.set("hasta", hasta as string);
     if (p > 1) params.set("pagina", String(p));
     const query = params.toString();
     return query ? `/panel/auditoria?${query}` : "/panel/auditoria";
@@ -100,50 +213,38 @@ export default async function AuditoriaPanelPage({
         </div>
       </div>
 
-      <div className="auditoria-filtros">
-        <div className="filtros-consultas" aria-label="Filtrar por módulo">
-          <a
-            href={construirHref(1, undefined, accionFiltro)}
-            className={`btn-sm ${!recursoFiltro ? "btn-primary" : "btn-ghost-dark"}`}
-            aria-current={!recursoFiltro ? "page" : undefined}
-          >
-            Todos
-          </a>
-          {Object.values(RECURSOS_AUDITORIA).map((r) => (
-            <a
-              key={r}
-              href={construirHref(1, r, accionFiltro)}
-              className={`btn-sm ${recursoFiltro === r ? "btn-primary" : "btn-ghost-dark"}`}
-              aria-current={recursoFiltro === r ? "page" : undefined}
-            >
-              {ETIQUETAS_RECURSO[r] ?? r}
-            </a>
-          ))}
-        </div>
-        <div className="filtros-consultas" aria-label="Filtrar por acción">
-          <a
-            href={construirHref(1, recursoFiltro, undefined)}
-            className={`btn-sm ${!accionFiltro ? "btn-primary" : "btn-ghost-dark"}`}
-            aria-current={!accionFiltro ? "page" : undefined}
-          >
-            Cualquier acción
-          </a>
-          {Object.entries(ETIQUETAS_ACCION).map(([valor, etiqueta]) => (
-            <a
-              key={valor}
-              href={construirHref(1, recursoFiltro, valor)}
-              className={`btn-sm ${accionFiltro === valor ? "btn-primary" : "btn-ghost-dark"}`}
-              aria-current={accionFiltro === valor ? "page" : undefined}
-            >
-              {etiqueta}
-            </a>
-          ))}
-        </div>
-      </div>
+      <FiltrosAuditoria
+        valores={{
+          q: qLimpia,
+          recurso: recursoFiltro ?? "",
+          accion: accionFiltro ?? "",
+          rol: rolFiltro ?? "",
+          usuario: usuarioFiltro !== null ? String(usuarioFiltro) : "",
+          desde: desde ?? "",
+          hasta: hasta ?? "",
+        }}
+        roles={roles.map((r) => r.nombre)}
+        usuarios={usuarios.map((u) => ({
+          id: u.id,
+          nombre: u.nombre,
+          apellido: u.apellido,
+          rol: u.rol.nombre,
+        }))}
+        hayFiltro={hayFiltro}
+      />
+
+      {rangoInvalido && (
+        <p className="form-aviso" role="alert">
+          El período pedido no es válido: la fecha inicial es posterior a la
+          final. No se aplicó ningún filtro de fechas.
+        </p>
+      )}
 
       {registros.length === 0 ? (
         <p className="panel-vacio">
-          Todavía no hay acciones registradas para estos filtros.
+          {hayFiltro
+            ? "No hay acciones que coincidan con estos filtros."
+            : "Todavía no hay acciones registradas."}
         </p>
       ) : (
         <>

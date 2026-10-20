@@ -2830,11 +2830,47 @@ a.panel-nav-item:hover {
 }
 
 /* ── Auditoría (panel) ───────────────────────────────────── */
-.auditoria-filtros {
+.filtros-auditoria {
   display: flex;
-  flex-direction: column;
   gap: 10px;
-  margin: 18px 0 22px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0 0 14px;
+}
+.filtros-auditoria .filtro-buscar {
+  flex: 1 1 240px;
+}
+.filtros-auditoria .filtro-seccion,
+.filtros-auditoria .filtro-accion {
+  flex: 0 1 190px;
+}
+.filtros-auditoria .filtro-rol,
+.filtros-auditoria .filtro-usuario {
+  flex: 0 1 175px;
+}
+.filtros-auditoria .filtro-fecha {
+  flex: 0 1 150px;
+}
+.filtros-auditoria input[type="search"],
+.filtros-auditoria input[type="date"],
+.filtros-auditoria select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid rgba(18, 42, 69, 0.2);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--cfl-white);
+  color: var(--cfl-navy);
+}
+.filtros-auditoria input:focus,
+.filtros-auditoria select:focus {
+  outline: 2px solid var(--cfl-blue);
+  outline-offset: 1px;
+}
+.filtros-auditoria select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 .auditoria-accion {
   display: block;
