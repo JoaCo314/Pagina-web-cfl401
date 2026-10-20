@@ -2883,22 +2883,96 @@ a.panel-nav-item:hover {
 .auditoria-sin-dato {
   opacity: 0.55;
 }
-.auditoria-detalle summary {
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--cfl-blue);
-  margin-top: 6px;
+/* Celda de detalle de la tabla: resumen arriba y el botón que abre el panel. */
+.auditoria-detalle-celda {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
 }
-.auditoria-detalle pre {
-  margin: 8px 0 0;
-  padding: 10px 12px;
-  background: #f2f7fd;
-  border-radius: 6px;
-  font-size: 12px;
-  line-height: 1.5;
+/* Panel lateral de detalle (solo lectura). Sale por portal sobre todo el
+   documento, así que trae su propio fondo y desplazamiento. */
+.detalle-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(9, 20, 34, 0.55);
+}
+.detalle-panel {
+  width: min(460px, 92vw);
+  height: 100vh;
+  overflow-y: auto;
+  background: var(--cfl-white);
+  padding: 22px 24px 24px;
+  box-shadow: 0 18px 50px rgba(9, 20, 34, 0.32);
+}
+.detalle-panel:focus {
+  outline: none;
+}
+.detalle-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.detalle-cabecera h2 {
+  margin: 0;
+  font-size: 19px;
+  color: var(--cfl-navy-2);
+}
+.detalle-meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 7px 14px;
+  margin: 0 0 18px;
+  font-size: 14px;
+}
+.detalle-meta dt {
+  color: #5b6b7d;
+}
+.detalle-meta dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.detalle-campos h3 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: var(--cfl-navy-2);
+}
+.detalle-campos dl {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+}
+.detalle-campo {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(18, 42, 69, 0.08);
+}
+.detalle-campo dt {
+  color: #5b6b7d;
+}
+.detalle-campo dd {
+  margin: 0;
+  overflow-wrap: anywhere;
   white-space: pre-wrap;
-  word-break: break-word;
-  overflow-x: auto;
+}
+.detalle-nota {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #5b6b7d;
+}
+.detalle-sin-datos {
+  margin: 0;
+  font-size: 14px;
+  color: #5b6b7d;
 }
 .consultas-lista {
   display: flex;

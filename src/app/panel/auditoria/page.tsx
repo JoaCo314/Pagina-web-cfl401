@@ -11,23 +11,15 @@ import { Prisma } from "@/generated/prisma/client";
 import PanelShell from "@/components/auth/PanelShell";
 import NavPaginacion from "@/components/panel/NavPaginacion";
 import FiltrosAuditoria from "@/components/panel/FiltrosAuditoria";
-import {
-  ETIQUETAS_ACCION,
-  ETIQUETAS_RECURSO,
-  RECURSOS_AUDITORIA,
-} from "@/lib/auditoria";
+import TablaAuditoria from "@/components/panel/TablaAuditoria";
+import { ETIQUETAS_ACCION, RECURSOS_AUDITORIA } from "@/lib/auditoria";
+import type { RegistroAuditoriaUI } from "@/lib/auditoriaPresentacion";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Auditoría" };
 
 const CANTIDAD_POR_PAGINA = 30;
-
-const formatoFecha = new Intl.DateTimeFormat("es-AR", {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: "America/Argentina/Buenos_Aires",
-});
 
 function paginaValida(valor: string | undefined, totalPaginas: number): number {
   const numero = Number(valor);
@@ -176,6 +168,57 @@ export default async function AuditoriaPanelPage({
     take: CANTIDAD_POR_PAGINA,
   });
 
+  // Los `categoriaId` del detalle llegan como números: si hay alguno en la
+  // página actual se traducen al nombre para la vista de detalle.
+  const idsCursos = new Set<number>();
+  const idsPreguntas = new Set<number>();
+  for (const registro of registros) {
+    const detalle = registro.detalle;
+    if (!detalle || typeof detalle !== "object" || Array.isArray(detalle)) continue;
+    const categoriaId = (detalle as Record<string, unknown>).categoriaId;
+    if (typeof categoriaId !== "number") continue;
+    if (registro.recurso === RECURSOS_AUDITORIA.CURSO) idsCursos.add(categoriaId);
+    if (registro.recurso === RECURSOS_AUDITORIA.PREGUNTA) {
+      idsPreguntas.add(categoriaId);
+    }
+  }
+  const [categoriasCursos, categoriasPreguntas] = await Promise.all([
+    idsCursos.size > 0
+      ? prisma.categoriaCurso.findMany({
+          where: { id: { in: [...idsCursos] } },
+          select: { id: true, nombre: true },
+        })
+      : Promise.resolve([]),
+    idsPreguntas.size > 0
+      ? prisma.categoriaPregunta.findMany({
+          where: { id: { in: [...idsPreguntas] } },
+          select: { id: true, nombre: true },
+        })
+      : Promise.resolve([]),
+  ]);
+  const categorias = {
+    cursos: Object.fromEntries(
+      categoriasCursos.map((c) => [String(c.id), c.nombre])
+    ),
+    preguntas: Object.fromEntries(
+      categoriasPreguntas.map((c) => [String(c.id), c.nombre])
+    ),
+  };
+
+  const registrosUI: RegistroAuditoriaUI[] = registros.map((registro) => ({
+    id: registro.id,
+    createdAt: registro.createdAt.toISOString(),
+    accion: registro.accion,
+    recurso: registro.recurso,
+    recursoId: registro.recursoId,
+    usuarioNombre: registro.usuarioNombre,
+    usuarioEmail: registro.usuarioEmail,
+    rol: registro.rol,
+    resumen: registro.resumen,
+    ip: registro.ip,
+    detalle: (registro.detalle ?? null) as Record<string, unknown> | null,
+  }));
+
   const hayFiltro = Boolean(
     qLimpia ||
       recursoFiltro ||
@@ -240,7 +283,7 @@ export default async function AuditoriaPanelPage({
         </p>
       )}
 
-      {registros.length === 0 ? (
+      {registrosUI.length === 0 ? (
         <p className="panel-vacio">
           {hayFiltro
             ? "No hay acciones que coincidan con estos filtros."
@@ -248,67 +291,7 @@ export default async function AuditoriaPanelPage({
         </p>
       ) : (
         <>
-          <div className="panel-table-wrap">
-            <table className="panel-table">
-              <caption className="sr-only">
-                Registro de acciones administrativas con su fecha, autor y
-                detalle
-              </caption>
-              <thead>
-                <tr>
-                  <th scope="col">Fecha</th>
-                  <th scope="col">Usuario</th>
-                  <th scope="col">Acción</th>
-                  <th scope="col">Detalle</th>
-                </tr>
-              </thead>
-              <tbody>
-                {registros.map((r) => (
-                  <tr key={r.id}>
-                    <td data-label="Fecha">
-                      <time dateTime={r.createdAt.toISOString()}>
-                        {formatoFecha.format(r.createdAt)}
-                      </time>
-                    </td>
-                    <td data-label="Usuario">
-                      {r.usuarioNombre ? (
-                        <>
-                          <strong>{r.usuarioNombre}</strong>
-                          {r.usuarioEmail && (
-                            <span className="td-sub">{r.usuarioEmail}</span>
-                          )}
-                          {r.rol && (
-                            <span className="td-sub">Rol: {r.rol}</span>
-                          )}
-                        </>
-                      ) : (
-                        <span className="auditoria-sin-dato">—</span>
-                      )}
-                    </td>
-                    <td data-label="Acción">
-                      <span className="auditoria-accion">
-                        {ETIQUETAS_ACCION[r.accion] ?? r.accion}
-                      </span>
-                      <span className="td-sub">
-                        {ETIQUETAS_RECURSO[r.recurso] ?? r.recurso}
-                      </span>
-                    </td>
-                    <td data-label="Detalle">
-                      {r.resumen && <p className="auditoria-resumen">{r.resumen}</p>}
-                      {r.detalle ? (
-                        <details className="auditoria-detalle">
-                          <summary>Ver datos</summary>
-                          <pre>{JSON.stringify(r.detalle, null, 2)}</pre>
-                        </details>
-                      ) : (
-                        <span className="auditoria-sin-dato">—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <TablaAuditoria registros={registrosUI} categorias={categorias} />
           <NavPaginacion
             pagina={pagina}
             totalPaginas={totalPaginas}
