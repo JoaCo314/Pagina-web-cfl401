@@ -171,7 +171,11 @@ export default function AccionesUsuario({
   // En la propia fila no hay menú: solo queda «Editar». Las operaciones sobre
   // la propia cuenta (blanqueo, baja, eliminación) no se ofrecen desde acá.
   return (
-    <span className="acciones-usuario">
+    <span
+      className={
+        esPropio ? "acciones-usuario acciones-propias" : "acciones-usuario"
+      }
+    >
       <Link
         href={`/panel/usuarios/${usuarioId}/editar`}
         className="btn-primary btn-sm"

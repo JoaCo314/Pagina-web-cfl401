@@ -2639,6 +2639,13 @@ a.panel-nav-item:hover {
      (basis 100%) baja a su propia línea debajo de las acciones. */
   gap: 10px;
 }
+/* En la propia fila no hay menú ⋮: este espacio reservado (mismo ancho que el
+   botón ⋮) mantiene al botón «Editar» en la misma posición horizontal que en
+   el resto de las filas de la tabla. */
+.acciones-propias::after {
+  content: "";
+  width: 34px;
+}
 .acciones-usuario .form-error {
   flex: 1 0 100%;
   white-space: normal;
