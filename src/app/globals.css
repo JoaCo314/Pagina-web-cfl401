@@ -2907,8 +2907,7 @@ a.panel-nav-item:hover {
   color: #fff;
   border: 1px solid transparent;
 }
-.btn-detalles:hover,
-.btn-detalles:focus {
+.btn-detalles:hover {
   background: #22597f;
   color: #fff;
 }
