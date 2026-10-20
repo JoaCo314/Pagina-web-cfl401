@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ETIQUETAS_ACCION, ETIQUETAS_RECURSO } from "@/lib/auditoriaDatos";
 import {
-  camposModificadosAuditoria,
   etiquetaCampoAuditoria,
   entradasDetalleAuditoria,
   fechaCompleta,
@@ -257,9 +256,9 @@ function DetalleAcciones({
   );
 
   const entradas = entradasDetalleAuditoria(registro);
-  const esEdicion =
-    registro.accion === "editar" &&
-    camposModificadosAuditoria(registro).length > 0;
+  // Toda edición guarda valores nuevos de los campos tocados; la lista
+  // `campos` solo aporta el orden y no siempre está presente.
+  const esEdicion = registro.accion === "editar" && entradas.length > 0;
   const jsonTecnico = registro.detalle
     ? JSON.stringify(registro.detalle, null, 2)
     : null;

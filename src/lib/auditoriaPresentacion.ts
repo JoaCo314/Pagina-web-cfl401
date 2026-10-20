@@ -67,6 +67,7 @@ const formatoFechaHora = new Intl.DateTimeFormat("es-AR", {
 const formatoDia = new Intl.DateTimeFormat("es-AR", {
   day: "numeric",
   month: "short",
+  year: "numeric",
   timeZone: ZONA,
 });
 const formatoHora = new Intl.DateTimeFormat("es-AR", {
