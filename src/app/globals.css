@@ -2852,6 +2852,7 @@ a.panel-nav-item:hover {
   flex: 1 1 210px;
 }
 .filtros-auditoria input[type="search"],
+.filtros-auditoria input[type="text"],
 .filtros-auditoria input[type="date"],
 .filtros-auditoria select {
   width: 100%;

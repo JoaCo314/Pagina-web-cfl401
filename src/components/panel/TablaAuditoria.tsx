@@ -133,7 +133,7 @@ export default function TablaAuditoria({
                     )}
                     <button
                       type="button"
-                      className="btn-detalles btn-sm"
+                      className="btn-ghost-dark btn-sm"
                       onClick={() => setAbierto(registro)}
                       aria-label={
                         registro.resumen
