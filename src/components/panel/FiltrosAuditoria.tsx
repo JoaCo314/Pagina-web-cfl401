@@ -15,8 +15,7 @@ type Valores = {
   accion: string;
   rol: string;
   usuario: string;
-  desde: string;
-  hasta: string;
+  fecha: string;
 };
 
 /// Filtros del panel de auditoría. Es un formulario GET (sin JavaScript los
@@ -65,7 +64,7 @@ export default function FiltrosAuditoria({
       <label className="filtro-seccion">
         <span className="sr-only">Filtrar por sección</span>
         <select name="recurso" defaultValue={valores.recurso}>
-          <option value="">Todas las secciones</option>
+          <option value="">Secciones</option>
           {Object.values(RECURSOS_AUDITORIA).map((r) => (
             <option key={r} value={r}>
               {ETIQUETAS_RECURSO[r] ?? r}
@@ -77,7 +76,7 @@ export default function FiltrosAuditoria({
       <label className="filtro-accion">
         <span className="sr-only">Filtrar por acción</span>
         <select name="accion" defaultValue={valores.accion}>
-          <option value="">Todas las acciones</option>
+          <option value="">Acciones</option>
           {Object.entries(ETIQUETAS_ACCION).map(([valor, etiqueta]) => (
             <option key={valor} value={valor}>
               {etiqueta}
@@ -98,7 +97,7 @@ export default function FiltrosAuditoria({
             setUsuario("");
           }}
         >
-          <option value="">Todos los roles</option>
+          <option value="">Roles</option>
           {roles.map((r) => (
             <option key={r} value={r}>
               {r}
@@ -117,7 +116,7 @@ export default function FiltrosAuditoria({
         >
           {rol ? (
             <>
-              <option value="">Todos los usuarios del rol</option>
+              <option value="">Usuarios</option>
               {usuariosDelRol.map((u) => (
                 <option key={u.id} value={u.id}>
                   {u.nombre} {u.apellido}
@@ -125,27 +124,20 @@ export default function FiltrosAuditoria({
               ))}
             </>
           ) : (
-            <option value="">Elegí primero un rol</option>
+            <option value="">Usuarios</option>
           )}
         </select>
       </label>
 
       <label className="filtro-fecha">
-        <span className="sr-only">Fecha inicial del período</span>
+        <span className="sr-only">Filtrar por día, mes o año</span>
         <input
-          type="date"
-          name="desde"
-          defaultValue={valores.desde}
-          title="Fecha inicial"
-        />
-      </label>
-      <label className="filtro-fecha">
-        <span className="sr-only">Fecha final del período</span>
-        <input
-          type="date"
-          name="hasta"
-          defaultValue={valores.hasta}
-          title="Fecha final"
+          type="text"
+          name="fecha"
+          defaultValue={valores.fecha}
+          maxLength={20}
+          placeholder="Día, mes o año (ej: 17, oct, 2026)"
+          title="Día, mes o año"
         />
       </label>
 

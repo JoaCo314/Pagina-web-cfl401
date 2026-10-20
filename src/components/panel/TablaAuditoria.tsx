@@ -79,7 +79,7 @@ export default function TablaAuditoria({
   return (
     <>
       <div className="panel-table-wrap">
-        <table className="panel-table">
+        <table className="panel-table auditoria-tabla">
           <caption className="sr-only">
             Registro de acciones administrativas con su fecha, autor y detalle
           </caption>
@@ -133,7 +133,7 @@ export default function TablaAuditoria({
                     )}
                     <button
                       type="button"
-                      className="btn-ghost-dark btn-sm"
+                      className="btn-detalles btn-sm"
                       onClick={() => setAbierto(registro)}
                       aria-label={
                         registro.resumen
@@ -173,10 +173,11 @@ export default function TablaAuditoria({
                 <h2 id="detalle-auditoria-titulo">Detalle de la acción</h2>
                 <button
                   type="button"
-                  className="btn-ghost-dark btn-sm"
+                  className="detalle-cerrar"
                   onClick={() => setAbierto(null)}
+                  aria-label="Cerrar detalle"
                 >
-                  Cerrar
+                  ✕
                 </button>
               </header>
 
@@ -318,7 +319,7 @@ function DetalleAcciones({
           <div className="detalle-tecnico-botones">
             <button
               type="button"
-              className="btn-ghost-dark btn-sm"
+              className="btn-detalles btn-sm"
               aria-expanded={verTecnicos}
               onClick={() => setVerTecnicos((v) => !v)}
             >
@@ -327,7 +328,7 @@ function DetalleAcciones({
             {verTecnicos && (
               <button
                 type="button"
-                className="btn-ghost-dark btn-sm"
+                className="btn-detalles btn-sm"
                 onClick={copiarDatos}
               >
                 {copiado ? "Copiado ✓" : "Copiar datos"}

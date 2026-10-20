@@ -27,19 +27,40 @@ function paginaValida(valor: string | undefined, totalPaginas: number): number {
   return Math.min(numero, totalPaginas);
 }
 
-/// Convierte un `YYYY-MM-DD` en el instante UTC del comienzo del día en
-/// Argentina (UTC-3): con `fin` devuelve el comienzo del día siguiente, para
-/// usarlo como límite exclusivo e incluir toda la fecha final.
-function diaUtc(valor: string | undefined, fin: boolean): Date | null {
-  if (!valor || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return null;
-  const [anio, mes, dia] = valor.split("-").map(Number);
-  const fecha = new Date(Date.UTC(anio, mes - 1, dia + (fin ? 1 : 0), 3, 0, 0));
-  return Number.isNaN(fecha.getTime()) ? null : fecha;
+/// Meses en español para el filtro parcial por fecha (también se aceptan
+/// las abreviaturas de tres letras).
+const MESES_ES: Record<string, number> = {
+  enero: 1, ene: 1, febrero: 2, feb: 2, marzo: 3, mar: 3, abril: 4, abr: 4,
+  mayo: 5, may: 5, junio: 6, jun: 6, julio: 7, jul: 7, agosto: 8, ago: 8,
+  septiembre: 9, setiembre: 9, sep: 9, octubre: 10, oct: 10,
+  noviembre: 11, nov: 11, diciembre: 12, dic: 12,
+};
+
+/// Una sola casilla de fecha admite un día del mes (1-31), un mes en español
+/// o un año de cuatro dígitos; lo que no se entienda se descarta con aviso.
+function parsearFechaParcial(valor?: string): {
+  filtro: { dia?: number; mes?: number; anio?: number } | null;
+  invalida: boolean;
+} {
+  const limpio = valor?.trim().toLowerCase();
+  if (!limpio) return { filtro: null, invalida: false };
+  if (/^\d{4}$/.test(limpio)) {
+    return { filtro: { anio: Number(limpio) }, invalida: false };
+  }
+  if (/^\d{1,2}$/.test(limpio)) {
+    const dia = Number(limpio);
+    return dia >= 1 && dia <= 31
+      ? { filtro: { dia }, invalida: false }
+      : { filtro: null, invalida: true };
+  }
+  const mes = MESES_ES[limpio];
+  if (mes) return { filtro: { mes }, invalida: false };
+  return { filtro: null, invalida: true };
 }
 
 /// Vista de auditoría. Es de solo lectura y exclusiva del Administrador: muestra
 /// quién ejecutó cada acción administrativa, cuándo y sobre qué recurso. Los
-/// filtros (búsqueda, sección, acción, rol, usuario y período) se combinan en
+/// filtros (búsqueda, sección, acción, rol, usuario y fecha) se combinan en
 /// el backend con condiciones AND y no alteran el orden histórico
 /// (fecha descendente).
 export default async function AuditoriaPanelPage({
@@ -51,8 +72,7 @@ export default async function AuditoriaPanelPage({
     accion?: string;
     rol?: string;
     usuario?: string;
-    desde?: string;
-    hasta?: string;
+    fecha?: string;
     pagina?: string;
   }>;
 }) {
@@ -67,8 +87,7 @@ export default async function AuditoriaPanelPage({
     accion,
     rol,
     usuario,
-    desde,
-    hasta,
+    fecha,
     pagina: paginaParam,
   } = await searchParams;
 
@@ -112,18 +131,8 @@ export default async function AuditoriaPanelPage({
   }
 
   const qLimpia = q?.trim().slice(0, 100) ?? "";
-  const inicio = diaUtc(desde, false);
-  const fin = diaUtc(hasta, true);
-  // Intervalo incoherente (desde posterior a hasta): no se aplica ninguna
-  // fecha y se avisa en la interfaz.
-  const rangoInvalido =
-    desde !== undefined &&
-    hasta !== undefined &&
-    inicio !== null &&
-    fin !== null &&
-    inicio >= fin;
-  const fechaDesde = rangoInvalido ? null : inicio;
-  const fechaHasta = rangoInvalido ? null : fin;
+  const { filtro: filtroFecha, invalida: fechaInvalida } =
+    parsearFechaParcial(fecha);
 
   const condiciones: Prisma.AuditoriaAccionWhereInput[] = [];
   if (recursoFiltro) condiciones.push({ recurso: recursoFiltro });
@@ -143,13 +152,29 @@ export default async function AuditoriaPanelPage({
       ],
     });
   }
-  if (fechaDesde || fechaHasta) {
-    condiciones.push({
-      createdAt: {
-        ...(fechaDesde ? { gte: fechaDesde } : {}),
-        ...(fechaHasta ? { lt: fechaHasta } : {}),
-      },
-    });
+  // El filtro parcial de fecha (día, mes o año) se resuelve con una consulta
+  // ligera de ids; Prisma no permite extraer partes de la fecha en `where`.
+  if (filtroFecha) {
+    let idsFecha: number[] = [];
+    if (filtroFecha.dia) {
+      const filas = await prisma.$queryRaw<{ id: number }[]>`
+        SELECT id FROM auditoria_acciones
+        WHERE EXTRACT(DAY FROM "createdAt") = ${filtroFecha.dia}`;
+      idsFecha = filas.map((f) => f.id);
+    } else if (filtroFecha.mes) {
+      const filas = await prisma.$queryRaw<{ id: number }[]>`
+        SELECT id FROM auditoria_acciones
+        WHERE EXTRACT(MONTH FROM "createdAt") = ${filtroFecha.mes}`;
+      idsFecha = filas.map((f) => f.id);
+    } else if (filtroFecha.anio) {
+      const filas = await prisma.$queryRaw<{ id: number }[]>`
+        SELECT id FROM auditoria_acciones
+        WHERE EXTRACT(YEAR FROM "createdAt") = ${filtroFecha.anio}`;
+      idsFecha = filas.map((f) => f.id);
+    }
+    condiciones.push(
+      idsFecha.length > 0 ? { id: { in: idsFecha } } : { id: -1 }
+    );
   }
   const donde: Prisma.AuditoriaAccionWhereInput =
     condiciones.length > 0 ? { AND: condiciones } : {};
@@ -225,8 +250,7 @@ export default async function AuditoriaPanelPage({
       accionFiltro ||
       rolFiltro ||
       usuarioFiltro ||
-      fechaDesde ||
-      fechaHasta
+      filtroFecha
   );
 
   const construirHref = (p: number) => {
@@ -236,8 +260,7 @@ export default async function AuditoriaPanelPage({
     if (accionFiltro) params.set("accion", accionFiltro);
     if (rolFiltro) params.set("rol", rolFiltro);
     if (usuarioFiltro !== null) params.set("usuario", String(usuarioFiltro));
-    if (fechaDesde) params.set("desde", desde as string);
-    if (fechaHasta) params.set("hasta", hasta as string);
+    if (filtroFecha && fecha?.trim()) params.set("fecha", fecha.trim());
     if (p > 1) params.set("pagina", String(p));
     const query = params.toString();
     return query ? `/panel/auditoria?${query}` : "/panel/auditoria";
@@ -263,8 +286,7 @@ export default async function AuditoriaPanelPage({
           accion: accionFiltro ?? "",
           rol: rolFiltro ?? "",
           usuario: usuarioFiltro !== null ? String(usuarioFiltro) : "",
-          desde: desde ?? "",
-          hasta: hasta ?? "",
+          fecha: fecha?.trim() ?? "",
         }}
         roles={roles.map((r) => r.nombre)}
         usuarios={usuarios.map((u) => ({
@@ -276,10 +298,10 @@ export default async function AuditoriaPanelPage({
         hayFiltro={hayFiltro}
       />
 
-      {rangoInvalido && (
+      {fechaInvalida && (
         <p className="form-aviso" role="alert">
-          El período pedido no es válido: la fecha inicial es posterior a la
-          final. No se aplicó ningún filtro de fechas.
+          No se reconoció «{fecha}»: escribí un día (ej: 17), un mes en español
+          (ej: octubre) o un año (ej: 2026).
         </p>
       )}
 
