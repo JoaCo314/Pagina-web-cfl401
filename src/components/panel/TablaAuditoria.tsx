@@ -18,7 +18,8 @@ import {
 /// Listado de acciones de la auditoría con su panel de detalle. La tabla
 /// muestra lo esencial (fecha compacta, quién, qué hizo y sobre qué); el
 /// detalle no se vuelca en crudo sino en un panel lateral de solo lectura,
-/// con los campos etiquetados y formateados.
+/// con los campos etiquetados y formateados. El JSON técnico queda como vista
+/// secundaria, detrás de un botón, para depurar sin ensuciar la lectura.
 export default function TablaAuditoria({
   registros,
   categorias,
@@ -220,6 +221,7 @@ export default function TablaAuditoria({
               </dl>
 
               <DetalleAcciones
+                key={abierto.id}
                 registro={abierto}
                 categorias={categorias}
               />
@@ -233,7 +235,9 @@ export default function TablaAuditoria({
 
 /// Cuerpo del panel: los campos del detalle presentados según el tipo de
 /// acción. Solo se muestran los datos que la auditoría guardó; nunca se inventan
-/// valores anteriores.
+/// valores anteriores. Detrás de un botón queda el JSON crudo del registro,
+/// para depurar; el JSON nunca trae contraseñas ni tokens porque
+/// `registrarAuditoria` los descarta al escribir.
 function DetalleAcciones({
   registro,
   categorias,
@@ -241,42 +245,107 @@ function DetalleAcciones({
   registro: RegistroAuditoriaUI;
   categorias: NombresCategorias;
 }) {
+  const [verTecnicos, setVerTecnicos] = useState(false);
+  const [copiado, setCopiado] = useState(false);
+  const temporizadorRef = useRef<number | null>(null);
+
+  useEffect(
+    () => () => {
+      if (temporizadorRef.current) window.clearTimeout(temporizadorRef.current);
+    },
+    []
+  );
+
   const entradas = entradasDetalleAuditoria(registro);
   const esEdicion =
-    registro.accion === "editar" && camposModificadosAuditoria(registro).length > 0;
+    registro.accion === "editar" &&
+    camposModificadosAuditoria(registro).length > 0;
+  const jsonTecnico = registro.detalle
+    ? JSON.stringify(registro.detalle, null, 2)
+    : null;
 
-  if (entradas.length === 0) {
-    return (
-      <p className="detalle-sin-datos">
-        Esta acción no guardó datos adicionales.
-      </p>
-    );
+  async function copiarDatos() {
+    if (!jsonTecnico) return;
+    try {
+      await navigator.clipboard.writeText(jsonTecnico);
+      setCopiado(true);
+      if (temporizadorRef.current) window.clearTimeout(temporizadorRef.current);
+      temporizadorRef.current = window.setTimeout(
+        () => setCopiado(false),
+        2000
+      );
+    } catch {
+      // Sin permiso del portapapeles: el texto queda visible para copiarlo a mano.
+    }
   }
 
   return (
-    <section className="detalle-campos" aria-label="Datos de la acción">
-      <h3>
-        {esEdicion
-          ? "Campos modificados"
-          : registro.accion === "crear"
-            ? "Datos creados"
-            : "Datos adicionales"}
-      </h3>
-      <dl>
-        {entradas.map(([clave, valor]) => (
-          <div className="detalle-campo" key={clave}>
-            <dt>{etiquetaCampoAuditoria(clave)}</dt>
-            <dd>{formatearCampoAuditoria(registro, clave, valor, categorias)}</dd>
-          </div>
-        ))}
-      </dl>
-      {esEdicion && (
-        <p className="detalle-nota">
-          La auditoría guarda los valores registrados al momento del cambio y no
-          conserva los anteriores: por eso se muestran los datos guardados, sin
-          comparación previa.
+    <>
+      {entradas.length === 0 ? (
+        <p className="detalle-sin-datos">
+          Esta acción no guardó datos adicionales.
         </p>
+      ) : (
+        <section className="detalle-campos" aria-label="Datos de la acción">
+          <h3>
+            {esEdicion
+              ? "Campos modificados"
+              : registro.accion === "crear"
+                ? "Datos creados"
+                : "Datos adicionales"}
+          </h3>
+          <dl>
+            {entradas.map(([clave, valor]) => (
+              <div className="detalle-campo" key={clave}>
+                <dt>{etiquetaCampoAuditoria(clave)}</dt>
+                <dd>
+                  {formatearCampoAuditoria(registro, clave, valor, categorias)}
+                </dd>
+              </div>
+            ))}
+          </dl>
+          {esEdicion && (
+            <p className="detalle-nota">
+              La auditoría guarda los valores registrados al momento del cambio
+              y no conserva los anteriores: por eso se muestran los datos
+              guardados, sin comparación previa.
+            </p>
+          )}
+        </section>
       )}
-    </section>
+
+      {jsonTecnico && (
+        <section className="detalle-tecnico" aria-label="Datos técnicos">
+          <div className="detalle-tecnico-botones">
+            <button
+              type="button"
+              className="btn-ghost-dark btn-sm"
+              aria-expanded={verTecnicos}
+              onClick={() => setVerTecnicos((v) => !v)}
+            >
+              {verTecnicos ? "Ocultar datos técnicos" : "Ver datos técnicos"}
+            </button>
+            {verTecnicos && (
+              <button
+                type="button"
+                className="btn-ghost-dark btn-sm"
+                onClick={copiarDatos}
+              >
+                {copiado ? "Copiado ✓" : "Copiar datos"}
+              </button>
+            )}
+          </div>
+          {verTecnicos && (
+            <>
+              <pre className="detalle-json">{jsonTecnico}</pre>
+              <p className="detalle-nota">
+                JSON guardado en la auditoría. No incluye contraseñas ni
+                tokens: esos datos se descartan al registrar la acción.
+              </p>
+            </>
+          )}
+        </section>
+      )}
+    </>
   );
 }

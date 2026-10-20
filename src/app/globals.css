@@ -2974,6 +2974,31 @@ a.panel-nav-item:hover {
   font-size: 14px;
   color: #5b6b7d;
 }
+/* Vista técnica: JSON crudo del registro, detrás de un botón. */
+.detalle-tecnico {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(18, 42, 69, 0.08);
+}
+.detalle-tecnico-botones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.detalle-json {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  background: #f2f7fd;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+}
+.detalle-tecnico .detalle-nota {
+  margin-top: 10px;
+}
 .consultas-lista {
   display: flex;
   flex-direction: column;
