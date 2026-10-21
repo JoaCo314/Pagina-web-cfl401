@@ -319,7 +319,7 @@ function DetalleAcciones({
           <div className="detalle-tecnico-botones">
             <button
               type="button"
-              className="btn-detalles btn-sm"
+              className="btn-ghost-dark btn-sm"
               aria-expanded={verTecnicos}
               onClick={() => setVerTecnicos((v) => !v)}
             >
@@ -328,7 +328,7 @@ function DetalleAcciones({
             {verTecnicos && (
               <button
                 type="button"
-                className="btn-detalles btn-sm"
+                className="btn-ghost-dark btn-sm"
                 onClick={copiarDatos}
               >
                 {copiado ? "Copiado ✓" : "Copiar datos"}

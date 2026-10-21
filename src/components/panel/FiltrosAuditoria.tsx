@@ -15,8 +15,17 @@ type Valores = {
   accion: string;
   rol: string;
   usuario: string;
-  fecha: string;
+  dia: string;
+  mes: string;
+  anio: string;
 };
+
+/// Meses en español con su número, en el orden natural del calendario.
+const MESES = [
+  ["enero", 1], ["febrero", 2], ["marzo", 3], ["abril", 4], ["mayo", 5],
+  ["junio", 6], ["julio", 7], ["agosto", 8], ["septiembre", 9],
+  ["octubre", 10], ["noviembre", 11], ["diciembre", 12],
+] as const;
 
 /// Filtros del panel de auditoría. Es un formulario GET (sin JavaScript los
 /// filtros siguen funcionando) pero vive en el cliente para poder desplegar
@@ -129,17 +138,48 @@ export default function FiltrosAuditoria({
         </select>
       </label>
 
-      <label className="filtro-fecha">
+      <span className="filtro-fecha">
         <span className="sr-only">Filtrar por día, mes o año</span>
-        <input
-          type="text"
-          name="fecha"
-          defaultValue={valores.fecha}
-          maxLength={20}
-          placeholder="Día, mes o año (ej: 17, oct, 2026)"
-          title="Día, mes o año"
-        />
-      </label>
+        <span className="campo-diagnostico">
+          <select
+            name="dia"
+            className="campo-dia"
+            defaultValue={valores.dia}
+            aria-label="Día"
+          >
+            <option value="">Día</option>
+            {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+              <option key={d} value={d}>
+                {d}
+              </option>
+            ))}
+          </select>
+          <select
+            name="mes"
+            className="campo-mes"
+            defaultValue={valores.mes}
+            aria-label="Mes"
+          >
+            <option value="">Mes</option>
+            {MESES.map(([nombre, numero]) => (
+              <option key={numero} value={numero}>
+                {nombre}
+              </option>
+            ))}
+          </select>
+          <input
+            type="number"
+            name="anio"
+            className="campo-anio"
+            defaultValue={valores.anio}
+            min={2000}
+            max={2100}
+            inputMode="numeric"
+            placeholder="Año"
+            aria-label="Año"
+          />
+        </span>
+      </span>
 
       <button type="submit" className="btn-primary btn-sm">
         Aplicar

@@ -2849,10 +2849,35 @@ a.panel-nav-item:hover {
   flex: 0 1 175px;
 }
 .filtros-auditoria .filtro-fecha {
-  flex: 1 1 210px;
+  flex: 0 1 auto;
+}
+/* Fecha parcial: tres casillas chicas (día / mes / año) en vez de un campo
+   ancho de texto libre. El grupo se alinea con el alto de los demás filtros. */
+.filtros-auditoria .filtro-fecha .campo-diagnostico {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.filtros-auditoria .filtro-fecha .campo-diagnostico select,
+.filtros-auditoria .filtro-fecha .campo-diagnostico input {
+  width: auto;
+  padding: 9px 10px;
+}
+.filtros-auditoria .filtro-fecha .campo-dia {
+  flex: 0 0 auto;
+  width: 74px;
+}
+.filtros-auditoria .filtro-fecha .campo-mes {
+  flex: 0 0 auto;
+  width: 120px;
+}
+.filtros-auditoria .filtro-fecha .campo-anio {
+  flex: 0 0 auto;
+  width: 92px;
 }
 .filtros-auditoria input[type="search"],
 .filtros-auditoria input[type="text"],
+.filtros-auditoria input[type="number"],
 .filtros-auditoria input[type="date"],
 .filtros-auditoria select {
   width: 100%;
@@ -2901,20 +2926,6 @@ a.panel-nav-item:hover {
 .auditoria-tabla th:nth-child(2),
 .auditoria-tabla td:nth-child(2) {
   min-width: 240px;
-}
-/* Botón de acción del panel de auditoría (ver detalles y datos técnicos). */
-.btn-detalles {
-  background: #2a6ea3;
-  color: #fff;
-  border: 1px solid transparent;
-}
-.btn-detalles:hover {
-  background: #22597f;
-  color: #fff;
-}
-.btn-detalles:focus-visible {
-  outline: 2px solid #2a6ea3;
-  outline-offset: 2px;
 }
 /* Panel lateral de detalle (solo lectura). Sale por portal sobre todo el
    documento, así que trae su propio fondo y desplazamiento. */
@@ -2976,7 +2987,8 @@ a.panel-nav-item:hover {
   font-size: 19px;
   color: var(--cfl-navy-2);
 }
-/* Equis de cierre del panel lateral. */
+/* Equis de cierre del panel lateral: botón fantasma del panel con una ✕ que
+   hereda el color y la tipografía del resto de los botones. */
 .detalle-cerrar {
   display: inline-flex;
   align-items: center;
@@ -2984,29 +2996,24 @@ a.panel-nav-item:hover {
   width: 32px;
   height: 32px;
   padding: 0;
-  border: 1px solid transparent;
-  border-radius: 6px;
+  border: 1.5px solid rgba(18, 42, 69, 0.3);
+  border-radius: 4px;
   background: transparent;
-  color: #b23a3a;
-  font-size: 18px;
+  color: var(--cfl-navy-2);
+  font-size: 15px;
   line-height: 1;
   cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease,
-    transform 0.1s ease;
+  transition: background-color 0.15s ease, transform 0.1s ease;
 }
 .detalle-cerrar:hover {
-  background: #b23a3a;
-  color: #fff;
+  background-color: color-mix(in srgb, var(--cfl-navy-2) 8%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--cfl-navy-2) 12%, transparent);
 }
 .detalle-cerrar:active {
-  background: #992f2f;
-  color: #fff;
-  transform: scale(0.92);
+  transform: translateY(1px);
 }
 .detalle-cerrar:focus-visible {
-  outline: 2px solid #b23a3a;
+  outline: 2px solid var(--cfl-blue);
   outline-offset: 2px;
 }
 .detalle-meta {

@@ -27,35 +27,22 @@ function paginaValida(valor: string | undefined, totalPaginas: number): number {
   return Math.min(numero, totalPaginas);
 }
 
-/// Meses en español para el filtro parcial por fecha (también se aceptan
-/// las abreviaturas de tres letras).
-const MESES_ES: Record<string, number> = {
-  enero: 1, ene: 1, febrero: 2, feb: 2, marzo: 3, mar: 3, abril: 4, abr: 4,
-  mayo: 5, may: 5, junio: 6, jun: 6, julio: 7, jul: 7, agosto: 8, ago: 8,
-  septiembre: 9, setiembre: 9, sep: 9, octubre: 10, oct: 10,
-  noviembre: 11, nov: 11, diciembre: 12, dic: 12,
-};
-
-/// Una sola casilla de fecha admite un día del mes (1-31), un mes en español
-/// o un año de cuatro dígitos; lo que no se entienda se descarta con aviso.
-function parsearFechaParcial(valor?: string): {
-  filtro: { dia?: number; mes?: number; anio?: number } | null;
-  invalida: boolean;
-} {
-  const limpio = valor?.trim().toLowerCase();
-  if (!limpio) return { filtro: null, invalida: false };
-  if (/^\d{4}$/.test(limpio)) {
-    return { filtro: { anio: Number(limpio) }, invalida: false };
-  }
-  if (/^\d{1,2}$/.test(limpio)) {
-    const dia = Number(limpio);
-    return dia >= 1 && dia <= 31
-      ? { filtro: { dia }, invalida: false }
-      : { filtro: null, invalida: true };
-  }
-  const mes = MESES_ES[limpio];
-  if (mes) return { filtro: { mes }, invalida: false };
-  return { filtro: null, invalida: true };
+/// Filtro parcial de fecha: cada casilla es opcional y se combinan (solo el año
+/// acota al año; año+mes al mes; día+mes+año a un día concreto). Los valores
+/// fuera de rango se descartan en silencio porque las casillas ya los limitan.
+function parsearFechaParcial(diaStr?: string, mesStr?: string, anioStr?: string): {
+  dia?: number;
+  mes?: number;
+  anio?: number;
+} | null {
+  const filtro: { dia?: number; mes?: number; anio?: number } = {};
+  const dia = Number(diaStr);
+  if (Number.isInteger(dia) && dia >= 1 && dia <= 31) filtro.dia = dia;
+  const mes = Number(mesStr);
+  if (Number.isInteger(mes) && mes >= 1 && mes <= 12) filtro.mes = mes;
+  const anio = Number(anioStr);
+  if (Number.isInteger(anio) && anio >= 2000 && anio <= 2100) filtro.anio = anio;
+  return Object.keys(filtro).length > 0 ? filtro : null;
 }
 
 /// Vista de auditoría. Es de solo lectura y exclusiva del Administrador: muestra
@@ -72,7 +59,9 @@ export default async function AuditoriaPanelPage({
     accion?: string;
     rol?: string;
     usuario?: string;
-    fecha?: string;
+    dia?: string;
+    mes?: string;
+    anio?: string;
     pagina?: string;
   }>;
 }) {
@@ -87,7 +76,9 @@ export default async function AuditoriaPanelPage({
     accion,
     rol,
     usuario,
-    fecha,
+    dia,
+    mes,
+    anio,
     pagina: paginaParam,
   } = await searchParams;
 
@@ -131,8 +122,7 @@ export default async function AuditoriaPanelPage({
   }
 
   const qLimpia = q?.trim().slice(0, 100) ?? "";
-  const { filtro: filtroFecha, invalida: fechaInvalida } =
-    parsearFechaParcial(fecha);
+  const filtroFecha = parsearFechaParcial(dia, mes, anio);
 
   const condiciones: Prisma.AuditoriaAccionWhereInput[] = [];
   if (recursoFiltro) condiciones.push({ recurso: recursoFiltro });
@@ -152,26 +142,17 @@ export default async function AuditoriaPanelPage({
       ],
     });
   }
-  // El filtro parcial de fecha (día, mes o año) se resuelve con una consulta
+  // El filtro parcial de fecha (día, mes y/o año) se resuelve con una consulta
   // ligera de ids; Prisma no permite extraer partes de la fecha en `where`.
   if (filtroFecha) {
-    let idsFecha: number[] = [];
-    if (filtroFecha.dia) {
-      const filas = await prisma.$queryRaw<{ id: number }[]>`
-        SELECT id FROM auditoria_acciones
-        WHERE EXTRACT(DAY FROM "createdAt") = ${filtroFecha.dia}`;
-      idsFecha = filas.map((f) => f.id);
-    } else if (filtroFecha.mes) {
-      const filas = await prisma.$queryRaw<{ id: number }[]>`
-        SELECT id FROM auditoria_acciones
-        WHERE EXTRACT(MONTH FROM "createdAt") = ${filtroFecha.mes}`;
-      idsFecha = filas.map((f) => f.id);
-    } else if (filtroFecha.anio) {
-      const filas = await prisma.$queryRaw<{ id: number }[]>`
-        SELECT id FROM auditoria_acciones
-        WHERE EXTRACT(YEAR FROM "createdAt") = ${filtroFecha.anio}`;
-      idsFecha = filas.map((f) => f.id);
-    }
+    const partes: string[] = [];
+    if (filtroFecha.dia) partes.push(`EXTRACT(DAY FROM "createdAt") = ${filtroFecha.dia}`);
+    if (filtroFecha.mes) partes.push(`EXTRACT(MONTH FROM "createdAt") = ${filtroFecha.mes}`);
+    if (filtroFecha.anio) partes.push(`EXTRACT(YEAR FROM "createdAt") = ${filtroFecha.anio}`);
+    const filas = await prisma.$queryRawUnsafe<{ id: number }[]>(
+      `SELECT id FROM auditoria_acciones WHERE ${partes.join(" AND ")}`
+    );
+    const idsFecha = filas.map((f) => f.id);
     condiciones.push(
       idsFecha.length > 0 ? { id: { in: idsFecha } } : { id: -1 }
     );
@@ -260,7 +241,9 @@ export default async function AuditoriaPanelPage({
     if (accionFiltro) params.set("accion", accionFiltro);
     if (rolFiltro) params.set("rol", rolFiltro);
     if (usuarioFiltro !== null) params.set("usuario", String(usuarioFiltro));
-    if (filtroFecha && fecha?.trim()) params.set("fecha", fecha.trim());
+    if (filtroFecha?.dia) params.set("dia", String(filtroFecha.dia));
+    if (filtroFecha?.mes) params.set("mes", String(filtroFecha.mes));
+    if (filtroFecha?.anio) params.set("anio", String(filtroFecha.anio));
     if (p > 1) params.set("pagina", String(p));
     const query = params.toString();
     return query ? `/panel/auditoria?${query}` : "/panel/auditoria";
@@ -286,7 +269,9 @@ export default async function AuditoriaPanelPage({
           accion: accionFiltro ?? "",
           rol: rolFiltro ?? "",
           usuario: usuarioFiltro !== null ? String(usuarioFiltro) : "",
-          fecha: fecha?.trim() ?? "",
+          dia: filtroFecha?.dia ? String(filtroFecha.dia) : "",
+          mes: filtroFecha?.mes ? String(filtroFecha.mes) : "",
+          anio: filtroFecha?.anio ? String(filtroFecha.anio) : "",
         }}
         roles={roles.map((r) => r.nombre)}
         usuarios={usuarios.map((u) => ({
@@ -297,13 +282,6 @@ export default async function AuditoriaPanelPage({
         }))}
         hayFiltro={hayFiltro}
       />
-
-      {fechaInvalida && (
-        <p className="form-aviso" role="alert">
-          No se reconoció «{fecha}»: escribí un día (ej: 17), un mes en español
-          (ej: octubre) o un año (ej: 2026).
-        </p>
-      )}
 
       {registrosUI.length === 0 ? (
         <p className="panel-vacio">
