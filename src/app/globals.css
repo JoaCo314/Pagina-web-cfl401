@@ -2987,8 +2987,8 @@ a.panel-nav-item:hover {
   font-size: 19px;
   color: var(--cfl-navy-2);
 }
-/* Equis de cierre del panel lateral: botón fantasma del panel con una ✕ que
-   hereda el color y la tipografía del resto de los botones. */
+/* Equis de cierre del panel lateral: botón fantasma del panel con una ✕ en
+   rojo para señalar la acción de cierre. */
 .detalle-cerrar {
   display: inline-flex;
   align-items: center;
@@ -2996,24 +2996,24 @@ a.panel-nav-item:hover {
   width: 32px;
   height: 32px;
   padding: 0;
-  border: 1.5px solid rgba(18, 42, 69, 0.3);
+  border: 1.5px solid rgba(178, 58, 58, 0.35);
   border-radius: 4px;
   background: transparent;
-  color: var(--cfl-navy-2);
+  color: #b23a3a;
   font-size: 15px;
   line-height: 1;
   cursor: pointer;
   transition: background-color 0.15s ease, transform 0.1s ease;
 }
 .detalle-cerrar:hover {
-  background-color: color-mix(in srgb, var(--cfl-navy-2) 8%, transparent);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--cfl-navy-2) 12%, transparent);
+  background-color: color-mix(in srgb, #b23a3a 8%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, #b23a3a 12%, transparent);
 }
 .detalle-cerrar:active {
   transform: translateY(1px);
 }
 .detalle-cerrar:focus-visible {
-  outline: 2px solid var(--cfl-blue);
+  outline: 2px solid #b23a3a;
   outline-offset: 2px;
 }
 .detalle-meta {
