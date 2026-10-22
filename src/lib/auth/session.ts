@@ -1,10 +1,17 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { SignJWT, jwtVerify } from "jose";
 import { prisma } from "@/lib/prisma";
+import {
+  SESSION_COOKIE,
+  SESSION_MAX_AGE_SECONDS,
+  crearTokenSesion,
+  verificarTokenSesion,
+} from "@/lib/auth/token";
 
-export const SESSION_COOKIE = "cfl401_session";
-export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
+// La emisión/verificación del token vive en `token.ts` (sin Prisma ni
+// `next/headers`) para que el middleware pueda usarla en el runtime Edge. Acá
+// se reexporta para no cambiar los importadores existentes.
+export { SESSION_COOKIE, SESSION_MAX_AGE_SECONDS, crearTokenSesion, verificarTokenSesion };
 
 export type UsuarioSesion = {
   id: number;
@@ -14,45 +21,6 @@ export type UsuarioSesion = {
   debeCambiarContrasena: boolean;
   rol: { nombre: string; nivel: number };
 };
-
-function obtenerSecreto(): Uint8Array {
-  const secreto = process.env.AUTH_SECRET;
-  if (!secreto) {
-    throw new Error("Falta la variable AUTH_SECRET para firmar las sesiones.");
-  }
-  return new TextEncoder().encode(secreto);
-}
-
-export async function crearTokenSesion(
-  userId: number,
-  versionSesion: number
-): Promise<string> {
-  return new SignJWT({ ver: versionSesion })
-    .setProtectedHeader({ alg: "HS256" })
-    .setSubject(String(userId))
-    .setIssuedAt()
-    .setExpirationTime(`${SESSION_MAX_AGE_SECONDS}s`)
-    .sign(obtenerSecreto());
-}
-
-export async function verificarTokenSesion(
-  token: string
-): Promise<{ userId: number; version: number } | null> {
-  try {
-    const { payload } = await jwtVerify(token, obtenerSecreto());
-    if (!payload.sub) return null;
-    const version = Number(payload.ver);
-    return {
-      userId: Number(payload.sub),
-      // Tokens emitidos antes de existir `ver` (o con un claim inválido) se
-      // tratan como versión 1: siguen funcionando hasta el próximo cambio de
-      // contraseña, que los invalida igual.
-      version: Number.isInteger(version) && version > 0 ? version : 1,
-    };
-  } catch {
-    return null;
-  }
-}
 
 function seleccionUsuario() {
   return {

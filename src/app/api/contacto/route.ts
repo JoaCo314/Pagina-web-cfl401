@@ -20,11 +20,13 @@ export const dynamic = "force-dynamic";
 /// actuar antes (sobre un body enorme o mal formado).
 const DURACION_MS = 10 * 60 * 1000;
 const limitePorIp = crearLimitador({
+  nombre: "contacto-ip",
   maxIntentos: 20,
   duracionMs: DURACION_MS,
   contarAciertos: true,
 });
 const limitePorCorreo = crearLimitador({
+  nombre: "contacto-correo",
   maxIntentos: 5,
   duracionMs: DURACION_MS,
   contarAciertos: true,
@@ -59,7 +61,7 @@ export async function POST(request: NextRequest) {
   // El límite por IP actúa antes de parsear el cuerpo: un envío con un body
   // enorme o inválido también consume presupuesto.
   const ip = ipCliente(request);
-  const limiteIp = limitePorIp.chequear(ip);
+  const limiteIp = await limitePorIp.chequear(ip);
   if (!limiteIp.permitido) return respuesta429(limiteIp.esperaSegundos);
 
   let body: unknown;
@@ -110,7 +112,7 @@ export async function POST(request: NextRequest) {
   const celular = texto(fuente.celular, LARGO_MAXIMO.celular);
 
   // Normalizado para que "Ana@x.com" y "ana@x.com" compartan el mismo tope.
-  const limiteCorreo = limitePorCorreo.chequear(email.toLowerCase());
+  const limiteCorreo = await limitePorCorreo.chequear(email.toLowerCase());
   if (!limiteCorreo.permitido) return respuesta429(limiteCorreo.esperaSegundos);
 
   try {

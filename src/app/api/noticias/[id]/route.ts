@@ -1,3 +1,4 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -5,10 +6,17 @@ import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
 import { NOTICIA_SELECT, validarDatosNoticia } from "@/lib/noticiaAdmin";
 import { borrarImagenPorUrl } from "@/lib/imagenes";
+import { ipCliente } from "@/lib/auth/rateLimit";
+import {
+  ACCIONES_AUDITORIA,
+  RECURSOS_AUDITORIA,
+  registrarAuditoria,
+} from "@/lib/auditoria";
 
 export const dynamic = "force-dynamic";
 
-/// Detalle público de una noticia: solo si está activa (RF-17).
+/// Detalle público de una noticia: solo si está publicada (activa y no en
+/// borrador) (RF-17).
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -25,7 +33,7 @@ export async function GET(
 
   try {
     const noticia = await prisma.noticia.findFirst({
-      where: { id: noticiaId, activo: true },
+      where: { id: noticiaId, activo: true, borrador: false },
       select: NOTICIA_SELECT,
     });
 
@@ -103,7 +111,7 @@ export async function PUT(
     return NextResponse.json({ error: resultado.error }, { status: 400 });
   }
 
-  const { activo, ...campos } = resultado.datos;
+  const { activo, borrador, ...campos } = resultado.datos;
   const presentes = new Set(resultado.presentes);
 
   const data: Record<string, unknown> = {};
@@ -114,6 +122,9 @@ export async function PUT(
   }
   if (presentes.has("activo") && activo !== undefined) {
     data.activo = activo;
+  }
+  if (presentes.has("borrador") && borrador !== undefined) {
+    data.borrador = borrador;
   }
 
   try {
@@ -130,6 +141,16 @@ export async function PUT(
     if (nuevaImagen !== existente.imagenUrl) {
       await borrarImagenPorUrl(existente.imagenUrl);
     }
+
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.EDITAR,
+      recurso: RECURSOS_AUDITORIA.NOTICIA,
+      recursoId: noticiaId,
+      resumen: `Noticia «${noticia.titulo}»`,
+      detalle: data,
+      ip: ipCliente(request),
+    });
 
     return NextResponse.json({ noticia });
   } catch (err) {
@@ -190,6 +211,15 @@ export async function DELETE(
     });
 
     await borrarImagenPorUrl(existente.imagenUrl);
+
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.ELIMINAR,
+      recurso: RECURSOS_AUDITORIA.NOTICIA,
+      recursoId: noticiaEliminada.id,
+      resumen: `Noticia «${noticiaEliminada.titulo}»`,
+      ip: ipCliente(request),
+    });
 
     return NextResponse.json({ eliminado: true, noticia: noticiaEliminada });
   } catch (err) {

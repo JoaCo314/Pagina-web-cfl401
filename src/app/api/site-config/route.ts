@@ -1,3 +1,4 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 // Creado por sofia-athos - API editable para banner, logo, footer y contactos
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -9,6 +10,12 @@ import {
   upsertSiteConfig,
 } from "@/lib/siteConfig";
 import { borrarImagenPorUrl, validarImagenUrl } from "@/lib/imagenes";
+import { ipCliente } from "@/lib/auth/rateLimit";
+import {
+  ACCIONES_AUDITORIA,
+  RECURSOS_AUDITORIA,
+  registrarAuditoria,
+} from "@/lib/auditoria";
 
 export const dynamic = "force-dynamic";
 
@@ -156,6 +163,16 @@ export async function PUT(request: NextRequest) {
     if (config.logoUrl !== antes.logoUrl) {
       await borrarImagenPorUrl(antes.logoUrl);
     }
+
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.EDITAR,
+      recurso: RECURSOS_AUDITORIA.SITE_CONFIG,
+      resumen: "Configuración del sitio",
+      detalle: { campos: Object.keys(data).join(", ") },
+      ip: ipCliente(request),
+    });
+
     return NextResponse.json({ config });
   } catch (err) {
     console.error("[API] Error interno:", err);

@@ -1,3 +1,4 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -44,15 +45,44 @@ model Usuario {
   /// así todos los tokens anteriores dejan de validar y hay que volver a entrar.
   versionSesion Int      @default(1)
   activo    Boolean  @default(true)
+  /// true cuando la cuenta se bloqueó sola tras demasiados intentos fallidos de
+  /// inicio de sesión. A diferencia de `activo=false` (una baja manual), este
+  /// bloqueo lo aplica el sistema y solo lo revierte un Administrador o
+  /// Preceptor desde el panel; sirve para distinguir el motivo en el listado.
+  bloqueada Boolean  @default(false)
+  /// Momento en que se aplicó el bloqueo automático (para el detalle del panel).
+  bloqueadaEn DateTime?
+  /// Teléfono de contacto de la persona (opcional). Lo carga el propio usuario
+  /// desde "Mis datos" y lo ven Administrador y Preceptor en el listado del
+  /// panel, solo para comunicación directa: nunca se muestra en el sitio público.
+  telefono  String?
   rolId     Int
   rol       Rol      @relation(fields: [rolId], references: [id])
   cursosAsignados CursoDocente[]
+  notificaciones  Notificacion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([rolId])
   @@map("usuarios")
+}
+
+/// Categoría/rubro que agrupa la oferta educativa (RF-08). Es una entidad y no
+/// texto libre: el formulario de curso la elige de un selector, así no se
+/// duplican rubros por diferencias de tipeo. `activo` la oculta del selector
+/// pero no da de baja los cursos que ya la usan.
+model CategoriaCurso {
+  id        Int      @id @default(autoincrement())
+  nombre    String   @unique
+  orden     Int?
+  activo    Boolean  @default(true)
+  cursos    Curso[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("categorias_cursos")
 }
 
 /// Curso de la oferta educativa. Información mínima según sección 7 del documento
@@ -73,7 +103,8 @@ model Curso {
   /// HTML ya sanitizado del editor enriquecido del panel. Si viene, se renderiza
   /// en el detalle público; si no, se usa `programaContenidos` en texto plano.
   programaContenidosHtml String?
-  categoria String?
+  categoriaId Int?
+  categoria   CategoriaCurso? @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
   /// Emoji/ícono opcional cargado desde el panel. Si viene vacío, el sitio usa
   /// uno automático según la categoría (iconoCurso con fallback a iconoCategoria).
   emoji     String?
@@ -87,6 +118,7 @@ model Curso {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([categoriaId])
   @@map("cursos")
 }
 
@@ -132,6 +164,10 @@ model Noticia {
   fecha     DateTime
   imagenUrl String?
   activo    Boolean  @default(true)
+  /// Borrador de trabajo (RF-17): una noticia en borrador nunca se muestra en
+  /// el sitio público, aunque `activo` sea verdadero. Se publica al guardarla
+  /// con `borrador = false`.
+  borrador  Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -298,4 +334,77 @@ model MensajeContacto {
   @@index([leido])
   @@index([createdAt])
   @@map("mensajes_contacto")
+}
+
+/// Registro de acciones administrativas (quién hizo qué y cuándo). Es de solo
+/// lectura: no se edita ni se borra desde el panel, y su vista está reservada al
+/// Administrador. `usuarioEmail` y `usuarioNombre` se guardan en el momento de la
+/// acción (snapshot) para que el registro siga siendo legible si la cuenta luego
+/// se elimina. Nunca se guarda el contenido completo de los textos largos ni
+/// contraseñas/hashes: solo un resumen y los campos afectados.
+model AuditoriaAccion {
+  id Int @id @default(autoincrement())
+  /// Cuenta que ejecutó la acción. Puede ser nula si la sesión ya no existe.
+  usuarioId Int?
+  usuarioEmail String?
+  usuarioNombre String?
+  /// Rol con el que operaba al momento de la acción.
+  rol String?
+  /// Verbos cortos: crear, editar, eliminar, activar, desactivar, blanquear,
+  /// asignar_docentes, marcar_leida, bloquear.
+  accion String
+  /// Módulo recurso: usuario, curso, noticia, pregunta, categoria_pregunta,
+  /// guia, sobre_el_centro, site_config, imagen, consulta.
+  recurso String
+  recursoId Int?
+  /// Texto legible del registro afectado (ej: `Curso «Electricidad»`).
+  resumen String?
+  /// Campos afectados y sus valores nuevos, resumidos. No incluye datos
+  /// sensibles (nunca passwordHash ni la contraseña temporal).
+  detalle Json?
+  ip String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([recurso])
+  @@index([usuarioId])
+  @@map("auditoria_acciones")
+}
+
+/// Contadores de los limitadores de tasa (login, cambio de contraseña propia y
+/// formulario público de contacto). Viven en la base para que el bloqueo se
+/// comparta entre réplicas y sobreviva a un reinicio; antes estaban en memoria
+/// del proceso y con varias instancias cada una contaba por separado.
+/// `ambito` es el espacio de nombres de cada limitador; `clave` la identidad
+/// (email) o la IP.
+model IntentoRateLimit {
+  ambito         String
+  clave          String
+  fallidos       Int       @default(0)
+  bloqueadoHasta DateTime?
+  updatedAt      DateTime  @updatedAt
+
+  @@id([ambito, clave])
+  @@map("rate_limit_intentos")
+}
+
+/// Aviso interno (in-app) para una cuenta del panel. Por ahora se usa para
+/// avisarle a un docente cuando lo asignan a un curso; el registro se borra en
+/// cascada si se elimina la cuenta.
+model Notificacion {
+  id        Int      @id @default(autoincrement())
+  usuarioId Int
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  /// Tipo de aviso: por ahora `curso_asignado`.
+  tipo      String   @default("curso_asignado")
+  /// Texto que ve la persona.
+  mensaje   String
+  /// Ruta interna del panel a la que conviene ir (opcional).
+  url       String?
+  leida     Boolean  @default(false)
+  leidaEn   DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([usuarioId, leida])
+  @@map("notificaciones")
 }

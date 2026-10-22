@@ -1,40 +1,37 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/panel/ConfirmDialog";
 import { fetchConTimeout, TimeoutError } from "@/lib/fetchTimeout";
 
+/// Blanquea la contraseña de una cuenta (vuelve a ser la temporal). El botón
+/// que dispara la operación vive en el menú ⋮ de la fila (AccionesUsuario):
+/// acá queda la confirmación, el envío y los avisos de error. `abierto` y
+/// `onCerrar` los controla el padre para que el diálogo no se monte dentro del
+/// menú (si el menú se cierra, el diálogo se caería con él).
 export default function BlanquearContrasena({
   usuarioId,
   nombre,
-  esPropio,
+  abierto,
+  onCerrar,
 }: {
   usuarioId: number;
   nombre: string;
-  esPropio: boolean;
+  abierto: boolean;
+  onCerrar: () => void;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
-  const [confirmar, setConfirmar] = useState(false);
-  const [listo, setListo] = useState(false);
 
-  // El mensaje de éxito se va solo: si queda hasta recargar, la fila queda
-  // alta de verdad durante toda la sesión. Va antes del early return de
-  // `esPropio` para no romper el orden de los hooks.
-  useEffect(() => {
-    if (!listo) return;
-    const t = setTimeout(() => setListo(false), 6000);
-    return () => clearTimeout(t);
-  }, [listo]);
-
-  // En la fila propia no hay acciones: el aviso "Tu cuenta" lo pinta
-  // ToggleUsuario (el otro componente de la misma celda), y renderizarlo en
-  // los dos dejaba dos renglones idénticos uno encima del otro.
-  if (esPropio) {
-    return null;
-  }
+  // Callback estable: ConfirmDialog re-ejecuta su efecto de foco cuando
+  // cambian sus props, y con una función nueva en cada render el foco saltaba
+  // al panel cada vez que cambiaba `enviando`.
+  const cancelar = useCallback(() => {
+    onCerrar();
+  }, [onCerrar]);
 
   async function blanquear() {
     setEnviando(true);
@@ -54,8 +51,7 @@ export default function BlanquearContrasena({
         return;
       }
 
-      setConfirmar(false);
-      setListo(true);
+      onCerrar();
       router.refresh();
     } catch (err) {
       setError(
@@ -69,40 +65,30 @@ export default function BlanquearContrasena({
   }
 
   return (
-    <span className="acciones-usuario">
-      <button
-        type="button"
-        className="link-accion link-accion-alerta"
-        onClick={() => {
-          setError(null);
-          setListo(false);
-          setConfirmar(true);
-        }}
-        disabled={enviando}
-      >
-        {enviando ? "Blanqueando…" : "Blanquear contraseña"}
-      </button>
+    <>
+      {/* El span vive en la celda (detrás del overlay) para anunciar el error
+          y para que siga visible si la persona cancela el diálogo. */}
       <span className="form-error" role="alert" aria-live="polite">
         {error ?? ""}
       </span>
-      {listo && (
-        <span className="td-sub" role="status">
-          Contraseña blanqueada: la de {nombre} vuelve a ser la temporal y
-          tendrá que elegir una nueva al ingresar. Avisale por un canal seguro,
-          sin escribirle la contraseña.
-        </span>
-      )}
 
       <ConfirmDialog
-        abierto={confirmar}
+        abierto={abierto}
         titulo="Blanquear la contraseña"
         destructivo
         ocupado={enviando}
         confirmar="Blanquear"
-        mensaje={`La contraseña de ${nombre} va a volver a ser la temporal (los últimos 4 dígitos de su DNI). Hay que comunicárselos a la persona por un canal seguro: al ingresar, el sistema le va a pedir que elija una contraseña nueva. Además se cierran las sesiones que tenga abiertas en otros equipos.`}
-        onCancelar={() => setConfirmar(false)}
+        mensaje={
+          <>
+            {`La contraseña de ${nombre} va a volver a ser la temporal (los últimos 4 dígitos de su DNI). Hay que comunicárselos a la persona por un canal seguro: al ingresar, el sistema le va a pedir que elija una contraseña nueva. Además se cierran las sesiones que tenga abiertas en otros equipos.`}
+            {/* El error también se repite adentro del diálogo: afuera quedaría
+                tapado por el fondo del ConfirmDialog. */}
+            {error && <p className="form-error">{error}</p>}
+          </>
+        }
+        onCancelar={cancelar}
         onConfirmar={blanquear}
       />
-    </span>
+    </>
   );
 }

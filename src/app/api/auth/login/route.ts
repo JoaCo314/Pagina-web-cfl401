@@ -1,3 +1,4 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
@@ -9,6 +10,11 @@ import {
   opcionesCookieSesion,
   publicarUsuario,
 } from "@/lib/auth/session";
+import {
+  ACCIONES_AUDITORIA,
+  RECURSOS_AUDITORIA,
+  registrarAuditoria,
+} from "@/lib/auditoria";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +25,7 @@ const USUARIO_SELECT = {
   email: true,
   passwordHash: true,
   activo: true,
+  bloqueada: true,
   debeCambiarContrasena: true,
   versionSesion: true,
   rol: { select: { nombre: true, nivel: true } },
@@ -26,13 +33,21 @@ const USUARIO_SELECT = {
 
 /// Control de intentos fallidos (anti fuerza bruta). Dos contadores
 /// independientes: por cuenta (email) y por IP de origen (anti password
-/// spraying). Ver `src/lib/auth/rateLimit.ts` para el alcance del estado en
-/// memoria.
+/// spraying). El estado se guarda en la base (ver `src/lib/auth/rateLimit.ts`).
+/// Al quinto fallo de una cuenta (maxIntentos) además se bloquea la cuenta de
+/// forma permanente hasta que un Administrador o Preceptor la reactive.
 const limitador = crearLimitador({
+  nombre: "login",
   maxIntentos: 5,
   maxIntentosPorIp: 20,
   duracionMs: 15 * 60 * 1000,
 });
+
+/// Hash de una contraseña inventada, con el mismo coste que las reales. Se usa
+/// cuando el email no existe (o la cuenta está desactivada): bcrypt corre igual
+/// contra este hash, así el tiempo de respuesta no delata si la cuenta existe.
+const HASH_DUMMY =
+  "$2b$10$awpPVJH0BlLhj8mYSThRC.1v16tHmykk4kir6sUKmVHPqbxruqs2y";
 
 export async function POST(request: NextRequest) {
   let body: unknown;
@@ -45,22 +60,35 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { email, password } = (body ?? {}) as Record<string, unknown>;
+  const { email, identificador, password } = (body ?? {}) as Record<
+    string,
+    unknown
+  >;
+  // El acceso admite correo electrónico o DNI. Se acepta el campo
+  // `identificador` (nombre nuevo) y, por compatibilidad, el campo `email`.
+  const entradaRaw = typeof identificador === "string" ? identificador : email;
   if (
-    typeof email !== "string" ||
+    typeof entradaRaw !== "string" ||
     typeof password !== "string" ||
-    !email.trim() ||
+    !entradaRaw.trim() ||
     !password
   ) {
     return NextResponse.json(
-      { error: "Ingresá tu correo electrónico y tu contraseña." },
+      { error: "Ingresá tu correo electrónico o DNI y tu contraseña." },
       { status: 400 }
     );
   }
 
+  // Si trae «@» se trata como correo; si no, como DNI (se descartan puntos y
+  // espacios). La clave del limitador usa esa misma normalización.
+  const entrada = entradaRaw.trim();
+  const esCorreo = entrada.includes("@");
+  const identidad = esCorreo
+    ? entrada.toLowerCase()
+    : entrada.replace(/\D/g, "");
+
   const ip = ipCliente(request);
-  const identidad = email.trim().toLowerCase();
-  const limite = limitador.chequear(identidad, ip);
+  const limite = await limitador.chequear(identidad, ip);
   if (!limite.permitido) {
     return NextResponse.json(
       {
@@ -71,25 +99,85 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const usuario = await prisma.usuario.findUnique({
-    where: { email: identidad },
-    select: USUARIO_SELECT,
-  });
+  const usuario = esCorreo
+    ? await prisma.usuario.findUnique({
+        where: { email: identidad },
+        select: USUARIO_SELECT,
+      })
+    : await prisma.usuario.findUnique({
+        where: { dni: identidad },
+        select: USUARIO_SELECT,
+      });
 
+  // Cuenta bloqueada por intentos fallidos previos: se corta antes de comparar
+  // la contraseña con un mensaje claro, para que quien la conoce sepa que el
+  // problema no son sus credenciales sino el bloqueo (que revierte el panel).
+  if (usuario?.bloqueada) {
+    return NextResponse.json(
+      {
+        error:
+          "Tu cuenta quedó bloqueada por demasiados intentos fallidos de inicio de sesión. Para recuperar el acceso, un administrador o preceptor tiene que reactivarla desde el panel.",
+      },
+      { status: 403 }
+    );
+  }
+
+  // bcrypt se ejecuta siempre, contra el hash real o el dummy, antes de decidir.
+  // Si se cortocircuitara antes de comparar, un atacante mediría cuándo falta la
+  // cuenta por la diferencia de tiempo y así enumeraría los emails existentes.
+  const hashAContrastar = usuario?.activo ? usuario.passwordHash : HASH_DUMMY;
+  const contrasenaCorrecta = verificarPassword(password, hashAContrastar);
   const credencialesValidas =
-    usuario !== null &&
-    usuario.activo &&
-    verificarPassword(password, usuario.passwordHash);
+    usuario !== null && usuario.activo && contrasenaCorrecta;
 
   if (!usuario || !credencialesValidas) {
-    limitador.registrarFallo(identidad, ip);
+    const { bloqueoCuenta } = await limitador.registrarFallo(identidad, ip);
+
+    // Al agotar los intentos de una cuenta existente, además del bloqueo
+    // temporal del limitador se bloquea la cuenta de forma permanente: queda
+    // inactiva y solo un Administrador o Preceptor puede reactivarla desde el
+    // panel (RF-15 y la política antifuerza bruta).
+    if (bloqueoCuenta && usuario) {
+      await prisma.usuario.update({
+        where: { id: usuario.id },
+        data: {
+          bloqueada: true,
+          bloqueadaEn: new Date(),
+          activo: false,
+          // Invalida cualquier sesión abierta de esa cuenta.
+          versionSesion: { increment: 1 },
+        },
+      });
+
+      await registrarAuditoria({
+        usuario: null,
+        accion: ACCIONES_AUDITORIA.BLOQUEAR,
+        recurso: RECURSOS_AUDITORIA.USUARIO,
+        recursoId: usuario.id,
+        resumen: `Usuario «${usuario.nombre} ${usuario.apellido}»`,
+        detalle: {
+          motivo: "intentos fallidos de inicio de sesión",
+          email: usuario.email,
+        },
+        ip,
+      });
+
+      return NextResponse.json(
+        {
+          error:
+            "La cuenta quedó bloqueada tras demasiados intentos fallidos. Un administrador o preceptor puede reactivarla desde el panel.",
+        },
+        { status: 403 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Credenciales inválidas. Verificá los datos ingresados." },
       { status: 401 }
     );
   }
 
-  limitador.limpiar(identidad, ip);
+  await limitador.limpiar(identidad, ip);
 
   const token = await crearTokenSesion(usuario.id, usuario.versionSesion);
   const cookieStore = await cookies();

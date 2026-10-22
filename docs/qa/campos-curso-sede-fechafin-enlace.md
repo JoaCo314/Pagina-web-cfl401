@@ -1,4 +1,4 @@
-# QA — Nuevos campos de curso: sede, fin de cursada y link de inscripción IPFL
+﻿# QA — Nuevos campos de curso: sede, fin de cursada y link de inscripción IPFL
 
 Fecha: 2026-09-17 · Branch `Joaquin`
 

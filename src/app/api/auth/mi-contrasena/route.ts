@@ -20,6 +20,7 @@ export const dynamic = "force-dynamic";
 /// sin este límite, un token robado o un equipo sin bloquear podrían iterar
 /// contra la contraseña temporal.
 const limitador = crearLimitador({
+  nombre: "cambio-contrasena",
   maxIntentos: 5,
   maxIntentosPorIp: 20,
   duracionMs: 15 * 60 * 1000,
@@ -37,7 +38,7 @@ export async function PATCH(request: NextRequest) {
 
   const ip = ipCliente(request);
   const identidad = `usuario:${user.id}`;
-  const limite = limitador.chequear(identidad, ip);
+  const limite = await limitador.chequear(identidad, ip);
   if (!limite.permitido) {
     return NextResponse.json(
       {
@@ -114,7 +115,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   if (!verificarPassword(passwordActual, cuenta.passwordHash)) {
-    limitador.registrarFallo(identidad, ip);
+    await limitador.registrarFallo(identidad, ip);
     return NextResponse.json(
       { error: "La contraseña actual no es correcta." },
       { status: 400 }
@@ -134,7 +135,7 @@ export async function PATCH(request: NextRequest) {
       select: { versionSesion: true },
     });
 
-    limitador.limpiar(identidad, ip);
+    await limitador.limpiar(identidad, ip);
 
     // La sesión en curso se renueva con la versión nueva para que el usuario
     // pueda seguir trabajando sin volver a entrar.

@@ -110,7 +110,7 @@ export default function PreguntaForm({
   return (
     <form className="curso-form" onSubmit={onSubmit} noValidate>
       <div className="panel-form-seccion">
-        <div className="form-field form-field-full">
+        <label className="form-field form-field-full">
           <span>
             Pregunta <strong>*</strong>
           </span>
@@ -120,7 +120,7 @@ export default function PreguntaForm({
             onChange={(e) => setPregunta(e.target.value)}
             placeholder="Ej: ¿Cómo me inscribo a un curso?"
           />
-        </div>
+        </label>
 
         <div className="form-field form-field-full">
           <EditorTextoEnriquecido
@@ -132,7 +132,7 @@ export default function PreguntaForm({
           />
         </div>
 
-        <div className="form-field">
+        <label className="form-field">
           <span>
             Categoría <strong>*</strong>
           </span>
@@ -146,9 +146,9 @@ export default function PreguntaForm({
               </option>
             ))}
           </select>
-        </div>
+        </label>
 
-        <div className="form-field">
+        <label className="form-field">
           <span>Orden (opcional)</span>
           <input
             type="text"
@@ -160,7 +160,7 @@ export default function PreguntaForm({
           <small className="form-hint">
             Menor número, primero en aparecer dentro de su categoría.
           </small>
-        </div>
+        </label>
 
         <label className="form-field form-field-full form-toggle">
           <input

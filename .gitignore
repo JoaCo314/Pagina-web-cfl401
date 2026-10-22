@@ -39,6 +39,9 @@ dev-server.log
 # prisma generated client
 /src/generated/
 
+# respaldos de la base generados con `docker compose --profile backup run --rm backup`
+/backups/
+
 # vercel
 .vercel
 

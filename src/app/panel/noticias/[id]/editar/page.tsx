@@ -1,3 +1,4 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { notFound, redirect } from "next/navigation";
 import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
 import { PERMISOS, obtenerSeccionesPanel, tienePermiso } from "@/lib/auth/autorizacion";
@@ -49,6 +50,7 @@ export default async function EditarNoticiaPage({
     fecha: noticia.fecha.toISOString().slice(0, 10),
     imagenUrl: noticia.imagenUrl,
     activo: noticia.activo,
+    borrador: noticia.borrador,
   };
 
   const secciones = obtenerSeccionesPanel(user);

@@ -1,3 +1,4 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { limpiarHtmlEnriquecido } from "@/lib/htmlEnriquecido";
 export { limpiarHtmlEnriquecido };
 import { validarImagenUrl } from "@/lib/imagenes";
@@ -12,6 +13,7 @@ export const NOTICIA_SELECT = {
   fecha: true,
   imagenUrl: true,
   activo: true,
+  borrador: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -23,7 +25,12 @@ export type NoticiaInputNormalizado = {
   contenidoHtml: string | null | undefined;
   fecha: Date;
   imagenUrl: string | null;
-  activo: boolean;
+  /// `undefined` cuando el cuerpo no trae `activo`: en el alta se usa el valor
+  /// por defecto de la base (activa) y en la edición se preserva el actual.
+  activo: boolean | undefined;
+  /// `true` marca la noticia como borrador: no se publica en el sitio hasta
+  /// guardarla con `borrador = false`. `undefined` preserva el valor actual.
+  borrador: boolean | undefined;
 };
 
 export type ResultadoNoticiaInput =
@@ -129,6 +136,14 @@ export function validarDatosNoticia(input: unknown): ResultadoNoticiaInput {
     activo = fuente.activo;
   }
 
+  let borrador: boolean | undefined;
+  if (fuente.borrador !== undefined && fuente.borrador !== null) {
+    if (typeof fuente.borrador !== "boolean") {
+      return { ok: false, error: "borrador debe ser un valor booleano." };
+    }
+    borrador = fuente.borrador;
+  }
+
   /// HTML enriquecido (editor del panel). Opcional; se sanea en el servidor.
   let contenidoHtml: string | null | undefined;
   if (fuente.contenidoHtml !== undefined && fuente.contenidoHtml !== null) {
@@ -149,7 +164,8 @@ export function validarDatosNoticia(input: unknown): ResultadoNoticiaInput {
       contenidoHtml,
       fecha: fecha.valor as Date,
       imagenUrl: imagenUrl.valor,
-      activo: activo === true,
+      activo,
+      borrador,
     },
   };
 }

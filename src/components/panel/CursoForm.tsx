@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { DocenteAsignable } from "@/lib/cursoAdmin";
+import type { DocenteAsignable, CategoriaCursoOpcion } from "@/lib/cursoAdmin";
 import EditorTextoEnriquecido from "@/components/panel/EditorTextoEnriquecido";
 import { extraerTextoPlano, valorInicialEditor } from "@/lib/htmlEnriquecidoUtil";
 import CampoImagen from "@/components/panel/CampoImagen";
@@ -26,7 +26,7 @@ export type CursoFormInicial = {
   enlaceInscripcion: string | null;
   programaContenidos: string | null;
   programaContenidosHtml: string | null;
-  categoria: string | null;
+  categoriaId: number | null;
   emoji: string | null;
   cupos: number | null;
   imagenUrl: string | null;
@@ -37,10 +37,12 @@ export type CursoFormInicial = {
 
 export default function CursoForm({
   docentes,
+  categorias,
   inicial,
   puedeAsignarDocentes = true,
 }: {
   docentes: DocenteAsignable[];
+  categorias: CategoriaCursoOpcion[];
   inicial?: CursoFormInicial;
   puedeAsignarDocentes?: boolean;
 }) {
@@ -62,7 +64,8 @@ export default function CursoForm({
       inicial?.programaContenidosHtml,
       inicial?.programaContenidos
     ),
-    categoria: inicial?.categoria ?? "",
+    categoriaId:
+      inicial?.categoriaId != null ? String(inicial.categoriaId) : "",
     emoji: inicial?.emoji ?? "",
     cupos: inicial?.cupos != null ? String(inicial.cupos) : "",
     informacionAdicional: inicial?.informacionAdicional ?? "",
@@ -78,6 +81,7 @@ export default function CursoForm({
   );
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [buscarDocente, setBuscarDocente] = useState("");
 
   function setCampo(campo: string, valor: string) {
     setDatos((prev) => ({ ...prev, [campo]: valor }));
@@ -265,12 +269,24 @@ export default function CursoForm({
 
       <label className="form-field">
         <span>Categoría / rubro</span>
-        <input
-          type="text"
-          value={datos.categoria}
-          onChange={(e) => setCampo("categoria", e.target.value)}
-          placeholder="Ej: Informática"
-        />
+        <select
+          value={datos.categoriaId}
+          onChange={(e) => setCampo("categoriaId", e.target.value)}
+        >
+          <option value="">Sin categoría</option>
+          {categorias.map((categoria) => (
+            <option key={categoria.id} value={categoria.id}>
+              {categoria.nombre}
+              {categoria.activo ? "" : " (inactiva)"}
+            </option>
+          ))}
+        </select>
+        {categorias.length === 0 && (
+          <small className="form-hint">
+            Todavía no hay categorías cargadas. Creá una en «Categorías de
+            cursos» para poder asignarla.
+          </small>
+        )}
       </label>
 
       <label className="form-field">
@@ -376,7 +392,7 @@ export default function CursoForm({
         </small>
       </label>
 
-      <div className="form-field form-field-full">
+      <label className="form-field form-field-full">
         <span>Descripción</span>
         <textarea
           rows={3}
@@ -384,7 +400,7 @@ export default function CursoForm({
           onChange={(e) => setCampo("descripcion", e.target.value)}
           placeholder="Descripción breve del curso"
         />
-      </div>
+      </label>
 
       <div className="form-field form-field-full">
         <EditorTextoEnriquecido
@@ -396,7 +412,7 @@ export default function CursoForm({
         />
       </div>
 
-      <div className="form-field form-field-full">
+      <label className="form-field form-field-full">
         <span>Información adicional</span>
         <textarea
           rows={2}
@@ -404,7 +420,7 @@ export default function CursoForm({
           onChange={(e) => setCampo("informacionAdicional", e.target.value)}
           placeholder="Ej: cupos limitados, requisitos extra, materiales"
         />
-      </div>
+      </label>
 
       {puedeAsignarDocentes && (() => {
         // Solo se ofrecen docentes activos para agregar. Los que ya están
@@ -418,6 +434,18 @@ export default function CursoForm({
           (d) => !d.activo && docenteIds.includes(d.id)
         );
 
+        // Con decenas de docentes el listado queda poco práctico: el filtro
+        // acota las opciones mostradas. Ignora mayúsculas y busca en nombre,
+        // apellido y correo.
+        const texto = buscarDocente.trim().toLowerCase();
+        const filtrados = texto
+          ? disponibles.filter((d) =>
+              `${d.nombre} ${d.apellido} ${d.email}`
+                .toLowerCase()
+                .includes(texto)
+            )
+          : disponibles;
+
         return (
           <div className="form-field form-field-full">
             <span>Docentes asignados</span>
@@ -427,34 +455,55 @@ export default function CursoForm({
                 para poder asignarlos.
               </p>
             ) : (
-              <div className="docentes-box">
-                {disponibles.map((docente) => {
-                  const asignado = docenteIds.includes(docente.id);
-                  return (
-                    <label
-                      key={docente.id}
-                      className={`docente-opt${asignado ? " activo" : ""}`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={asignado}
-                        onChange={() => alternarDocente(docente.id)}
-                      />
-                      <span>
-                        <strong>
-                          {docente.nombre} {docente.apellido}
-                        </strong>
-                        <small>{docente.email}</small>
-                        {!docente.activo && (
-                          <small className="docente-inactivo">
-                            Cuenta desactivada
-                          </small>
-                        )}
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
+              <>
+                <input
+                  type="search"
+                  className="docentes-buscar"
+                  value={buscarDocente}
+                  onChange={(e) => setBuscarDocente(e.target.value)}
+                  onKeyDown={(e) => {
+                    // Está dentro del formulario de alta/edición del curso:
+                    // Enter no tiene que mandar el form.
+                    if (e.key === "Enter") e.preventDefault();
+                  }}
+                  placeholder="Buscar por nombre, apellido o correo"
+                  aria-label="Buscar docente"
+                />
+                {filtrados.length === 0 ? (
+                  <p className="form-aviso">
+                    Ningún docente coincide con «{buscarDocente}».
+                  </p>
+                ) : (
+                  <div className="docentes-box">
+                    {filtrados.map((docente) => {
+                      const asignado = docenteIds.includes(docente.id);
+                      return (
+                        <label
+                          key={docente.id}
+                          className={`docente-opt${asignado ? " activo" : ""}`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={asignado}
+                            onChange={() => alternarDocente(docente.id)}
+                          />
+                          <span>
+                            <strong>
+                              {docente.nombre} {docente.apellido}
+                            </strong>
+                            <small>{docente.email}</small>
+                            {!docente.activo && (
+                              <small className="docente-inactivo">
+                                Cuenta desactivada
+                              </small>
+                            )}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
             )}
             {inactivosAsignados.length > 0 && (
               <p className="form-aviso">

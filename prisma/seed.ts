@@ -30,7 +30,7 @@ type CursoData = {
   activo?: boolean;
 };
 
-async function upsertCurso(data: CursoData) {
+async function upsertCurso(data: Omit<CursoData, "categoria"> & { categoriaId?: number | null }) {
   const existing = await prisma.curso.findFirst({ where: { nombre: data.nombre } });
   if (existing) {
     return prisma.curso.update({ where: { id: existing.id }, data });
@@ -216,10 +216,24 @@ async function main() {
     },
   ];
 
-  for (const curso of cursos) {
-    const { docentes, ...data } = curso;
+  const categoriasCursosSemilla = ["Informática", "Gastronomía", "Oficios", "Administración"];
+  const categoriaCursoIds: Record<string, number> = {};
+  for (const nombre of categoriasCursosSemilla) {
+    const categoria = await prisma.categoriaCurso.upsert({
+      where: { nombre },
+      update: {},
+      create: { nombre },
+    });
+    categoriaCursoIds[nombre] = categoria.id;
+  }
 
-    const saved = await upsertCurso(data);
+  for (const curso of cursos) {
+    const { docentes, categoria, ...resto } = curso;
+
+    const saved = await upsertCurso({
+      ...resto,
+      categoriaId: categoria ? categoriaCursoIds[categoria] ?? null : null,
+    });
 
     await prisma.cursoDocente.deleteMany({ where: { cursoId: saved.id } });
 
@@ -426,7 +440,9 @@ Felicitamos a todos los egresados y los invitamos a continuar su formación en l
   for (const cat of categoriasSemilla) {
     const categoria = await prisma.categoriaPregunta.upsert({
       where: { nombre: cat.nombre },
-      update: { orden: 1 },
+      // No se pisa `orden` en las categorías ya existentes: el seed es de
+      // arranque, no un reseteo. Solo se define al crearlas.
+      update: {},
       create: { nombre: cat.nombre, orden: 1 },
     });
     totalCategorias += 1;

@@ -1,3 +1,4 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -21,7 +22,8 @@ export default async function PanelLoginPage() {
         </div>
         <h1>Bienvenido</h1>
         <p className="auth-sub">
-          Ingresá con tu cuenta para administrar la plataforma del CFL 401.
+          Ingresá con tu correo electrónico o tu DNI para administrar la
+          plataforma del CFL 401.
         </p>
         <p className="auth-note">
           Solo nuestro personal institucional necesita ingresar al sistema.

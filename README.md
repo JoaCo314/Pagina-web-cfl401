@@ -13,25 +13,34 @@ Sitio web del **Centro de Formación Laboral N° 401**. Plataforma para presenta
 ```text
 Pagina-web-cfl401/
 ├── src/
-│   ├── app/
-│   │   ├── api/
-│   │   │   └── health/       # Health check del backend
+│   ├── app/                  # Rutas (App Router)
+│   │   ├── api/              # Endpoints (auth, cursos, usuarios, noticias, ...)
+│   │   ├── panel/            # Panel de administración (secciones por rol)
+│   │   ├── cursos/           # Catálogo público de cursos
+│   │   ├── noticias/         # Sección pública de noticias
+│   │   ├── contacto/         # Página y formulario de contacto
+│   │   ├── preguntas-frecuentes/  # Página pública de FAQ
+│   │   ├── sobre-el-centro/  # Página institucional
+│   │   ├── login/            # Ingreso al panel
 │   │   ├── layout.tsx        # Layout raíz
 │   │   ├── page.tsx          # Página principal
+│   │   ├── sitemap.ts        # Sitemap para SEO
 │   │   └── globals.css       # Estilos globales
-│   ├── lib/
-│   │   ├── db.ts             # Health check de la base de datos
-│   │   └── prisma.ts         # Cliente Prisma (singleton)
+│   ├── components/           # Componentes de UI (auth/, panel/, sitios públicos)
+│   ├── lib/                  # Lógica de dominio y helpers (auth/, *Admin.ts, ...)
+│   ├── proxy.ts              # Middleware de sesión (el "proxy" de Next 16)
 │   └── generated/            # Cliente Prisma generado (no se commitea)
 ├── prisma/
 │   ├── schema.prisma         # Modelo de datos (entidades y relaciones)
+│   ├── seed.ts               # Datos de ejemplo (seed)
 │   └── migrations/           # Migraciones versionadas
-├── prisma7.config.ts         # Config de Prisma 7 (DATABASE_URL)
+├── docs/                     # Documentación de cambios y reportes de QA
 ├── public/                   # Imágenes y recursos estáticos
 ├── assets/                   # Assets originales del sitio (referencia)
 ├── Dockerfile                # Build de producción (web + init)
 ├── docker-compose.yml        # Orquestación (web + db + init)
 ├── docker-entrypoint.sh      # Arranque del contenedor: migraciones + seed + server
+├── prisma7.config.ts         # Config de Prisma 7 (DATABASE_URL)
 ├── .env.example              # Variables de entorno de ejemplo
 └── README.md
 ```
@@ -177,9 +186,9 @@ Con `TRUST_PROXY=true` la app también toma `x-forwarded-proto` para decidir si 
 cookie de sesión se marca `secure`, así que funciona igual detrás de un proxy que
 termina TLS.
 
-> Los contadores viven en memoria del proceso. Con una sola instancia (el
-> despliegue de este proyecto) alcanza; si alguna vez se escala a varias réplicas
-> detrás de un balanceador hay que moverlos a la base o a Redis.
+> Los contadores se guardan en la base de datos (tabla `rate_limit_intentos`), no
+> en memoria del proceso: el bloqueo se comparte entre réplicas y sobrevive a un
+> reinicio. Los registros vencidos se van borrando solos de a poco.
 
 `RUN_SEED` viene **apagado**: el seed crea datos de prueba y en un despliegue
 con datos reales no debe correr. El seed solo crea lo que falta y nunca pisa
@@ -189,11 +198,28 @@ contraseñas ni reinicia cuentas existentes.
 
 El modelo de datos se define en `prisma/schema.prisma`. Entidades:
 
+**Acceso y personas**
+
 - **Rol** — los 3 roles que se persisten (Administrador, Preceptor, Docente) con campo `nivel` para la jerarquía. El Visitante no tiene rol: es todo usuario sin sesión.
-- **Usuario** — usuarios del sistema. `activo` desactiva el login; `dni` es único y es la fuente de la contraseña temporal; `debeCambiarContrasena` fuerza el cambio en el primer ingreso; `versionSesion` invalida sesiones al cambiar o blanquear una contraseña.
-- **Curso** — oferta educativa (campos de la sección 7 del documento).
+- **Usuario** — cuentas del sistema. `activo` desactiva el login; `bloqueada` la marca tras 5 intentos fallidos; `dni` es único y es la fuente de la contraseña temporal; `email` es único (se normaliza a minúsculas); `telefono` es opcional y solo lo ven Administrador y Preceptor; `debeCambiarContrasena` fuerza el cambio en el primer ingreso; `versionSesion` invalida sesiones al cambiar o blanquear una contraseña.
+- **IntentoRateLimit** — contadores del rate limit (login, cambio de contraseña y formulario de contacto). Viven en la base, no en memoria del proceso.
+- **AuditoriaAccion** — registro de acciones administrativas (quién, qué, cuándo). Guarda un snapshot del usuario, no contraseñas; exclusivo del Administrador.
+- **Notificacion** — avisos internos de cada cuenta (p. ej. la asignación a un curso); se marcan como leídas.
+
+**Oferta educativa**
+
+- **Curso** — oferta educativa (campos de la sección 7 del documento). `categoriaId` enlaza con la categoría.
+- **CategoriaCurso** — rubros que agrupan los cursos. `onDelete: SetNull`: al borrar una categoría los cursos quedan sin categoría (no se eliminan).
 - **CursoDocente** — relación N:N entre cursos y docentes asignados.
+
+**Contenido y sitio**
+
+- **Noticia** — noticias públicas. `borrador` las oculta del sitio aunque estén activas.
 - **Imagen** — imágenes subidas desde el panel, guardadas como bytes y servidas por `/api/imagenes/[id]`.
+- **SobreElCentro** — contenido de la página institucional (hitos y galería reordenables).
+- **CategoriaPregunta** y **PreguntaFrecuente** — las FAQ de la página pública y sus categorías.
+- **ContenidoGuia** — contenido de la guía de inscripción.
+- **SiteConfig** — fila única con los textos editables del sitio (banner, logo, footer, contacto y mapa).
 - **MensajeContacto** — consultas que llegan por el formulario público de `/contacto`. El panel las lee (Administrador y Preceptor) y marca como leídas.
 
 Comandos de base de datos:
@@ -206,6 +232,40 @@ npm run db:studio     # Abre Prisma Studio (GUI para ver/editar datos)
 ```
 
 > El cliente generado (`src/generated/`) no se commitea; se regenera con `npm run db:generate` (el `Dockerfile` ya lo hace en el build).
+
+## 🧩 Funcionalidades
+
+### Sitio público
+
+- Home con oferta destacada, últimas noticias y accesos a la información de inscripción.
+- Catálogo de cursos con búsqueda, filtro por categoría y paginación; detalle de cada curso.
+- Noticias (listado y detalle), "Sobre el centro", preguntas frecuentes y formulario de contacto.
+- Sitemap para SEO (`/sitemap.xml`).
+
+### Panel de administración (`/panel`)
+
+Secciones según el rol: se calculan en el servidor y las no autorizadas no se muestran en la navegación ni son accesibles por URL.
+
+- **Resumen** y **Notificaciones** — para cualquier cuenta autenticada.
+- **Cursos** — alta, edición, baja y asignación de docentes.
+- **Categorías de cursos** — rubros que agrupan la oferta.
+- **Usuarios** — el Administrador gestiona todas las cuentas; el Preceptor solo las de rol Docente.
+- **Guía de inscripción**, **Noticias**, **Imágenes**, **Sobre el centro**, **Preguntas frecuentes**, **Contacto** y **Configuración del sitio** — contenido editorial.
+- **Auditoría** — registro de acciones administrativas (solo Administrador).
+- **Consultas** — mensajes que llegan por el formulario público.
+
+Roles:
+
+| Rol | Alcance |
+|---|---|
+| Administrador | Todo el panel, incluida la auditoría y la gestión de cualquier cuenta. |
+| Preceptor | Cursos, contenido y gestión **solo de docentes**. Sin auditoría ni cuentas de admin/preceptor. |
+| Docente | Solo sus cursos asignados y sus propios datos. |
+| Visitante (sin sesión) | Sitio público. |
+
+El ingreso acepta **correo o DNI**. Tras 5 intentos fallidos la cuenta queda bloqueada hasta que la reactive un Administrador o Preceptor. La contraseña temporal (derivada del DNI) obliga a cambiarla antes de operar.
+
+Las mejoras incorporadas sobre el MVP (auditoría, bloqueo de cuenta, edición y eliminación de usuarios, correo y teléfono propios, login por DNI, notificaciones in-app, categorías de cursos, borradores de noticias y drag & drop en Sobre el centro) están documentadas en [`docs/CAMBIOS-MEJORAS-2026-10.md`](docs/CAMBIOS-MEJORAS-2026-10.md).
 
 ## 🔍 Verificación
 

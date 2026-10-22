@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 
 export {
   TAMANO_MAXIMO_IMAGEN,
+  TAMANO_MAXIMO_IMAGEN_MB,
   TIPOS_IMAGEN_PERMITIDOS,
 } from "@/lib/imagenesConstantes";
 

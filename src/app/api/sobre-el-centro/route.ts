@@ -1,3 +1,4 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -6,6 +7,12 @@ import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
 import { SOBRE_SELECT, validarSobreElCentro } from "@/lib/sobreElCentro";
 import { borrarImagenPorUrl } from "@/lib/imagenes";
+import { ipCliente } from "@/lib/auth/rateLimit";
+import {
+  ACCIONES_AUDITORIA,
+  RECURSOS_AUDITORIA,
+  registrarAuditoria,
+} from "@/lib/auditoria";
 
 export const dynamic = "force-dynamic";
 
@@ -110,6 +117,18 @@ export async function PUT(request: NextRequest) {
         await borrarImagenPorUrl(foto.url);
       }
     }
+
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.EDITAR,
+      recurso: RECURSOS_AUDITORIA.SOBRE_EL_CENTRO,
+      resumen: "Sobre el centro",
+      detalle: {
+        hitos: Array.isArray(datos.hitos) ? datos.hitos.length : 0,
+        galeria: Array.isArray(datos.galeria) ? datos.galeria.length : 0,
+      },
+      ip: ipCliente(request),
+    });
 
     return NextResponse.json({ sobre });
   } catch (err) {

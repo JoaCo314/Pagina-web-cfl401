@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
 import { PERMISOS, obtenerSeccionesPanel, tienePermiso } from "@/lib/auth/autorizacion";
-import { obtenerDocentesAsignables } from "@/lib/cursoAdmin";
+import { obtenerCategoriasCurso, obtenerDocentesAsignables } from "@/lib/cursoAdmin";
 import PanelShell from "@/components/auth/PanelShell";
 import CursoForm from "@/components/panel/CursoForm";
 
@@ -19,7 +19,10 @@ export default async function NuevoCursoPage() {
     redirect("/panel");
   }
 
-  const docentes = await obtenerDocentesAsignables();
+  const [docentes, categorias] = await Promise.all([
+    obtenerDocentesAsignables(),
+    obtenerCategoriasCurso(),
+  ]);
   const secciones = obtenerSeccionesPanel(user);
 
   return (
@@ -31,6 +34,7 @@ export default async function NuevoCursoPage() {
       </p>
       <CursoForm
         docentes={docentes}
+        categorias={categorias}
         puedeAsignarDocentes={tienePermiso(
           user,
           PERMISOS.CURSOS_ASIGNAR_DOCENTES

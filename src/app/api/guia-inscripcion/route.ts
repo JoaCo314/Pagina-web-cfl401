@@ -1,9 +1,16 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
 import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
 import { validarContenidosGuia } from "@/lib/contenidoGuia";
+import { ipCliente } from "@/lib/auth/rateLimit";
+import {
+  ACCIONES_AUDITORIA,
+  RECURSOS_AUDITORIA,
+  registrarAuditoria,
+} from "@/lib/auditoria";
 
 export const dynamic = "force-dynamic";
 
@@ -104,6 +111,15 @@ export async function PUT(request: NextRequest) {
       where: { clave: { in: claves } },
       select: SELECT_CONTENIDO,
       orderBy: { orden: "asc" },
+    });
+
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.EDITAR,
+      recurso: RECURSOS_AUDITORIA.GUIA,
+      resumen: "Guía de inscripción",
+      detalle: { bloques: claves.join(", ") },
+      ip: ipCliente(request),
     });
 
     return NextResponse.json({ contenidos });

@@ -1,4 +1,6 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
 import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
@@ -12,6 +14,12 @@ import {
   contrasenaTemporalDesdeDni,
   hashPassword,
 } from "@/lib/auth/password";
+import { ipCliente } from "@/lib/auth/rateLimit";
+import {
+  ACCIONES_AUDITORIA,
+  RECURSOS_AUDITORIA,
+  registrarAuditoria,
+} from "@/lib/auditoria";
 import {
   NOMBRE_ROL_A_PERMISO_CREAR,
   USUARIO_SELECT,
@@ -119,27 +127,11 @@ export async function POST(request: NextRequest) {
 
   const { nombre, apellido, dni, email, rol, activo } = resultado.datos;
 
-  const existente = await prisma.usuario.findUnique({
-    where: { email },
-    select: { id: true },
-  });
-  if (existente) {
-    return NextResponse.json(
-      { error: "Ya existe un usuario con ese email." },
-      { status: 409 }
-    );
-  }
-
-  const dniExistente = await prisma.usuario.findUnique({
-    where: { dni },
-    select: { id: true },
-  });
-  if (dniExistente) {
-    return NextResponse.json(
-      { error: "Ya existe un usuario con ese DNI." },
-      { status: 409 }
-    );
-  }
+  // No se hacen chequeos previos de existencia de email/DNI: cada uno sería un
+  // oráculo con el que un Preceptor podría enumerar cuentas que le están fuera
+  // de alcance (una búsqueda "¿existe?" por cada email candidato). La unicidad
+  // la garantiza la base; si colisiona, el P2002 de abajo lo traduce en el
+  // 409 correspondiente sin decir a qué rol pertenece la cuenta en conflicto.
 
   const rolDb = await prisma.rol.findUnique({
     where: { nombre: rol },
@@ -171,8 +163,35 @@ export async function POST(request: NextRequest) {
 
     // No se devuelve la contraseña temporal: quien da de alta ya conoce el DNI
     // que ingresó y puede leer los últimos 4 dígitos de la columna DNI.
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.CREAR,
+      recurso: RECURSOS_AUDITORIA.USUARIO,
+      recursoId: usuario.id,
+      resumen: `Usuario «${usuario.nombre} ${usuario.apellido}»`,
+      detalle: { rol, email, activo: activo ?? true },
+      ip: ipCliente(request),
+    });
+
     return NextResponse.json({ usuario }, { status: 201 });
   } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
+      // Unicidad violada (email o DNI): el mensaje identifica el campo pero no
+      // la cuenta que lo ocupa, así no filtra cuentas fuera de alcance.
+      const objetivo = err.meta?.target;
+      const campos = Array.isArray(objetivo)
+        ? objetivo.map(String)
+        : [String(objetivo ?? "")];
+      const mensaje = campos.includes("email")
+        ? "Ya existe un usuario con ese email."
+        : campos.includes("dni")
+          ? "Ya existe un usuario con ese DNI."
+          : "Ya existe un usuario con esos datos.";
+      return NextResponse.json({ error: mensaje }, { status: 409 });
+    }
     console.error("[API] Error interno:", err);
     return NextResponse.json(
       { error: "Ocurrió un error interno. Intentá nuevamente." },

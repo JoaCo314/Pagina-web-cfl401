@@ -1,3 +1,4 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -9,6 +10,13 @@ import {
 } from "@/lib/auth/autorizacion";
 import { CURSO_SELECT, validarDatosCurso } from "@/lib/cursoAdmin";
 import { borrarImagenPorUrl } from "@/lib/imagenes";
+import { ipCliente } from "@/lib/auth/rateLimit";
+import { notificarCursoAsignado } from "@/lib/notificaciones";
+import {
+  ACCIONES_AUDITORIA,
+  RECURSOS_AUDITORIA,
+  registrarAuditoria,
+} from "@/lib/auditoria";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +50,7 @@ export async function GET(
         enlaceInscripcion: true,
         programaContenidos: true,
         programaContenidosHtml: true,
-        categoria: true,
+        categoria: { select: { id: true, nombre: true } },
         emoji: true,
         cupos: true,
         imagenUrl: true,
@@ -100,7 +108,13 @@ export async function PUT(
 
   const existente = await prisma.curso.findUnique({
     where: { id: cursoId },
-    select: { id: true, imagenUrl: true, docentes: { select: { docenteId: true } } },
+    select: {
+      id: true,
+      imagenUrl: true,
+      fechaInicio: true,
+      fechaFin: true,
+      docentes: { select: { docenteId: true } },
+    },
   });
   if (!existente) {
     return NextResponse.json(
@@ -132,7 +146,13 @@ export async function PUT(
     );
   }
 
-  const resultado = await validarDatosCurso(body);
+  // Se le pasan las fechas guardadas al validador: así un PUT parcial que solo
+  // manda `fechaFin` se compara contra la `fechaInicio` persistida y no puede
+  // dejar un rango invertido.
+  const resultado = await validarDatosCurso(body, {
+    fechaInicio: existente.fechaInicio,
+    fechaFin: existente.fechaFin,
+  });
   if (!resultado.ok) {
     return NextResponse.json({ error: resultado.error }, { status: 400 });
   }
@@ -206,6 +226,39 @@ export async function PUT(
       await borrarImagenPorUrl(existente.imagenUrl);
     }
 
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.EDITAR,
+      recurso: RECURSOS_AUDITORIA.CURSO,
+      recursoId: cursoId,
+      resumen: `Curso «${curso?.nombre ?? cursoId}»`,
+      detalle: data,
+      ip: ipCliente(request),
+    });
+
+    if (reasignarDocentes) {
+      await registrarAuditoria({
+        usuario: user,
+        accion: ACCIONES_AUDITORIA.ASIGNAR_DOCENTES,
+        recurso: RECURSOS_AUDITORIA.CURSO,
+        recursoId: cursoId,
+        resumen: `Curso «${curso?.nombre ?? cursoId}»`,
+        detalle: { cantidad: docenteIds.length },
+        ip: ipCliente(request),
+      });
+
+      // Aviso in-app solo a los docentes que no estaban asignados antes, para no
+      // repetir la notificación en cada guardado.
+      const previos = new Set(existente.docentes.map((d) => d.docenteId));
+      const nuevos = docenteIds.filter((docenteId) => !previos.has(docenteId));
+      if (nuevos.length > 0) {
+        await notificarCursoAsignado(nuevos, {
+          id: cursoId,
+          nombre: curso?.nombre ?? String(cursoId),
+        });
+      }
+    }
+
     return NextResponse.json({ curso });
   } catch (err) {
     console.error("[API] Error interno:", err);
@@ -269,6 +322,15 @@ export async function DELETE(
     });
 
     await borrarImagenPorUrl(existente.imagenUrl);
+
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.ELIMINAR,
+      recurso: RECURSOS_AUDITORIA.CURSO,
+      recursoId: cursoEliminado.id,
+      resumen: `Curso «${cursoEliminado.nombre}»`,
+      ip: ipCliente(request),
+    });
 
     return NextResponse.json({ eliminado: true, curso: cursoEliminado });
   } catch (err) {

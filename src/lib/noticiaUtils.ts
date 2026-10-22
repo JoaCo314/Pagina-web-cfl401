@@ -1,3 +1,4 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 export type Noticia = {
   id: number;
   titulo: string;
@@ -7,6 +8,8 @@ export type Noticia = {
   fecha: string;
   imagenUrl: string | null;
   activo: boolean;
+  /// Borrador de trabajo: no se muestra en el sitio público hasta publicarse.
+  borrador: boolean;
   createdAt: string;
   updatedAt: string;
 };

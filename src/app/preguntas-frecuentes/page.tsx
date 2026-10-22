@@ -3,9 +3,12 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import FaqList, { type FaqCategoria } from "@/components/FaqList";
 import { prisma } from "@/lib/prisma";
+import { sanitizarHtmlLectura } from "@/lib/htmlEnriquecido";
 
 export const metadata = {
-  title: "Preguntas Frecuentes — CFL 401 Azul",
+  title: "Preguntas frecuentes",
+  description:
+    "Respuestas a las dudas más comunes sobre inscripción, cursada y documentación en el CFL 401 Azul.",
 };
 
 export const dynamic = "force-dynamic";
@@ -35,7 +38,15 @@ export default async function PreguntasFrecuentesPage() {
     .map((c) => ({
       id: c.id,
       nombre: c.nombre,
-      preguntas: c.preguntas,
+      preguntas: c.preguntas.map((p) => ({
+        ...p,
+        // Saneo de lectura: FaqList renderiza este HTML con DOMPurify en el
+        // navegador, pero en SSR lo dejaría salir tal cual. Se vuelve a filtrar
+        // acá con las mismas reglas que al guardar.
+        respuestaHtml: p.respuestaHtml
+          ? sanitizarHtmlLectura(p.respuestaHtml)
+          : null,
+      })),
     }));
 
   return (

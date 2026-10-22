@@ -1,3 +1,4 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 "use client";
 
 import { FormEvent, useState } from "react";
@@ -6,7 +7,7 @@ import { fetchConTimeout, TimeoutError } from "@/lib/fetchTimeout";
 
 export default function LoginForm() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [identificador, setIdentificador] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
@@ -20,7 +21,7 @@ export default function LoginForm() {
       const res = await fetchConTimeout("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identificador, password }),
       });
 
       if (res.ok) {
@@ -54,14 +55,14 @@ export default function LoginForm() {
   return (
     <form className="auth-form" onSubmit={onSubmit}>
       <label className="auth-field">
-        <span>Correo electrónico</span>
+        <span>Correo electrónico o DNI</span>
         <input
-          type="email"
-          name="email"
+          type="text"
+          name="identificador"
           autoComplete="username"
           required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={identificador}
+          onChange={(e) => setIdentificador(e.target.value)}
         />
       </label>
 

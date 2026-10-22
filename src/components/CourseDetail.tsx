@@ -22,7 +22,7 @@ type CursoDetail = {
   enlaceInscripcion: string | null;
   programaContenidos: string | null;
   programaContenidosHtml: string | null;
-  categoria: string | null;
+  categoria: { id: number; nombre: string } | null;
   emoji: string | null;
   cupos: number | null;
   imagenUrl: string | null;
@@ -145,12 +145,12 @@ export default function CourseDetail({ id }: { id: number }) {
           )}
           <div className="detail-head">
             <div className="course-icon">
-              {iconoCurso(curso.emoji, curso.categoria)}
+              {iconoCurso(curso.emoji, curso.categoria?.nombre)}
             </div>
             <div>
               <div className="detail-tags">
                 {curso.categoria && (
-                  <span className="tag">{curso.categoria}</span>
+                  <span className="tag">{curso.categoria.nombre}</span>
                 )}
                 {curso.cupos !== null && (
                   <span className={`cupos${curso.cupos <= 5 ? " pocos" : ""}`}>

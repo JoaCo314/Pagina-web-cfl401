@@ -1,4 +1,4 @@
-# QA — Consistencia de datos panel ↔ público (Tarea #28, RNF-06)
+﻿# QA — Consistencia de datos panel ↔ público (Tarea #28, RNF-06)
 
 Fecha: 2026-09-17 · Branch `Joaquin`
 

@@ -1,3 +1,4 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import type { UsuarioSesion } from "@/lib/auth/session";
 import { ROLES } from "@/lib/auth/roles";
 
@@ -7,6 +8,9 @@ export const PERMISOS = {
   CURSOS_EDITAR: "cursos:editar",
   CURSOS_ELIMINAR: "cursos:eliminar",
   CURSOS_ASIGNAR_DOCENTES: "cursos:asignar_docentes",
+  /// Administración del catálogo de categorías/rubros de cursos (entidad
+  /// separada del curso). La usan Administrador y Preceptor.
+  CURSOS_CATEGORIAS: "cursos:categorias",
   USUARIOS_VER: "usuarios:ver",
   USUARIOS_VER_TODOS: "usuarios:ver_todos",
   USUARIOS_GESTIONAR_DOCENTES: "usuarios:gestionar_docentes",
@@ -15,6 +19,9 @@ export const PERMISOS = {
   USUARIOS_CREAR_PRECEPTOR: "usuarios:crear_preceptor",
   USUARIOS_CREAR_DOCENTE: "usuarios:crear_docente",
   USUARIOS_DESACTIVAR: "usuarios:desactivar",
+  /// Eliminar una cuenta de forma definitiva. Es irreversible, así que queda
+  /// reservado al Administrador y solo sobre cuentas ya desactivadas (RF-15).
+  USUARIOS_ELIMINAR: "usuarios:eliminar",
   GUIA_EDITAR: "guia:editar",
   NOTICIAS_CREAR: "noticias:crear",
   NOTICIAS_EDITAR: "noticias:editar",
@@ -25,6 +32,9 @@ export const PERMISOS = {
   /// Consultas que llegan por el formulario público de /contacto. Administrador
   /// y Preceptor la leen desde el panel para poder responderle a quien escribió.
   CONSULTAS_VER: "consultas:ver",
+  /// Registro de acciones administrativas (auditoría). Exclusivo del
+  /// Administrador: muestra quién creó, editó o borró qué, y no se puede editar.
+  AUDITORIA_VER: "auditoria:ver",
 } as const;
 
 export type Permiso = (typeof PERMISOS)[keyof typeof PERMISOS];
@@ -54,6 +64,7 @@ const PERMISOS_POR_ROL: Record<
     PERMISOS.CURSOS_EDITAR,
     PERMISOS.CURSOS_ELIMINAR,
     PERMISOS.CURSOS_ASIGNAR_DOCENTES,
+    PERMISOS.CURSOS_CATEGORIAS,
     PERMISOS.USUARIOS_VER,
     PERMISOS.USUARIOS_VER_TODOS,
     PERMISOS.USUARIOS_CREAR,
@@ -61,6 +72,7 @@ const PERMISOS_POR_ROL: Record<
     PERMISOS.USUARIOS_CREAR_PRECEPTOR,
     PERMISOS.USUARIOS_CREAR_DOCENTE,
     PERMISOS.USUARIOS_DESACTIVAR,
+    PERMISOS.USUARIOS_ELIMINAR,
     PERMISOS.GUIA_EDITAR,
     PERMISOS.NOTICIAS_CREAR,
     PERMISOS.NOTICIAS_EDITAR,
@@ -69,6 +81,7 @@ const PERMISOS_POR_ROL: Record<
     PERMISOS.PREGUNTAS_FAQS_EDITAR,
     PERMISOS.SITE_CONFIG_EDITAR,
     PERMISOS.CONSULTAS_VER,
+    PERMISOS.AUDITORIA_VER,
   ],
   [ROLES.PRECEPTOR]: [
     PERMISOS.CURSOS_VER,
@@ -76,6 +89,7 @@ const PERMISOS_POR_ROL: Record<
     PERMISOS.CURSOS_EDITAR,
     PERMISOS.CURSOS_ELIMINAR,
     PERMISOS.CURSOS_ASIGNAR_DOCENTES,
+    PERMISOS.CURSOS_CATEGORIAS,
     PERMISOS.USUARIOS_VER,
     PERMISOS.USUARIOS_CREAR,
     PERMISOS.USUARIOS_CREAR_DOCENTE,
@@ -169,18 +183,20 @@ export function filtroUsuariosVisibles(
 /// Preceptor blanquee la contraseña de un Administrador pasando su ID a mano.
 export function puedeGestionarUsuario(
   usuario: UsuarioSesion | null | undefined,
-  objetivo: { id: number; rol: { nombre: string } }
+  objetivo: { id: number; rol: { nombre: string } } | null
 ): boolean {
   const alcance = alcanceUsuarios(usuario);
   if (alcance === "todos") return true;
-  if (alcance === "docentes") return objetivo.rol.nombre === ROLES.DOCENTE;
+  if (alcance === "docentes") return objetivo?.rol?.nombre === ROLES.DOCENTE;
   return false;
 }
 
 export type SeccionPanel = {
   clave:
     | "inicio"
+    | "notificaciones"
     | "cursos"
+    | "categorias-cursos"
     | "usuarios"
     | "guia"
     | "noticias"
@@ -189,6 +205,7 @@ export type SeccionPanel = {
     | "faqs"
     | "contacto"
     | "configuracion"
+    | "auditoria"
     | "consultas";
   titulo: string;
   descripcion: string;
@@ -209,6 +226,14 @@ export function obtenerSeccionesPanel(
       descripcion: "Resumen del panel y atajos.",
       href: "/panel",
     },
+    {
+      // Disponible para cualquier cuenta autenticada: los avisos in-app (por
+      // ejemplo, la asignación a un curso) los recibe cualquier rol.
+      clave: "notificaciones",
+      titulo: "Notificaciones",
+      descripcion: "Avisos internos de la cuenta.",
+      href: "/panel/notificaciones",
+    },
   ];
 
   if (tienePermiso(usuario, PERMISOS.CURSOS_VER)) {
@@ -223,6 +248,15 @@ export function obtenerSeccionesPanel(
         href: "/panel/cursos",
       });
     }
+  }
+
+  if (tienePermiso(usuario, PERMISOS.CURSOS_CATEGORIAS)) {
+    secciones.push({
+      clave: "categorias-cursos",
+      titulo: "Categorías de cursos",
+      descripcion: "Alta y edición de los rubros que agrupan la oferta educativa.",
+      href: "/panel/categorias-cursos",
+    });
   }
 
   if (tienePermiso(usuario, PERMISOS.USUARIOS_VER)) {
@@ -300,6 +334,15 @@ export function obtenerSeccionesPanel(
       titulo: "Configuración del sitio",
       descripcion: "Banner azul, logo, footer, mapa de ubicación y demás textos del sitio.",
       href: "/panel/configuracion",
+    });
+  }
+
+  if (tienePermiso(usuario, PERMISOS.AUDITORIA_VER)) {
+    secciones.push({
+      clave: "auditoria",
+      titulo: "Auditoría",
+      descripcion: "Registro de acciones administrativas: quién hizo qué y cuándo.",
+      href: "/panel/auditoria",
     });
   }
 

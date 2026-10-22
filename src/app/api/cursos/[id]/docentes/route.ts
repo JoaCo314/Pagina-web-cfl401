@@ -1,9 +1,17 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
 import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
-import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
+import { PERMISOS, tienePermiso, puedeGestionarCurso } from "@/lib/auth/autorizacion";
 import { CURSO_SELECT, validarListaDocentes } from "@/lib/cursoAdmin";
+import { ipCliente } from "@/lib/auth/rateLimit";
+import { notificarCursoAsignado } from "@/lib/notificaciones";
+import {
+  ACCIONES_AUDITORIA,
+  RECURSOS_AUDITORIA,
+  registrarAuditoria,
+} from "@/lib/auditoria";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +47,16 @@ export async function GET(
     select: CURSO_SELECT,
   });
   if (!curso) {
+    return NextResponse.json(
+      { error: "El curso solicitado no existe." },
+      { status: 404 }
+    );
+  }
+
+  // RF-16: un Docente solo consulta los cursos que tiene asignados. Se responde
+  // 404 (y no 403) para no revelar la existencia de cursos ajenos. Administrador
+  // y Preceptor siguen viendo cualquier curso, incluidos los inactivos.
+  if (!puedeGestionarCurso(user, curso)) {
     return NextResponse.json(
       { error: "El curso solicitado no existe." },
       { status: 404 }
@@ -81,7 +99,7 @@ export async function PUT(
 
   const existente = await prisma.curso.findUnique({
     where: { id: cursoId },
-    select: { id: true },
+    select: { id: true, docentes: { select: { docenteId: true } } },
   });
   if (!existente) {
     return NextResponse.json(
@@ -126,6 +144,26 @@ export async function PUT(
       where: { id: cursoId },
       select: CURSO_SELECT,
     });
+
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.ASIGNAR_DOCENTES,
+      recurso: RECURSOS_AUDITORIA.CURSO,
+      recursoId: cursoId,
+      resumen: `Curso «${curso?.nombre ?? cursoId}»`,
+      detalle: { cantidad: norm.ids.length },
+      ip: ipCliente(request),
+    });
+
+    // Aviso in-app solo a los docentes recién sumados (no a los que ya estaban).
+    const previos = new Set(existente.docentes.map((d) => d.docenteId));
+    const nuevos = norm.ids.filter((docenteId) => !previos.has(docenteId));
+    if (nuevos.length > 0) {
+      await notificarCursoAsignado(nuevos, {
+        id: cursoId,
+        nombre: curso?.nombre ?? String(cursoId),
+      });
+    }
 
     return NextResponse.json({ curso });
   } catch (err) {

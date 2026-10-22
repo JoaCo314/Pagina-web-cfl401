@@ -103,9 +103,12 @@ export async function validarPreguntaFrecuente(
   }
 
   let categoriaId: number | undefined;
-  if (fuente.categoriaId !== undefined && fuente.categoriaId !== null && fuente.categoriaId !== "") {
-    const id = Number(fuente.categoriaId);
-    if (!Number.isInteger(id) || id <= 0) {
+  if (fuente.categoriaId !== undefined && fuente.categoriaId !== null) {
+    // Un `""` presente se trata como inválido, no como "ausente": antes se
+    // ignoraba en silencio y la pregunta podía terminar sin categoría asignada.
+    const crudo = fuente.categoriaId;
+    const id = Number(crudo);
+    if (crudo === "" || !Number.isInteger(id) || id <= 0) {
       return { ok: false, error: "La categoría elegida no es válida." };
     }
     categoriaId = id;

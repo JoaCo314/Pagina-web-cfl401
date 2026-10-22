@@ -2,6 +2,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import HtmlEnriquecido from "@/components/HtmlEnriquecido";
 import { prisma } from "@/lib/prisma";
+import { sanitizarHtmlLectura } from "@/lib/htmlEnriquecido";
 import {
   SOBRE_SELECT,
   leerGaleria,
@@ -10,7 +11,9 @@ import {
 } from "@/lib/sobreElCentro";
 
 export const metadata = {
-  title: "Sobre el Centro — CFL 401 Azul",
+  title: "Sobre el Centro",
+  description:
+    "Historia, misión y datos del Centro de Formación Laboral N° 401 de Azul: recorré la trayectoria de la institución.",
 };
 
 export const dynamic = "force-dynamic";
@@ -25,6 +28,17 @@ export default async function SobreElCentroPage() {
   const hitos = leerHitos(sobre?.hitos ?? null);
   const estadisticas = leerEstadisticas(sobre?.estadisticas ?? null);
   const galeria = leerGaleria(sobre?.galeria ?? null);
+
+  // Saneo de lectura antes de mandarlo a SSR: el render del servidor no puede
+  // depender de DOMPurify (que corre en el navegador), así que el HTML se
+  // vuelve a filtrar acá con las mismas reglas que al guardar.
+  const introHtml = sobre?.introHtml ? sanitizarHtmlLectura(sobre.introHtml) : null;
+  const misionTextoHtml = sobre?.misionTextoHtml
+    ? sanitizarHtmlLectura(sobre.misionTextoHtml)
+    : null;
+  const historiaTextoHtml = sobre?.historiaTextoHtml
+    ? sanitizarHtmlLectura(sobre.historiaTextoHtml)
+    : null;
 
   const hayMision = Boolean(sobre?.misionTexto);
   const hayHistoria = Boolean(sobre?.historiaTexto || hitos);
@@ -42,7 +56,7 @@ export default async function SobreElCentroPage() {
           <h1>Sobre el Centro</h1>
           {sobre?.intro ? (
             <HtmlEnriquecido
-              html={sobre.introHtml}
+              html={introHtml}
               textoPlano={sobre.intro}
               className="page-intro-enriquecido"
             />
@@ -74,7 +88,7 @@ export default async function SobreElCentroPage() {
                   </div>
                 ) : null}
                 <HtmlEnriquecido
-                  html={sobre?.misionTextoHtml}
+                  html={misionTextoHtml}
                   textoPlano={sobre?.misionTexto}
                   className="sobre-mision-texto"
                 />
@@ -92,7 +106,7 @@ export default async function SobreElCentroPage() {
                 ) : null}
                 {sobre?.historiaTexto ? (
                   <HtmlEnriquecido
-                    html={sobre?.historiaTextoHtml}
+                    html={historiaTextoHtml}
                     textoPlano={sobre?.historiaTexto}
                     className="sobre-historia-texto"
                   />

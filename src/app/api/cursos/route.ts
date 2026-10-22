@@ -1,3 +1,4 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -7,6 +8,13 @@ import {
   CURSO_SELECT,
   validarDatosCurso,
 } from "@/lib/cursoAdmin";
+import { ipCliente } from "@/lib/auth/rateLimit";
+import { notificarCursoAsignado } from "@/lib/notificaciones";
+import {
+  ACCIONES_AUDITORIA,
+  RECURSOS_AUDITORIA,
+  registrarAuditoria,
+} from "@/lib/auditoria";
 
 export const dynamic = "force-dynamic";
 
@@ -17,12 +25,15 @@ export async function GET(request: NextRequest) {
     const groupBy = searchParams.get("groupBy");
 
     const cursos = await prisma.curso.findMany({
-      where: { activo: true, ...(categoria ? { categoria } : {}) },
+      where: {
+        activo: true,
+        ...(categoria ? { categoria: { nombre: categoria } } : {}),
+      },
       select: {
         id: true,
         nombre: true,
         descripcion: true,
-        categoria: true,
+        categoria: { select: { id: true, nombre: true } },
         emoji: true,
         cupos: true,
         modalidad: true,
@@ -37,13 +48,13 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: [{ categoria: "asc" }, { nombre: "asc" }],
+      orderBy: [{ categoria: { nombre: "asc" } }, { nombre: "asc" }],
     });
 
     if (groupBy === "categoria") {
       const grupos = new Map<string, (typeof cursos)[number][]>();
       for (const curso of cursos) {
-        const clave = curso.categoria ?? "Sin categoría";
+        const clave = curso.categoria?.nombre ?? "Sin categoría";
         const lista = grupos.get(clave) ?? [];
         lista.push(curso);
         grupos.set(clave, lista);
@@ -119,6 +130,28 @@ export async function POST(request: NextRequest) {
       },
       select: CURSO_SELECT,
     });
+
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.CREAR,
+      recurso: RECURSOS_AUDITORIA.CURSO,
+      recursoId: curso.id,
+      resumen: `Curso «${curso.nombre}»`,
+      detalle: {
+        categoria: curso.categoria?.nombre ?? null,
+        activo: curso.activo,
+        docentes: docenteIds.length,
+      },
+      ip: ipCliente(request),
+    });
+
+    // Aviso in-app a los docentes que quedaron asignados en el alta.
+    if (docenteIds.length > 0) {
+      await notificarCursoAsignado(docenteIds, {
+        id: curso.id,
+        nombre: curso.nombre,
+      });
+    }
 
     return NextResponse.json({ curso }, { status: 201 });
   } catch (err) {

@@ -1,3 +1,4 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 "use client";
 
 import Link from "next/link";
@@ -8,13 +9,18 @@ import {
   nombresDocentes,
 } from "@/lib/cursoUtils";
 
+/// Cantidad de cursos por página en el catálogo público. El listado se filtra
+/// del lado del cliente (ya se descargan todos los cursos para armar el filtro
+/// por rubro), así que la paginación también es local.
+const CURSOS_POR_PAGINA = 6;
+
 type Docente = { id: number; nombre: string; apellido: string };
 
 type Curso = {
   id: number;
   nombre: string;
   descripcion: string | null;
-  categoria: string | null;
+  categoria: { id: number; nombre: string } | null;
   emoji: string | null;
   cupos: number | null;
   modalidad: string | null;
@@ -39,7 +45,7 @@ function CourseCard({ curso }: { curso: Curso }) {
       )}
       <div className="course-top">
         <div className="course-icon">
-          {iconoCurso(curso.emoji, curso.categoria)}
+          {iconoCurso(curso.emoji, curso.categoria?.nombre)}
         </div>
         {curso.cupos !== null && (
           <span className={`cupos${cuposBajos ? " pocos" : ""}`}>
@@ -75,6 +81,7 @@ export default function CourseCatalog() {
   const [error, setError] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [rubro, setRubro] = useState("");
+  const [pagina, setPagina] = useState(1);
 
   useEffect(() => {
     fetch("/api/cursos?groupBy=categoria")
@@ -97,7 +104,7 @@ export default function CourseCatalog() {
     const termino = busqueda.trim().toLowerCase();
     return categorias.flatMap((c) =>
       c.cursos.filter((curso) => {
-        const cumpleRubro = rubro === "" || curso.categoria === rubro;
+        const cumpleRubro = rubro === "" || curso.categoria?.nombre === rubro;
         const cumpleBusqueda =
           termino === "" ||
           curso.nombre.toLowerCase().includes(termino) ||
@@ -108,6 +115,27 @@ export default function CourseCatalog() {
   }, [categorias, busqueda, rubro]);
 
   const hayFiltros = busqueda.trim() !== "" || rubro !== "";
+
+  // Cualquier cambio de filtro vuelve a la primera página para no quedar en una
+  // página que ya no tiene resultados.
+  useEffect(() => {
+    setPagina(1);
+  }, [busqueda, rubro]);
+
+  const totalPaginas = Math.max(
+    1,
+    Math.ceil(cursosFiltrados.length / CURSOS_POR_PAGINA)
+  );
+  const paginaSegura = Math.min(pagina, totalPaginas);
+  const cursosPagina = cursosFiltrados.slice(
+    (paginaSegura - 1) * CURSOS_POR_PAGINA,
+    paginaSegura * CURSOS_POR_PAGINA
+  );
+
+  function irAPagina(nueva: number) {
+    setPagina(nueva);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   function limpiarFiltros() {
     setBusqueda("");
@@ -188,11 +216,38 @@ export default function CourseCatalog() {
               )}
             </div>
           ) : (
-            <div className="course-grid">
-              {cursosFiltrados.map((curso) => (
-                <CourseCard key={curso.id} curso={curso} />
-              ))}
-            </div>
+            <>
+              <div className="course-grid">
+                {cursosPagina.map((curso) => (
+                  <CourseCard key={curso.id} curso={curso} />
+                ))}
+              </div>
+              {totalPaginas > 1 && (
+                <nav className="paginacion" aria-label="Paginación del catálogo de cursos">
+                  <button
+                    type="button"
+                    className="btn-sm btn-ghost-dark"
+                    onClick={() => irAPagina(paginaSegura - 1)}
+                    disabled={paginaSegura <= 1}
+                    aria-label="Página anterior"
+                  >
+                    ← Anterior
+                  </button>
+                  <span className="paginacion-info" aria-current="page">
+                    Página {paginaSegura} de {totalPaginas}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn-sm btn-ghost-dark"
+                    onClick={() => irAPagina(paginaSegura + 1)}
+                    disabled={paginaSegura >= totalPaginas}
+                    aria-label="Página siguiente"
+                  >
+                    Siguiente →
+                  </button>
+                </nav>
+              )}
+            </>
           )}
         </div>
       </section>

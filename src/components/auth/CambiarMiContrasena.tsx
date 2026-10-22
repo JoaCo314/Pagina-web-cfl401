@@ -141,16 +141,14 @@ export default function CambiarMiContrasena({ nombre }: { nombre: string }) {
         {enviando ? "Guardando…" : "Guardar contraseña"}
       </button>
 
-      <p className="auth-note sin-seleccion">
-        <button
-          type="button"
-          className="auth-submit-secondary"
-          onClick={onSalir}
-          disabled={enviando || saliendo}
-        >
-          {saliendo ? "Saliendo…" : "Salir de la cuenta"}
-        </button>
-      </p>
+      <button
+        type="button"
+        className="auth-submit-secondary"
+        onClick={onSalir}
+        disabled={enviando || saliendo}
+      >
+        {saliendo ? "Saliendo…" : "Salir de la cuenta"}
+      </button>
     </form>
   );
 }

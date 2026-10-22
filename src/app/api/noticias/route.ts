@@ -1,37 +1,58 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
 import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
 import { NOTICIA_SELECT, validarDatosNoticia } from "@/lib/noticiaAdmin";
+import { ipCliente } from "@/lib/auth/rateLimit";
+import {
+  ACCIONES_AUDITORIA,
+  RECURSOS_AUDITORIA,
+  registrarAuditoria,
+} from "@/lib/auditoria";
 
 export const dynamic = "force-dynamic";
 
 /// Máximo de noticias que devuelve el listado público, sin importar el `limit`.
 const LIMITE_MAXIMO_NOTICIAS = 100;
 
-/// Listado público de noticias (RF-17). Solo se devuelven las activas, de la
-/// más reciente a la más antigua. El panel consulta Prisma directamente para
-/// incluir también las inactivas.
+/// Listado público de noticias (RF-17). Solo se devuelven las publicadas
+/// (activas y que no estén en borrador), de la más reciente a la más antigua.
+/// El panel consulta Prisma directamente para incluir también borradores e
+/// inactivas.
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const limiteParam = Number(searchParams.get("limit"));
+    // Páginas (1-indexadas). `limit` se mantiene como alias de `porPagina`
+    // para el home (NoticiasHome), que pide solo las últimas 3.
+    const porPaginaParam = Number(searchParams.get("porPagina"));
+    const limitParam = Number(searchParams.get("limit"));
+    const paginaParam = Number(searchParams.get("pagina"));
+
+    const tamano =
+      Number.isInteger(porPaginaParam) && porPaginaParam > 0
+        ? porPaginaParam
+        : Number.isInteger(limitParam) && limitParam > 0
+          ? limitParam
+          : 12;
     // Tope duro: el endpoint es público y sin límite cualquiera puede pedir las
     // noticias enteras en una sola respuesta.
-    const take = Math.min(
-      Number.isInteger(limiteParam) && limiteParam > 0 ? limiteParam : 50,
-      LIMITE_MAXIMO_NOTICIAS
-    );
+    const porPagina = Math.min(tamano, LIMITE_MAXIMO_NOTICIAS);
+    const pagina = Number.isInteger(paginaParam) && paginaParam > 0 ? paginaParam : 1;
 
-    const noticias = await prisma.noticia.findMany({
-      where: { activo: true },
-      select: NOTICIA_SELECT,
-      orderBy: [{ fecha: "desc" }, { createdAt: "desc" }],
-      take,
-    });
+    const [noticias, total] = await Promise.all([
+      prisma.noticia.findMany({
+        where: { activo: true, borrador: false },
+        select: NOTICIA_SELECT,
+        orderBy: [{ fecha: "desc" }, { createdAt: "desc" }],
+        skip: (pagina - 1) * porPagina,
+        take: porPagina,
+      }),
+      prisma.noticia.count({ where: { activo: true, borrador: false } }),
+    ]);
 
-    return NextResponse.json({ noticias, total: noticias.length });
+    return NextResponse.json({ noticias, total, pagina, porPagina });
   } catch (err) {
     console.error("[API] Error interno:", err);
     return NextResponse.json(
@@ -74,15 +95,26 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: resultado.error }, { status: 400 });
   }
 
-  const { activo, ...campos } = resultado.datos;
+  const { activo, borrador, ...campos } = resultado.datos;
 
   try {
     const noticia = await prisma.noticia.create({
       data: {
         ...campos,
         ...(activo === undefined ? {} : { activo }),
+        ...(borrador === undefined ? {} : { borrador }),
       },
       select: NOTICIA_SELECT,
+    });
+
+    await registrarAuditoria({
+      usuario: user,
+      accion: ACCIONES_AUDITORIA.CREAR,
+      recurso: RECURSOS_AUDITORIA.NOTICIA,
+      recursoId: noticia.id,
+      resumen: `Noticia «${noticia.titulo}»`,
+      detalle: { activo: noticia.activo, borrador: noticia.borrador },
+      ip: ipCliente(request),
     });
 
     return NextResponse.json({ noticia }, { status: 201 });

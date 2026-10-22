@@ -1,3 +1,4 @@
+// Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 import {
   PERMISOS,
   tienePermiso,
@@ -30,6 +31,7 @@ export const USUARIO_SELECT = {
   apellido: true,
   dni: true,
   email: true,
+  telefono: true,
   activo: true,
   debeCambiarContrasena: true,
   rol: { select: { nombre: true, nivel: true } },
@@ -51,7 +53,7 @@ export type ResultadoDatosUsuario =
   | { ok: true; datos: UsuarioInputNormalizado }
   | { ok: false; error: string };
 
-function limpiarObligatorio(
+export function limpiarObligatorio(
   valor: unknown,
   etiqueta: string,
   max: number
