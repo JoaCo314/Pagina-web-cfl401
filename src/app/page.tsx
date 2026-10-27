@@ -47,6 +47,62 @@ export default async function Home() {
               Cómo inscribirme
             </a>
           </div>
+
+          <div className="hero-features">
+            <div className="hero-feature">
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                <path d="M6 12v5c3 3 9 3 12 0v-5" />
+              </svg>
+              <span>Certificación Oficial DGCyE</span>
+            </div>
+            <div className="hero-feature">
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 14 14" />
+              </svg>
+              <span>100% Gratuito y Público</span>
+            </div>
+            <div className="hero-feature">
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              <span>Abierto a la Comunidad</span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -74,14 +130,14 @@ export default async function Home() {
                 {config?.mapaSubtitulo && <p>{config.mapaSubtitulo}</p>}
               </div>
               {config?.contactoDireccion && (
-              <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(config.contactoDireccion)}`}
-                className="btn-ghost-dark btn-sm"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Cómo llegar
-              </a>
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(config.contactoDireccion)}`}
+                  className="btn-ghost-dark btn-sm"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Cómo llegar
+                </a>
               )}
             </div>
             <div className="mapa-frame">
@@ -101,9 +157,14 @@ export default async function Home() {
         <div className="wrap">
           <h2>¿Tenés dudas sobre un curso o tu inscripción?</h2>
           <p>Nuestro equipo te responde de lunes a viernes de 9 a 18 hs.</p>
-          <Link href="/preguntas-frecuentes" className="btn-primary">
-            Ver preguntas frecuentes
-          </Link>
+          <div className="cta-actions">
+            <Link href="/preguntas-frecuentes" className="btn-primary">
+              Ver preguntas frecuentes
+            </Link>
+            <Link href="/contacto" className="btn-ghost">
+              Contactar al centro
+            </Link>
+          </div>
         </div>
       </section>
 
