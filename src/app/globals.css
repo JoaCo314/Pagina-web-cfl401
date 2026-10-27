@@ -1877,6 +1877,31 @@ a {
   margin-top: 36px;
   max-width: 720px;
 }
+.sobre-quick-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+.sobre-quick-nav a {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cfl-white);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+.sobre-quick-nav a:hover {
+  background: var(--cfl-white);
+  color: var(--cfl-navy-2);
+}
 .timeline-item {
   position: relative;
   display: flex;
@@ -1905,6 +1930,15 @@ a {
   color: var(--cfl-navy-2);
   font-size: 14px;
   min-width: 96px;
+  font-family: var(--font-poppins), sans-serif;
+}
+.timeline-body {
+  background: var(--cfl-white);
+  border: 1px solid rgba(18, 42, 69, 0.1);
+  border-radius: 8px;
+  padding: 18px 22px;
+  box-shadow: 0 4px 12px rgba(18, 42, 69, 0.04);
+  flex: 1;
 }
 .timeline-body h3 {
   font-size: 17px;
@@ -1929,13 +1963,16 @@ a {
   background: var(--cfl-navy-2);
   color: var(--cfl-white);
   border-radius: 8px;
-  padding: 26px 20px;
+  padding: 28px 20px;
   text-align: center;
+  border-top: 3px solid var(--cfl-blue);
+  box-shadow: 0 8px 20px -8px rgba(18, 42, 69, 0.2);
 }
 .stat-card strong {
   display: block;
-  font-size: 34px;
-  color: var(--cfl-blue-light);
+  font-size: 38px;
+  font-family: var(--font-poppins), sans-serif;
+  color: var(--cfl-white);
   line-height: 1.1;
   margin-bottom: 8px;
 }
@@ -1961,12 +1998,21 @@ a {
   border: 1.5px solid rgba(18, 42, 69, 0.12);
   border-radius: 8px;
   overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.galeria-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -10px rgba(18, 42, 69, 0.2);
 }
 .galeria-item img {
   width: 100%;
   height: 200px;
   object-fit: cover;
   display: block;
+  transition: transform 0.25s ease;
+}
+.galeria-item:hover img {
+  transform: scale(1.04);
 }
 .galeria-item figcaption {
   padding: 10px 14px;

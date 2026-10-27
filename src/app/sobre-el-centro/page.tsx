@@ -29,9 +29,6 @@ export default async function SobreElCentroPage() {
   const estadisticas = leerEstadisticas(sobre?.estadisticas ?? null);
   const galeria = leerGaleria(sobre?.galeria ?? null);
 
-  // Saneo de lectura antes de mandarlo a SSR: el render del servidor no puede
-  // depender de DOMPurify (que corre en el navegador), así que el HTML se
-  // vuelve a filtrar acá con las mismas reglas que al guardar.
   const introHtml = sobre?.introHtml ? sanitizarHtmlLectura(sobre.introHtml) : null;
   const misionTextoHtml = sobre?.misionTextoHtml
     ? sanitizarHtmlLectura(sobre.misionTextoHtml)
@@ -61,6 +58,15 @@ export default async function SobreElCentroPage() {
               className="page-intro-enriquecido"
             />
           ) : null}
+
+          {!vacio && (
+            <nav className="sobre-quick-nav" aria-label="Navegación rápida en la página">
+              {hayMision && <a href="#mision">Nuestra Misión</a>}
+              {hayHistoria && <a href="#historia">Historia e Hitos</a>}
+              {hayEstadisticas && <a href="#datos">Cifras clave</a>}
+              {hayGaleria && <a href="#galeria">Galería fotográfica</a>}
+            </nav>
+          )}
         </div>
       </div>
 
