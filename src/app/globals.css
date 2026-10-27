@@ -5165,14 +5165,110 @@ a {
 /* El padding estaba en un style inline: se movió acá para que el responsive lo
    pueda tocar sin pelearse con el atributo style. */
 .contacto-main {
-  padding: 32px 0;
+  padding: 32px 0 64px;
 }
 .contacto-grid {
   display: grid;
   grid-template-columns: 1fr 1.2fr;
   align-items: start;
-  gap: 32px;
+  gap: 36px;
   margin-top: 8px;
+}
+.contacto-info-column h2,
+.contacto-form-column h2 {
+  font-size: 20px;
+  color: var(--cfl-navy);
+  margin-bottom: 8px;
+}
+.contacto-info-lead {
+  font-size: 14px;
+  opacity: 0.75;
+  margin-bottom: 20px;
+}
+.contacto-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.contacto-card-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+  background: var(--cfl-white);
+  border: 1.5px solid rgba(18, 42, 69, 0.12);
+  border-radius: 8px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.contacto-card-item:hover {
+  border-color: var(--cfl-blue);
+  box-shadow: 0 6px 16px -6px rgba(18, 42, 69, 0.12);
+}
+.contacto-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--cfl-blue-light);
+  color: var(--cfl-blue-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.contacto-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.contacto-card-body strong {
+  font-size: 14px;
+  color: var(--cfl-navy);
+}
+.contacto-card-body span,
+.contacto-card-value {
+  font-size: 14px;
+  color: var(--cfl-ink);
+  text-decoration: none;
+}
+.contacto-card-value:hover {
+  color: var(--cfl-blue-deep);
+  text-decoration: underline;
+}
+.contacto-card-link {
+  font-size: 12.5px;
+  color: var(--cfl-blue-deep);
+  font-weight: 600;
+  text-decoration: none;
+  margin-top: 2px;
+}
+.contacto-card-link:hover {
+  text-decoration: underline;
+}
+.form-ok-card {
+  padding: 32px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--cfl-success-bg);
+  border: 1.5px solid var(--cfl-success-border);
+  border-radius: 8px;
+}
+.form-ok-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--cfl-success);
+  color: var(--cfl-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.form-ok-card h3 {
+  font-size: 20px;
+  color: var(--cfl-success);
+  margin-bottom: 8px;
 }
 .info-list {
   list-style: none;
