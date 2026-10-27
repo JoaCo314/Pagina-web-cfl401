@@ -28,6 +28,21 @@ function anunciarCambio(sinLeer: number) {
   );
 }
 
+function iconoPorTipo(tipo: string): string {
+  switch (tipo) {
+    case "curso":
+    case "asignacion_docente":
+      return "🎓";
+    case "seguridad":
+    case "clave":
+      return "🔑";
+    case "consulta":
+      return "✉️";
+    default:
+      return "📢";
+  }
+}
+
 export default function NotificacionesLista({
   inicial,
 }: {
@@ -103,6 +118,9 @@ export default function NotificacionesLista({
             className={`notif-item${n.leida ? "" : " no-leida"}`}
           >
             <div className="notif-cuerpo">
+              <span className="notif-icono" aria-hidden="true">
+                {iconoPorTipo(n.tipo)}
+              </span>
               {!n.leida && <span className="notif-punto" aria-label="Sin leer" />}
               <div>
                 <p className="notif-mensaje">

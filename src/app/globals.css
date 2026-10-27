@@ -452,6 +452,27 @@ a {
   gap: 14px;
   flex-wrap: wrap;
 }
+.hero-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin-top: 32px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+.hero-feature {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--cfl-white);
+  opacity: 0.95;
+}
+.hero-feature svg {
+  color: var(--cfl-blue);
+  flex-shrink: 0;
+}
 .btn-primary {
   background: var(--cfl-blue-deep);
   color: var(--cfl-white);
@@ -517,17 +538,37 @@ a {
   border: 1.5px solid rgba(18, 42, 69, 0.12);
   border-radius: 8px;
   padding: 26px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.guia-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -12px rgba(18, 42, 69, 0.15);
+}
+.guia-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
 }
 .guia-icon {
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 44px;
   border-radius: 8px;
   background: var(--cfl-blue-light);
+  color: var(--cfl-blue-deep);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  margin-bottom: 14px;
+}
+.guia-step-badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--cfl-blue-light);
+  color: var(--cfl-blue-deep);
 }
 .guia-card h3 {
   font-size: 18px;
@@ -554,6 +595,13 @@ a {
 .cta-band p {
   opacity: 0.8;
   margin-bottom: 24px;
+}
+.cta-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
 /* ── Mapa (ubicación en la portada) ─────────────────────── */
@@ -1947,7 +1995,18 @@ a {
 .notif-cuerpo {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 12px;
+}
+.notif-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  background: var(--cfl-blue-light);
+  border-radius: 6px;
+  flex-shrink: 0;
 }
 .notif-punto {
   flex: 0 0 auto;
