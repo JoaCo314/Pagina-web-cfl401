@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof ErrorSolicitudChat) return responder({ error: error.message }, error.status);
     // No registrar claves, preguntas ni el contexto institucional completo.
-    console.error("[Chat] No se pudo responder", error instanceof OpenAI.APIError ? { status: error.status } : { tipo: error instanceof Error ? error.name : "desconocido" });
+    console.error("[Chat] No se pudo responder", error instanceof OpenAI.APIError ? { status: error.status } : { tipo: error instanceof Error ? (error as Error).name : "desconocido" });
     return responder({ error: "El asistente no está disponible en este momento. Intentá más tarde o escribinos desde Contacto." }, 503);
   }
 }
