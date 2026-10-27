@@ -110,7 +110,7 @@ export default function ContactoForm() {
           autoComplete="tel"
           placeholder="Ej.: +54 9 2281 55-1234"
           value={celular}
-          onChange={(e) => setCelular(e.target.value)}
+          onChange={(e) => setCelular(e.target.value.replace(/[^0-9+() \-]/g, ""))}
         />
         <small className="form-hint">
           Si preferís, podemos responderte por WhatsApp a este número.

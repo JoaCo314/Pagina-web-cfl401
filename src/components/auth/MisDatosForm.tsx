@@ -130,7 +130,7 @@ export default function MisDatosForm({ inicial }: { inicial: DatosIniciales }) {
           autoComplete="tel"
           placeholder="Ej.: +54 9 2284 12-3456"
           value={telefono}
-          onChange={(e) => setTelefono(e.target.value)}
+          onChange={(e) => setTelefono(e.target.value.replace(/[^0-9+() \-]/g, ""))}
         />
       </label>
 
