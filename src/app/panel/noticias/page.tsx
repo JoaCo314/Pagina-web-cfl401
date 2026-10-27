@@ -65,10 +65,29 @@ export default async function NoticiasPanelPage() {
               {noticias.map((noticia) => (
                 <tr key={noticia.id}>
                   <td data-label="Noticia">
-                    <strong>{noticia.titulo}</strong>
-                    {noticia.resumen && (
-                      <small className="td-sub">{noticia.resumen}</small>
-                    )}
+                    <div className="celda-con-thumbnail">
+                      {noticia.imagenUrl ? (
+                        <img
+                          src={noticia.imagenUrl}
+                          alt=""
+                          className="tabla-thumbnail"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div
+                          className="tabla-thumbnail tabla-thumbnail-vacio"
+                          aria-hidden="true"
+                        >
+                          📰
+                        </div>
+                      )}
+                      <div>
+                        <strong>{noticia.titulo}</strong>
+                        {noticia.resumen && (
+                          <small className="td-sub">{noticia.resumen}</small>
+                        )}
+                      </div>
+                    </div>
                   </td>
                   <td data-label="Fecha">
                     {formatearFecha(noticia.fecha.toISOString())}
@@ -92,6 +111,17 @@ export default async function NoticiasPanelPage() {
                   </td>
                   <td data-label="">
                     <div className="acciones-curso">
+                      {noticia.activo && !noticia.borrador && (
+                        <Link
+                          href={`/noticias/${noticia.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="link-accion link-accion-secundario"
+                          title="Abrir en pestaña nueva"
+                        >
+                          Ver ↗
+                        </Link>
+                      )}
                       <Link
                         href={`/panel/noticias/${noticia.id}/editar`}
                         className="link-accion"
