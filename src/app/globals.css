@@ -2400,6 +2400,13 @@ a.panel-nav-item:hover {
   gap: 18px;
 }
 
+.faqs-acciones-principales {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 /* Formulario compacto de creación de categorías */
 .faqs-crear-box {
   padding: 18px 20px;
@@ -2546,7 +2553,36 @@ a.panel-nav-item:hover {
   gap: 8px;
 }
 
-/* Menú de acciones 3 puntos */
+/* Menú de acciones 3 puntos y botón agregar en cabecera */
+.faqs-categoria-cabecera-acciones {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.faq-btn-agregar-pregunta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 6px;
+  border: 1px solid rgba(18, 42, 69, 0.15);
+  background: var(--cfl-white);
+  color: var(--cfl-blue);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.faq-btn-agregar-pregunta:hover {
+  background: var(--cfl-blue);
+  color: #fff;
+  border-color: var(--cfl-blue);
+}
+
 .faq-menu-contenedor {
   display: flex;
   align-items: center;

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
 import {
@@ -29,20 +28,6 @@ export default async function PreguntasFaqsPanelPage() {
 
   return (
     <PanelShell user={user} secciones={secciones}>
-      <div className="panel-head">
-        <div>
-          <h1 className="panel-title">Preguntas frecuentes</h1>
-          <p className="panel-lead">
-            Administrá las categorías y las preguntas de la página pública. Las
-            preguntas inactivas o las categorías sin preguntas activas no se
-            muestran en el sitio.
-          </p>
-        </div>
-        <Link href="/panel/preguntas-frecuentes/nueva" className="btn-primary btn-sm">
-          + Nueva pregunta
-        </Link>
-      </div>
-
       <CategoriasPreguntas categorias={categorias} />
     </PanelShell>
   );

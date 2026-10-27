@@ -226,11 +226,19 @@ export default function CategoriasPreguntas({
 }) {
   const router = useRouter();
   const [nueva, setNueva] = useState("");
+  const [mostrarCrearCategoria, setMostrarCrearCategoria] = useState(false);
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const [editandoNombre, setEditandoNombre] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const [porEliminar, setPorEliminar] = useState<CategoriaPreguntaListable | null>(null);
+  const inputNuevaCategoriaRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (mostrarCrearCategoria) {
+      inputNuevaCategoriaRef.current?.focus();
+    }
+  }, [mostrarCrearCategoria]);
 
   // Inicializar con la primera categoría expandida si existe, o vacía si no hay.
   const [abiertas, setAbiertas] = useState<Set<number>>(() => {
@@ -268,6 +276,7 @@ export default function CategoriasPreguntas({
         return;
       }
       setNueva("");
+      setMostrarCrearCategoria(false);
       router.refresh();
     } catch {
       setError("No se pudo crear la categoría.");
@@ -370,41 +379,88 @@ export default function CategoriasPreguntas({
 
   return (
     <div className="faqs-admin-root">
-      {/* Formulario compacto de creación de categoría */}
-      <div className="panel-box faqs-crear-box">
-        <div className="faqs-crear-head">
-          <h2>Administración de categorías</h2>
-          <p>
-            Creá temas para agrupar las preguntas. Las categorías inactivas o sin
-            preguntas no se publican en el sitio.
+      {/* Encabezado unificado de la sección con acciones principales */}
+      <div className="panel-head">
+        <div>
+          <h1 className="panel-title">Preguntas frecuentes</h1>
+          <p className="panel-lead">
+            Administrá las categorías y las preguntas de la página pública. Las
+            preguntas inactivas o las categorías sin preguntas activas no se
+            muestran en el sitio.
           </p>
         </div>
-        <div className="faqs-crear-fila">
-          <input
-            type="text"
-            value={nueva}
-            onChange={(e) => setNueva(e.target.value)}
-            placeholder="Nombre de la nueva categoría (ej. Inscripción, Cursada, Requisitos)"
-            aria-label="Nombre de la nueva categoría"
-            disabled={ocupado}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                crear();
-              }
-            }}
-          />
+        <div className="faqs-acciones-principales">
           <button
             type="button"
-            className="btn-primary btn-sm"
-            onClick={crear}
-            disabled={ocupado || !nueva.trim()}
+            className="btn-ghost-dark btn-sm"
+            onClick={() => {
+              setMostrarCrearCategoria((prev) => !prev);
+              setError(null);
+            }}
+            aria-expanded={mostrarCrearCategoria}
           >
-            + Crear categoría
+            {mostrarCrearCategoria ? "Cerrar" : "+ Nueva categoría"}
           </button>
+          <Link
+            href="/panel/preguntas-frecuentes/nueva"
+            className="btn-primary btn-sm"
+          >
+            + Nueva pregunta
+          </Link>
         </div>
-        {error && <p className="form-error">{error}</p>}
       </div>
+
+      {/* Formulario colapsable para crear categoría */}
+      {mostrarCrearCategoria && (
+        <div className="panel-box faqs-crear-box animate-fade-in">
+          <div className="faqs-crear-head">
+            <h2>Crear nueva categoría</h2>
+            <p>
+              Agrupá tus preguntas en temas. Las categorías se crean por defecto en estado activo.
+            </p>
+          </div>
+          <div className="faqs-crear-fila">
+            <input
+              ref={inputNuevaCategoriaRef}
+              type="text"
+              value={nueva}
+              onChange={(e) => setNueva(e.target.value)}
+              placeholder="Nombre de la nueva categoría (ej. Inscripción, Cursada, Requisitos)"
+              aria-label="Nombre de la nueva categoría"
+              disabled={ocupado}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  crear();
+                } else if (e.key === "Escape") {
+                  setMostrarCrearCategoria(false);
+                }
+              }}
+            />
+            <button
+              type="button"
+              className="btn-primary btn-sm"
+              onClick={crear}
+              disabled={ocupado || !nueva.trim()}
+            >
+              Crear categoría
+            </button>
+            <button
+              type="button"
+              className="btn-ghost-dark btn-sm"
+              onClick={() => {
+                setMostrarCrearCategoria(false);
+                setNueva("");
+                setError(null);
+              }}
+              disabled={ocupado}
+            >
+              Cancelar
+            </button>
+          </div>
+          {error && <p className="form-error">{error}</p>}
+        </div>
+      )}
 
       {/* Lista de categorías desplegables tipo acordeón */}
       {categorias.length === 0 ? (
@@ -512,13 +568,39 @@ export default function CategoriasPreguntas({
                         </span>
                       </button>
 
-                      <MenuAccionesCategoria
-                        categoria={categoria}
-                        disabled={ocupado}
-                        onElegir={(accion) =>
-                          onAccionCategoria(accion, categoria)
-                        }
-                      />
+                      <div className="faqs-categoria-cabecera-acciones">
+                        <Link
+                          href={`/panel/preguntas-frecuentes/nueva?categoriaId=${categoria.id}`}
+                          className="faq-btn-agregar-pregunta"
+                          title={`Agregar pregunta a ${categoria.nombre}`}
+                          aria-label={`Agregar pregunta a la categoría ${categoria.nombre}`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <svg
+                            viewBox="0 0 20 20"
+                            width="16"
+                            height="16"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <line x1="10" y1="4" x2="10" y2="16" />
+                            <line x1="4" y1="10" x2="16" y2="10" />
+                          </svg>
+                          <span className="faq-btn-agregar-texto">Pregunta</span>
+                        </Link>
+
+                        <MenuAccionesCategoria
+                          categoria={categoria}
+                          disabled={ocupado}
+                          onElegir={(accion) =>
+                            onAccionCategoria(accion, categoria)
+                          }
+                        />
+                      </div>
                     </>
                   )}
                 </div>
@@ -557,7 +639,7 @@ export default function CategoriasPreguntas({
                       <div className="faq-categoria-vacia">
                         <p>No hay preguntas en esta categoría todavía.</p>
                         <Link
-                          href="/panel/preguntas-frecuentes/nueva"
+                          href={`/panel/preguntas-frecuentes/nueva?categoriaId=${categoria.id}`}
                           className="btn-ghost-dark btn-sm"
                         >
                           + Agregar pregunta
