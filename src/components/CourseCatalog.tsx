@@ -9,9 +9,7 @@ import {
   nombresDocentes,
 } from "@/lib/cursoUtils";
 
-/// Cantidad de cursos por página en el catálogo público. El listado se filtra
-/// del lado del cliente (ya se descargan todos los cursos para armar el filtro
-/// por rubro), así que la paginación también es local.
+/// Cantidad de cursos por página en el catálogo público.
 const CURSOS_POR_PAGINA = 6;
 
 type Docente = { id: number; nombre: string; apellido: string };
@@ -38,41 +36,108 @@ function CourseCard({ curso }: { curso: Curso }) {
   const cuposBajos = curso.cupos !== null && curso.cupos <= 5;
 
   return (
-    <div className="course-card">
-      {curso.imagenUrl && (
+    <article className="course-card">
+      {curso.imagenUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img className="course-img" src={curso.imagenUrl} alt={curso.nombre} />
+      ) : (
+        <div className="course-img-placeholder" aria-hidden="true">
+          <span className="course-placeholder-icon">
+            {iconoCurso(curso.emoji, curso.categoria?.nombre)}
+          </span>
+          <span className="course-placeholder-tag">
+            {curso.categoria?.nombre ?? "Capacitación laboral"}
+          </span>
+        </div>
       )}
+
       <div className="course-top">
         <div className="course-icon">
           {iconoCurso(curso.emoji, curso.categoria?.nombre)}
         </div>
         {curso.cupos !== null && (
           <span className={`cupos${cuposBajos ? " pocos" : ""}`}>
-            {curso.cupos} cupos
+            {cuposBajos ? `¡Últimos ${curso.cupos} cupos!` : `${curso.cupos} cupos`}
           </span>
         )}
       </div>
-      <h3>{curso.nombre}</h3>
+
+      <h3>
+        <Link href={`/cursos/${curso.id}`} className="course-title-link">
+          {curso.nombre}
+        </Link>
+      </h3>
+
       <p>{curso.descripcion ?? "Información disponible próximamente."}</p>
+
       <p className="course-docente">
-        Docente: {nombresDocentes(curso.docentes)}
+        <strong>Docente:</strong> {nombresDocentes(curso.docentes)}
         {" · "}Inicia {formatearFecha(curso.fechaInicio)}
-        {curso.sede ? ` · Sede: ${curso.sede}` : ""}
       </p>
+
       <div className="course-tags">
-        {curso.horarios && <span className="tag">{curso.horarios}</span>}
+        {curso.horarios && (
+          <span className="tag">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            {curso.horarios}
+          </span>
+        )}
         {curso.mesesCursada && (
-          <span className="tag">Duración: {curso.mesesCursada}</span>
+          <span className="tag">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              aria-hidden="true"
+            >
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            Duración: {curso.mesesCursada}
+          </span>
+        )}
+        {curso.sede && (
+          <span className="tag">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              aria-hidden="true"
+            >
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            {curso.sede}
+          </span>
         )}
       </div>
+
       <div className="course-meta">
-        <span className="course-gratis">Gratuito</span>
+        <span className="course-gratis">100% Gratuito</span>
         <Link href={`/cursos/${curso.id}`} className="course-link">
           Ver detalle →
         </Link>
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -116,8 +181,7 @@ export default function CourseCatalog() {
 
   const hayFiltros = busqueda.trim() !== "" || rubro !== "";
 
-  // Cualquier cambio de filtro vuelve a la primera página para no quedar en una
-  // página que ya no tiene resultados.
+  // Cualquier cambio de filtro vuelve a la primera página
   useEffect(() => {
     setPagina(1);
   }, [busqueda, rubro]);
@@ -155,14 +219,40 @@ export default function CourseCatalog() {
       <section className="filters-sec">
         <div className="wrap">
           <div className="filters-grid">
-            <input
-              type="text"
-              className="filter-input"
-              placeholder="Buscar por nombre de curso o palabra clave..."
-              aria-label="Buscar cursos por nombre o palabra clave"
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-            />
+            <div className="filter-search-wrap">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                className="search-icon"
+                aria-hidden="true"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                className="filter-input filter-input-with-icon"
+                placeholder="Buscar por nombre de curso o palabra clave..."
+                aria-label="Buscar cursos por nombre o palabra clave"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+              />
+              {busqueda && (
+                <button
+                  type="button"
+                  className="search-clear-btn"
+                  aria-label="Limpiar búsqueda"
+                  onClick={() => setBusqueda("")}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
             <select
               className="filter-select"
               aria-label="Filtrar cursos por rubro"
@@ -177,6 +267,49 @@ export default function CourseCatalog() {
               ))}
             </select>
           </div>
+
+          {rubros.length > 0 && (
+            <div className="filter-chips">
+              <button
+                type="button"
+                className={`filter-chip${rubro === "" ? " active" : ""}`}
+                onClick={() => setRubro("")}
+              >
+                Todos
+              </button>
+              {rubros.map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  className={`filter-chip${rubro === r ? " active" : ""}`}
+                  onClick={() => setRubro(r)}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {categorias !== null && (
+            <div className="courses-results-bar">
+              <span className="courses-count">
+                {cursosFiltrados.length === 1
+                  ? "1 curso disponible"
+                  : `${cursosFiltrados.length} cursos disponibles`}
+                {rubro ? ` en ${rubro}` : ""}
+                {busqueda.trim() ? ` para "${busqueda.trim()}"` : ""}
+              </span>
+              {hayFiltros && (
+                <button
+                  type="button"
+                  className="link-limpiar-filtros"
+                  onClick={limpiarFiltros}
+                >
+                  Restablecer filtros
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
@@ -203,7 +336,7 @@ export default function CourseCatalog() {
             <div className="courses-empty">
               <p>
                 No encontramos cursos con esos filtros. Probá con otros
-                términos.
+                términos o cambiá el rubro seleccionado.
               </p>
               {hayFiltros && (
                 <button
@@ -223,7 +356,10 @@ export default function CourseCatalog() {
                 ))}
               </div>
               {totalPaginas > 1 && (
-                <nav className="paginacion" aria-label="Paginación del catálogo de cursos">
+                <nav
+                  className="paginacion"
+                  aria-label="Paginación del catálogo de cursos"
+                >
                   <button
                     type="button"
                     className="btn-sm btn-ghost-dark"
