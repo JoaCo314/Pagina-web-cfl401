@@ -1948,51 +1948,345 @@ a {
   flex: 0 0 auto;
   white-space: nowrap;
 }
-.panel-nav {
-  position: relative;
-  background: var(--cfl-white);
-  border-bottom: 1px solid rgba(18, 42, 69, 0.1);
+/* ── Layout Sidebar y Topbar del Panel Administrativo ──────── */
+.panel-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f8fb;
 }
-.panel-nav-inner {
+
+.panel-sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(14, 32, 56, 0.55);
+  backdrop-filter: blur(2px);
+  z-index: 90;
+}
+
+.panel-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--cfl-navy);
+  color: var(--cfl-white);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 50;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.panel-sidebar-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  height: 64px;
 }
-.panel-nav-burger {
-  display: none;
-}
-.panel-nav-links {
+
+.panel-sidebar-brand {
   display: flex;
-  /* Envolver en vez de scrollear: con las 11 secciones del administrador los
-     links medían 1353px contra 1124px disponibles y "Consultas" quedaba
-     totalmente fuera de pantalla en todos los anchos. Con wrap pasan a dos
-     filas y ninguna sección se corta. */
-  flex-wrap: wrap;
   align-items: center;
-  gap: 0 6px;
-}
-.panel-nav-item {
-  padding: 14px 18px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--cfl-ink);
-  /* 0.55 daba 3.76:1 contra el blanco del nav; con 0.70 el link inactivo
-     queda en ~5.5:1 (AA) y sigue destacando menos que el activo (opacity 1). */
-  opacity: 0.7;
-  white-space: nowrap;
-  cursor: default;
+  gap: 10px;
   text-decoration: none;
+  color: var(--cfl-white);
+  font-family: var(--font-poppins), sans-serif;
 }
-a.panel-nav-item {
+
+.panel-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-brand-name {
+  font-weight: 700;
+  font-size: 15.5px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.panel-brand-sub {
+  font-size: 11px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.panel-sidebar-close {
+  display: none;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.panel-sidebar-close:hover {
+  color: var(--cfl-white);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.panel-sidebar-nav {
+  flex: 1;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.panel-sidebar-nav::-webkit-scrollbar {
+  width: 5px;
+}
+.panel-sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.panel-sidebar-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-sidebar-group-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.45);
+  padding: 0 10px 6px;
+}
+
+.panel-sidebar-group-items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.panel-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
   cursor: pointer;
 }
-a.panel-nav-item:hover {
+
+.panel-sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--cfl-white);
+}
+
+.panel-sidebar-item.active {
+  background: rgba(62, 143, 204, 0.22);
+  color: var(--cfl-white);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--cfl-blue);
+}
+
+.panel-sidebar-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
   opacity: 0.8;
 }
-.panel-nav-item.active {
-  color: var(--cfl-navy-2);
+
+.panel-sidebar-item.active .panel-sidebar-icon {
   opacity: 1;
+  color: var(--cfl-blue);
+}
+
+.panel-sidebar-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Pie de barra lateral con perfil */
+.panel-sidebar-footer {
+  margin-top: auto;
+  padding: 14px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.panel-user-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.panel-user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--cfl-blue-deep);
+  color: var(--cfl-white);
+  font-weight: 700;
+  font-size: 12.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.panel-user-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.panel-user-name {
+  font-size: 13px;
   font-weight: 600;
-  box-shadow: inset 0 -3px 0 var(--cfl-blue);
+  color: var(--cfl-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.panel-user-role {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.panel-user-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-user-action-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 5px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.panel-user-action-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--cfl-white);
+}
+
+.panel-user-logout:hover {
+  background: rgba(214, 69, 69, 0.2);
+  border-color: rgba(214, 69, 69, 0.4);
+  color: #ff9999;
+}
+
+/* Área de contenido y cabecera superior */
+.panel-content-area {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.panel-topbar {
+  background: var(--cfl-white);
+  height: 64px;
+  border-bottom: 1px solid rgba(18, 42, 69, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.panel-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.panel-burger-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 6px;
+  background: none;
+  border: 1px solid rgba(18, 42, 69, 0.15);
+  color: var(--cfl-navy);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.panel-burger-btn:hover {
+  background: var(--cfl-blue-light);
+}
+
+.panel-topbar-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.panel-topbar-context {
+  color: var(--cfl-muted);
+  font-size: 13.5px;
+}
+
+.panel-topbar-separator {
+  color: rgba(18, 42, 69, 0.25);
+}
+
+.panel-topbar-current {
+  color: var(--cfl-navy);
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+.panel-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.panel-topbar-right .panel-campana {
+  background: rgba(18, 42, 69, 0.04);
+  border: 1px solid rgba(18, 42, 69, 0.14);
+  color: var(--cfl-navy);
+}
+
+.panel-topbar-right .panel-campana:hover {
+  background: rgba(18, 42, 69, 0.08);
 }
 .panel-main {
   padding: 40px 28px 64px;
@@ -2097,13 +2391,74 @@ a.panel-nav-item:hover {
   grid-column: 1 / -1;
 }
 .panel-card-link {
-  display: block;
+  display: flex;
+  flex-direction: column;
   color: inherit;
-  transition: box-shadow 0.15s, border-color 0.15s;
+  text-decoration: none;
+  transition: box-shadow 0.15s, border-color 0.15s, transform 0.15s;
 }
 .panel-card-link:hover {
   border-color: var(--cfl-blue);
   box-shadow: 0 14px 28px -16px rgba(18, 42, 69, 0.28);
+  transform: translateY(-2px);
+}
+.panel-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.panel-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.panel-card-title-group h2 {
+  margin-bottom: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--cfl-navy);
+}
+.panel-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 7px;
+  background: var(--cfl-blue-light);
+  color: var(--cfl-blue-deep);
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.panel-card-link:hover .panel-card-icon {
+  background: var(--cfl-blue);
+  color: var(--cfl-white);
+}
+.panel-card-arrow {
+  color: var(--cfl-blue);
+  font-size: 18px;
+  line-height: 1;
+  transition: transform 0.15s;
+  opacity: 0.6;
+}
+.panel-card-link:hover .panel-card-arrow {
+  transform: translateX(4px);
+  opacity: 1;
+}
+.panel-card-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--cfl-blue-light);
+  color: var(--cfl-blue-deep);
+  white-space: nowrap;
+}
+.panel-card-badge.alerta {
+  background: #fde8e8;
+  color: #b23a3a;
 }
 .panel-lista {
   list-style: none;
@@ -4523,6 +4878,31 @@ a.panel-nav-item:hover {
 }
 
 /* ── Panel administrativo responsive (RNF-02) ────────────── */
+@media (max-width: 1024px) {
+  .panel-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 270px;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease-in-out;
+    z-index: 100;
+    box-shadow: 6px 0 24px rgba(0, 0, 0, 0.25);
+  }
+  .panel-sidebar.abierto {
+    transform: translateX(0);
+  }
+  .panel-sidebar-close {
+    display: flex;
+  }
+  .panel-burger-btn {
+    display: inline-flex;
+  }
+  .panel-topbar {
+    padding: 0 16px;
+  }
+}
 @media (max-width: 900px) {
   .panel-user-info {
     display: none;
@@ -4538,83 +4918,8 @@ a.panel-nav-item:hover {
   .panel-main {
     padding: 24px 16px 48px;
   }
-  .panel-header-inner {
-    gap: 10px;
-  }
-  .panel-nav-inner {
-    padding-left: 16px;
-    padding-right: 16px;
-    min-height: 56px;
-    justify-content: space-between;
-  }
-  .panel-nav-burger {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    width: 40px;
-    height: 40px;
-    padding: 8px;
-    border: 1px solid rgba(18, 42, 69, 0.15);
-    border-radius: 8px;
-    background: none;
-    cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease;
-  }
-  .panel-nav-burger:hover {
-    background: var(--cfl-blue-light);
-    border-color: rgba(18, 42, 69, 0.35);
-  }
-  .panel-nav-burger:hover span {
-    background: var(--cfl-blue-deep);
-  }
-  .panel-nav-burger span {
-    display: block;
-    width: 20px;
-    height: 2px;
-    border-radius: 2px;
-    background: var(--cfl-ink);
-    transition: transform 0.2s ease, opacity 0.2s ease;
-  }
-  .panel-nav.abierto .panel-nav-burger span:nth-child(1) {
-    transform: translateY(7px) rotate(45deg);
-  }
-  .panel-nav.abierto .panel-nav-burger span:nth-child(2) {
-    opacity: 0;
-  }
-  .panel-nav.abierto .panel-nav-burger span:nth-child(3) {
-    transform: translateY(-7px) rotate(-45deg);
-  }
-  /* `absolute` resuelve contra `.panel-nav` (el `position: relative`), no contra el
-     `.wrap` que ahora contiene los links. */
-  .panel-nav-links {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    flex-direction: column;
-    /* El modo escritorio deja `flex-wrap: wrap` para que las 11 secciones
-       pasen a dos filas. Acá, en columna + max-height, ese wrap colaba las
-       secciones a una segunda COLUMNA (scroll lateral 750px). Con nowrap es
-       un desplegable de una columna y el sobrante scrollea en vertical. */
-    flex-wrap: nowrap;
-    align-items: stretch;
-    gap: 0;
-    background: var(--cfl-white);
-    border-bottom: 1px solid rgba(18, 42, 69, 0.1);
-    box-shadow: 0 12px 24px rgba(18, 42, 69, 0.08);
-    z-index: 40;
-    max-height: min(60vh, 480px);
-    overflow-y: auto;
-  }
-  .panel-nav.abierto .panel-nav-links {
-    display: flex;
-  }
-  .panel-nav-links .panel-nav-item {
-    width: 100%;
-    border-bottom: 1px solid rgba(18, 42, 69, 0.06);
+  .panel-topbar-breadcrumb {
+    font-size: 13px;
   }
   .panel-head {
     flex-direction: column;
