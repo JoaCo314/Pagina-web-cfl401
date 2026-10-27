@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/panel/ConfirmDialog";
+import EliminarPregunta from "@/components/panel/EliminarPregunta";
 import { fetchConTimeout, TimeoutError } from "@/lib/fetchTimeout";
+import type { CategoriaPreguntaListable } from "@/lib/preguntasFrecuentes";
 
 export type CategoriaListable = {
   id: number;
@@ -13,12 +16,213 @@ export type CategoriaListable = {
   _count: { preguntas: number };
 };
 
-/// Gestión inline de categorías de preguntas frecuentes desde el panel:
-/// crear, renombrar, activar/desactivar y eliminar.
+type AccionCategoria = "renombrar" | "alternar" | "eliminar";
+
+/// Menú ⋮ de acciones secundarias de una categoría (Renombrar, Activar/Desactivar, Eliminar).
+/// Se ancla con `position: fixed` para evitar recortes de overflow y no activa el acordeón al hacer clic.
+function MenuAccionesCategoria({
+  categoria,
+  onElegir,
+  disabled,
+}: {
+  categoria: CategoriaPreguntaListable;
+  onElegir: (accion: AccionCategoria) => void;
+  disabled: boolean;
+}) {
+  const [abierto, setAbierto] = useState(false);
+  const [posicion, setPosicion] = useState({ top: -10000, left: -10000 });
+  const menuId = useId();
+  const disparadorRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const cerrarMenu = useCallback((devolverFoco: boolean) => {
+    setAbierto(false);
+    if (devolverFoco) disparadorRef.current?.focus();
+  }, []);
+
+  const posicionarMenu = useCallback(() => {
+    const disparador = disparadorRef.current;
+    const menu = menuRef.current;
+    if (!disparador || !menu) return false;
+    const marco = disparador.getBoundingClientRect();
+    if (marco.bottom < 0 || marco.top > window.innerHeight) return false;
+    const alto = menu.offsetHeight;
+    const ancho = menu.offsetWidth;
+    let top = marco.bottom + 6;
+    if (top + alto > window.innerHeight - 8) {
+      top = Math.max(8, marco.top - 6 - alto);
+    }
+    let left = marco.right - ancho;
+    if (left < 8) left = 8;
+    setPosicion({ top, left });
+    return true;
+  }, []);
+
+  function abrirMenu() {
+    if (!posicionarMenu()) return;
+    setAbierto(true);
+  }
+
+  useEffect(() => {
+    if (!abierto) return;
+    menuRef.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
+  }, [abierto]);
+
+  useEffect(() => {
+    if (!abierto) return;
+    function alPointerDown(evento: PointerEvent) {
+      const destino = evento.target as Node | null;
+      if (!destino) return;
+      if (menuRef.current?.contains(destino)) return;
+      if (disparadorRef.current?.contains(destino)) return;
+      cerrarMenu(false);
+    }
+    document.addEventListener("pointerdown", alPointerDown);
+    return () => document.removeEventListener("pointerdown", alPointerDown);
+  }, [abierto, cerrarMenu]);
+
+  useEffect(() => {
+    if (!abierto) return;
+    function alMoverVista() {
+      if (!posicionarMenu()) cerrarMenu(false);
+    }
+    window.addEventListener("scroll", alMoverVista, true);
+    window.addEventListener("resize", alMoverVista);
+    return () => {
+      window.removeEventListener("scroll", alMoverVista, true);
+      window.removeEventListener("resize", alMoverVista);
+    };
+  }, [abierto, cerrarMenu, posicionarMenu]);
+
+  function alTeclar(evento: React.KeyboardEvent<HTMLDivElement>) {
+    const items = Array.from(
+      menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []
+    );
+    if (items.length === 0) return;
+    const indice = items.indexOf(document.activeElement as HTMLElement);
+    switch (evento.key) {
+      case "Escape":
+        evento.preventDefault();
+        cerrarMenu(true);
+        break;
+      case "ArrowDown":
+        evento.preventDefault();
+        items[(indice + 1 + items.length) % items.length].focus();
+        break;
+      case "ArrowUp":
+        evento.preventDefault();
+        items[(indice - 1 + items.length) % items.length].focus();
+        break;
+      case "Home":
+        evento.preventDefault();
+        items[0].focus();
+        break;
+      case "End":
+        evento.preventDefault();
+        items[items.length - 1].focus();
+        break;
+      default:
+        break;
+    }
+  }
+
+  function ejecutar(tipo: AccionCategoria) {
+    disparadorRef.current?.focus();
+    setAbierto(false);
+    onElegir(tipo);
+  }
+
+  return (
+    <div className="faq-menu-contenedor" onClick={(e) => e.stopPropagation()}>
+      <button
+        ref={disparadorRef}
+        type="button"
+        className="mas-acciones"
+        aria-haspopup="menu"
+        aria-expanded={abierto}
+        aria-controls={menuId}
+        aria-label={`Acciones de categoría ${categoria.nombre}`}
+        disabled={disabled}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (abierto) {
+            cerrarMenu(true);
+          } else {
+            abrirMenu();
+          }
+        }}
+      >
+        <svg
+          viewBox="0 0 20 20"
+          width="18"
+          height="18"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <circle cx="10" cy="4.2" r="1.8" fill="currentColor" />
+          <circle cx="10" cy="10" r="1.8" fill="currentColor" />
+          <circle cx="10" cy="15.8" r="1.8" fill="currentColor" />
+        </svg>
+      </button>
+
+      <div
+        id={menuId}
+        ref={menuRef}
+        className="menu-acciones"
+        role="menu"
+        aria-label={`Acciones de categoría ${categoria.nombre}`}
+        aria-orientation="vertical"
+        aria-hidden={!abierto}
+        style={{
+          top: posicion.top,
+          left: posicion.left,
+          visibility: abierto ? "visible" : "hidden",
+          pointerEvents: abierto ? "auto" : "none",
+        }}
+        onBlur={(evento) => {
+          const destino = evento.relatedTarget as Node | null;
+          if (destino && evento.currentTarget.contains(destino)) return;
+          cerrarMenu(false);
+        }}
+        onKeyDown={alTeclar}
+      >
+        <button
+          type="button"
+          role="menuitem"
+          onClick={() => ejecutar("renombrar")}
+        >
+          Renombrar
+        </button>
+        <button
+          type="button"
+          role="menuitem"
+          className={categoria.activo ? "menu-item-peligro" : "menu-item-ok"}
+          onClick={() => ejecutar("alternar")}
+        >
+          {categoria.activo ? "Desactivar" : "Activar"}
+        </button>
+        <button
+          type="button"
+          role="menuitem"
+          className="menu-item-peligro"
+          onClick={() => ejecutar("eliminar")}
+        >
+          Eliminar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/// Panel interactivo de preguntas frecuentes:
+/// - Creación compacta de categorías.
+/// - Lista de categorías desplegables en acordeón.
+/// - Menú de 3 puntos para acciones de categoría.
+/// - Tabla estructurada y fija de preguntas con posición numérica real.
 export default function CategoriasPreguntas({
   categorias,
 }: {
-  categorias: CategoriaListable[];
+  categorias: CategoriaPreguntaListable[];
 }) {
   const router = useRouter();
   const [nueva, setNueva] = useState("");
@@ -26,8 +230,24 @@ export default function CategoriasPreguntas({
   const [editandoNombre, setEditandoNombre] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
-  // Categoría a la que le corresponde el diálogo de eliminación.
-  const [porEliminar, setPorEliminar] = useState<CategoriaListable | null>(null);
+  const [porEliminar, setPorEliminar] = useState<CategoriaPreguntaListable | null>(null);
+
+  // Inicializar con la primera categoría expandida si existe, o vacía si no hay.
+  const [abiertas, setAbiertas] = useState<Set<number>>(() => {
+    return categorias.length > 0 ? new Set([categorias[0].id]) : new Set();
+  });
+
+  function toggleCategoria(id: number) {
+    setAbiertas((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
 
   async function crear() {
     const nombre = nueva.trim();
@@ -83,7 +303,7 @@ export default function CategoriasPreguntas({
     }
   }
 
-  async function alternarActiva(categoria: CategoriaListable) {
+  async function alternarActiva(categoria: CategoriaPreguntaListable) {
     setOcupado(true);
     setError(null);
     try {
@@ -110,7 +330,7 @@ export default function CategoriasPreguntas({
     }
   }
 
-  async function eliminar(categoria: CategoriaListable) {
+  async function eliminar(categoria: CategoriaPreguntaListable) {
     setOcupado(true);
     setError(null);
     try {
@@ -137,137 +357,311 @@ export default function CategoriasPreguntas({
     }
   }
 
+  function onAccionCategoria(accion: AccionCategoria, categoria: CategoriaPreguntaListable) {
+    if (accion === "renombrar") {
+      setEditandoId(categoria.id);
+      setEditandoNombre(categoria.nombre);
+    } else if (accion === "alternar") {
+      alternarActiva(categoria);
+    } else if (accion === "eliminar") {
+      setPorEliminar(categoria);
+    }
+  }
+
   return (
-    <div className="panel-box">
-      <div className="panel-box-head">
-        <h2>Categorías</h2>
-        <p>
-          Agrupá las preguntas por tema. Las categorías sin preguntas activas no
-          se muestran en el sitio.
-        </p>
+    <div className="faqs-admin-root">
+      {/* Formulario compacto de creación de categoría */}
+      <div className="panel-box faqs-crear-box">
+        <div className="faqs-crear-head">
+          <h2>Administración de categorías</h2>
+          <p>
+            Creá temas para agrupar las preguntas. Las categorías inactivas o sin
+            preguntas no se publican en el sitio.
+          </p>
+        </div>
+        <div className="faqs-crear-fila">
+          <input
+            type="text"
+            value={nueva}
+            onChange={(e) => setNueva(e.target.value)}
+            placeholder="Nombre de la nueva categoría (ej. Inscripción, Cursada, Requisitos)"
+            aria-label="Nombre de la nueva categoría"
+            disabled={ocupado}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                crear();
+              }
+            }}
+          />
+          <button
+            type="button"
+            className="btn-primary btn-sm"
+            onClick={crear}
+            disabled={ocupado || !nueva.trim()}
+          >
+            + Crear categoría
+          </button>
+        </div>
+        {error && <p className="form-error">{error}</p>}
       </div>
 
-      <div className="categorias-crear">
-        <input
-          type="text"
-          value={nueva}
-          onChange={(e) => setNueva(e.target.value)}
-          placeholder="Nombre de la nueva categoría"
-          aria-label="Nombre de la nueva categoría"
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              crear();
-            }
-          }}
-        />
-        <button
-          type="button"
-          className="btn-primary btn-sm"
-          onClick={crear}
-          disabled={ocupado || !nueva.trim()}
-        >
-          Crear categoría
-        </button>
-      </div>
-
-      {error && <p className="form-error">{error}</p>}
-
+      {/* Lista de categorías desplegables tipo acordeón */}
       {categorias.length === 0 ? (
-        <p className="form-aviso">
-          Todavía no hay categorías. Creá la primera para poder agregar
-          preguntas frecuentes.
+        <p className="panel-vacio">
+          Todavía no hay categorías creadas. Creá la primera categoría arriba
+          para empezar a cargar preguntas frecuentes.
         </p>
       ) : (
-        <ul className="categorias-lista">
-          {categorias.map((categoria) => (
-            <li key={categoria.id} className="categoria-fila">
-              {editandoId === categoria.id ? (
-                <>
-                  <input
-                    type="text"
-                    value={editandoNombre}
-                    onChange={(e) => setEditandoNombre(e.target.value)}
-                    aria-label={`Nombre de ${categoria.nombre}`}
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        guardar(categoria.id);
-                      }
-                      if (e.key === "Escape") setEditandoId(null);
-                    }}
-                  />
-                  <div className="acciones-curso">
-                    <button
-                      type="button"
-                      className="link-accion"
-                      onClick={() => guardar(categoria.id)}
-                      disabled={ocupado}
+        <div className="faqs-acordeon-lista">
+          {categorias.map((categoria) => {
+            const abierta = abiertas.has(categoria.id);
+            const totalPreguntas = categoria.preguntas.length;
+            const esEditando = editandoId === categoria.id;
+
+            return (
+              <div
+                key={categoria.id}
+                className={`panel-box faqs-acordeon-item ${
+                  !categoria.activo ? "categoria-inactiva" : ""
+                } ${abierta ? "item-abierto" : ""}`}
+              >
+                {/* Cabecera del acordeón */}
+                <div className="faqs-acordeon-head">
+                  {esEditando ? (
+                    <div
+                      className="faqs-acordeon-renombrar"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      Guardar
-                    </button>
-                    <button
-                      type="button"
-                      className="link-accion"
-                      onClick={() => setEditandoId(null)}
-                      disabled={ocupado}
-                    >
-                      Cancelar
-                    </button>
+                      <input
+                        type="text"
+                        value={editandoNombre}
+                        onChange={(e) => setEditandoNombre(e.target.value)}
+                        aria-label={`Nombre de ${categoria.nombre}`}
+                        autoFocus
+                        disabled={ocupado}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            guardar(categoria.id);
+                          }
+                          if (e.key === "Escape") setEditandoId(null);
+                        }}
+                      />
+                      <div className="faqs-renombrar-acciones">
+                        <button
+                          type="button"
+                          className="btn-primary btn-sm"
+                          onClick={() => guardar(categoria.id)}
+                          disabled={ocupado || !editandoNombre.trim()}
+                        >
+                          Guardar
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-ghost-dark btn-sm"
+                          onClick={() => setEditandoId(null)}
+                          disabled={ocupado}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        className="faqs-acordeon-trigger"
+                        onClick={() => toggleCategoria(categoria.id)}
+                        aria-expanded={abierta}
+                        aria-controls={`faq-categoria-contenido-${categoria.id}`}
+                      >
+                        <svg
+                          className={`faqs-acordeon-chevron ${
+                            abierta ? "rotado" : ""
+                          }`}
+                          viewBox="0 0 20 20"
+                          width="18"
+                          height="18"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.4"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <polyline points="6 8 10 12 14 8" />
+                        </svg>
+
+                        <div className="faqs-acordeon-info">
+                          <h3 className="faqs-acordeon-titulo">
+                            {categoria.nombre}
+                          </h3>
+                          <span className="faqs-acordeon-contador">
+                            {totalPreguntas}{" "}
+                            {totalPreguntas === 1 ? "pregunta" : "preguntas"}
+                          </span>
+                        </div>
+
+                        <span
+                          className={`badge-estado ${
+                            categoria.activo ? "ok" : "off"
+                          }`}
+                        >
+                          {categoria.activo ? "Activa" : "Inactiva"}
+                        </span>
+                      </button>
+
+                      <MenuAccionesCategoria
+                        categoria={categoria}
+                        disabled={ocupado}
+                        onElegir={(accion) =>
+                          onAccionCategoria(accion, categoria)
+                        }
+                      />
+                    </>
+                  )}
+                </div>
+
+                {/* Contenido desplegable: listado de preguntas */}
+                {abierta && (
+                  <div
+                    id={`faq-categoria-contenido-${categoria.id}`}
+                    className="faqs-acordeon-body"
+                    role="region"
+                    aria-label={`Preguntas de ${categoria.nombre}`}
+                  >
+                    {!categoria.activo && (
+                      <div className="faq-aviso-inactiva">
+                        <svg
+                          viewBox="0 0 20 20"
+                          width="16"
+                          height="16"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        <span>
+                          Esta categoría está inactiva: ninguna de sus preguntas
+                          se muestra en el sitio público hasta que sea reactivada.
+                        </span>
+                      </div>
+                    )}
+
+                    {totalPreguntas === 0 ? (
+                      <div className="faq-categoria-vacia">
+                        <p>No hay preguntas en esta categoría todavía.</p>
+                        <Link
+                          href="/panel/preguntas-frecuentes/nueva"
+                          className="btn-ghost-dark btn-sm"
+                        >
+                          + Agregar pregunta
+                        </Link>
+                      </div>
+                    ) : (
+                      <div className="panel-table-wrap">
+                        <table className="panel-table panel-table-faqs">
+                          <colgroup>
+                            <col className="col-faq-pregunta" />
+                            <col className="col-faq-orden" />
+                            <col className="col-faq-estado" />
+                            <col className="col-faq-acciones" />
+                          </colgroup>
+                          <thead>
+                            <tr>
+                              <th scope="col">Pregunta</th>
+                              <th scope="col" className="th-center">
+                                Orden
+                              </th>
+                              <th scope="col" className="th-center">
+                                Estado
+                              </th>
+                              <th scope="col" className="th-right">
+                                Acciones
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {categoria.preguntas.map((pregunta, idx) => {
+                              // Mostrar la posición numérica real: si tiene orden definido se muestra,
+                              // y si es null se muestra su posición ordenada en la lista (sin guiones).
+                              const posicionOrden =
+                                pregunta.orden !== null &&
+                                pregunta.orden !== undefined
+                                  ? pregunta.orden
+                                  : idx + 1;
+
+                              return (
+                                <tr key={pregunta.id}>
+                                  <td
+                                    data-label="Pregunta"
+                                    className="td-faq-pregunta"
+                                  >
+                                    <strong className="faq-texto-pregunta">
+                                      {pregunta.pregunta}
+                                    </strong>
+                                  </td>
+                                  <td
+                                    data-label="Orden"
+                                    className="td-faq-orden td-center"
+                                  >
+                                    <span
+                                      className="badge-orden"
+                                      title={`Posición ${posicionOrden}`}
+                                    >
+                                      {posicionOrden}
+                                    </span>
+                                  </td>
+                                  <td
+                                    data-label="Estado"
+                                    className="td-faq-estado td-center"
+                                  >
+                                    <span
+                                      className={`badge-estado ${
+                                        pregunta.activo ? "ok" : "off"
+                                      }`}
+                                    >
+                                      {pregunta.activo ? "Visible" : "Inactiva"}
+                                    </span>
+                                  </td>
+                                  <td
+                                    data-label="Acciones"
+                                    className="td-faq-acciones td-right"
+                                  >
+                                    <div className="acciones-curso acciones-faq">
+                                      <Link
+                                        href={`/panel/preguntas-frecuentes/${pregunta.id}/editar`}
+                                        className="link-accion"
+                                      >
+                                        Editar
+                                      </Link>
+                                      <EliminarPregunta
+                                        preguntaId={pregunta.id}
+                                        texto={pregunta.pregunta}
+                                      />
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </div>
-                </>
-              ) : (
-                <>
-                  <div className="categoria-info">
-                    <strong>{categoria.nombre}</strong>
-                    <small>
-                      {categoria._count.preguntas}{" "}
-                      {categoria._count.preguntas === 1
-                        ? "pregunta"
-                        : "preguntas"}{" "}
-                      · {categoria.activo ? "activa" : "inactiva"}
-                    </small>
-                  </div>
-                  <div className="acciones-curso">
-                    <button
-                      type="button"
-                      className="link-accion"
-                      onClick={() => {
-                        setEditandoId(categoria.id);
-                        setEditandoNombre(categoria.nombre);
-                      }}
-                      disabled={ocupado}
-                    >
-                      Renombrar
-                    </button>
-                    <button
-                      type="button"
-                      className="link-accion"
-                      onClick={() => alternarActiva(categoria)}
-                      disabled={ocupado}
-                    >
-                      {categoria.activo ? "Desactivar" : "Activar"}
-                    </button>
-                    <button
-                      type="button"
-                      className="link-accion link-eliminar"
-                      onClick={() => {
-                        setError(null);
-                        setPorEliminar(categoria);
-                      }}
-                      disabled={ocupado}
-                    >
-                      Eliminar
-                    </button>
-                  </div>
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
+                )}
+              </div>
+            );
+          })}
+        </div>
       )}
 
+      {/* Diálogo accesible de confirmación para eliminar categoría */}
       {porEliminar && (
         <ConfirmDialog
           abierto
@@ -276,9 +670,9 @@ export default function CategoriasPreguntas({
           ocupado={ocupado}
           confirmar="Eliminar"
           mensaje={`Se va a eliminar la categoría "${porEliminar.nombre}"${
-            porEliminar._count.preguntas > 0
-              ? ` y sus ${porEliminar._count.preguntas} pregunta${
-                  porEliminar._count.preguntas === 1 ? "" : "s"
+            porEliminar.preguntas.length > 0
+              ? ` y sus ${porEliminar.preguntas.length} pregunta${
+                  porEliminar.preguntas.length === 1 ? "" : "s"
                 }`
               : ""
           }. Esta acción no se puede deshacer.`}
