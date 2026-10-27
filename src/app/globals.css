@@ -4043,16 +4043,22 @@ a {
 .consulta {
   background: var(--cfl-white);
   border: 1.5px solid rgba(18, 42, 69, 0.1);
-  border-left: 4px solid var(--cfl-blue);
+  border-left: 5px solid var(--cfl-blue);
   border-radius: 8px;
-  padding: 16px 18px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.consulta:not(.leida) {
+  background: color-mix(in srgb, var(--cfl-blue-light) 40%, var(--cfl-white));
+  border-color: rgba(62, 143, 204, 0.35);
+  box-shadow: 0 4px 12px rgba(18, 42, 69, 0.05);
 }
 .consulta.leida {
   border-left-color: rgba(18, 42, 69, 0.2);
-  opacity: 0.78;
+  opacity: 0.85;
 }
 .consulta-cabecera {
   display: flex;
