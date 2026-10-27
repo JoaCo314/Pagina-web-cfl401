@@ -220,19 +220,33 @@ function MenuAccionesCategoria({
 /// - Menú de 3 puntos para acciones de categoría.
 /// - Tabla estructurada y fija de preguntas con posición numérica real.
 export default function CategoriasPreguntas({
-  categorias,
+  categorias: categoriasIniciales,
 }: {
   categorias: CategoriaPreguntaListable[];
 }) {
   const router = useRouter();
+  const [categorias, setCategorias] = useState(categoriasIniciales);
   const [nueva, setNueva] = useState("");
   const [mostrarCrearCategoria, setMostrarCrearCategoria] = useState(false);
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const [editandoNombre, setEditandoNombre] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
+  const [reordenando, setReordenando] = useState(false);
   const [porEliminar, setPorEliminar] = useState<CategoriaPreguntaListable | null>(null);
+  const [arrastrandoPregunta, setArrastrandoPregunta] = useState<{
+    categoriaId: number;
+    indice: number;
+  } | null>(null);
+  const [sobrePregunta, setSobrePregunta] = useState<{
+    categoriaId: number;
+    indice: number;
+  } | null>(null);
   const inputNuevaCategoriaRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setCategorias(categoriasIniciales);
+  }, [categoriasIniciales]);
 
   useEffect(() => {
     if (mostrarCrearCategoria) {
@@ -364,6 +378,74 @@ export default function CategoriasPreguntas({
     } finally {
       setOcupado(false);
     }
+  }
+
+  async function guardarReordenamiento(
+    categoriaId: number,
+    nuevasPreguntas: CategoriaPreguntaListable["preguntas"]
+  ) {
+    const ordenIds = nuevasPreguntas.map((p) => p.id);
+    setReordenando(true);
+    try {
+      const res = await fetch("/api/preguntas-frecuentes/reordenar", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ categoriaId, ordenIds }),
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as { error?: string } | null;
+        setError(data?.error ?? "No se pudo guardar el nuevo orden.");
+        router.refresh();
+      }
+    } catch {
+      setError("No se pudo conectar con el servidor para guardar el orden.");
+      router.refresh();
+    } finally {
+      setReordenando(false);
+    }
+  }
+
+  function moverPregunta(categoriaId: number, indiceOrigen: number, direccion: "arriba" | "abajo") {
+    const indiceDestino = direccion === "arriba" ? indiceOrigen - 1 : indiceOrigen + 1;
+    setCategorias((prev) =>
+      prev.map((cat) => {
+        if (cat.id !== categoriaId) return cat;
+        if (indiceDestino < 0 || indiceDestino >= cat.preguntas.length) return cat;
+
+        const copia = [...cat.preguntas];
+        const [movido] = copia.splice(indiceOrigen, 1);
+        copia.splice(indiceDestino, 0, movido);
+
+        const actualizadas = copia.map((p, idx) => ({ ...p, orden: idx + 1 }));
+        guardarReordenamiento(categoriaId, actualizadas);
+        return { ...cat, preguntas: actualizadas };
+      })
+    );
+  }
+
+  function reordenarPorDrag(categoriaId: number, indiceOrigen: number, indiceDestino: number) {
+    if (indiceOrigen === indiceDestino) return;
+    setCategorias((prev) =>
+      prev.map((cat) => {
+        if (cat.id !== categoriaId) return cat;
+        if (
+          indiceOrigen < 0 ||
+          indiceOrigen >= cat.preguntas.length ||
+          indiceDestino < 0 ||
+          indiceDestino >= cat.preguntas.length
+        ) {
+          return cat;
+        }
+
+        const copia = [...cat.preguntas];
+        const [movido] = copia.splice(indiceOrigen, 1);
+        copia.splice(indiceDestino, 0, movido);
+
+        const actualizadas = copia.map((p, idx) => ({ ...p, orden: idx + 1 }));
+        guardarReordenamiento(categoriaId, actualizadas);
+        return { ...cat, preguntas: actualizadas };
+      })
+    );
   }
 
   function onAccionCategoria(accion: AccionCategoria, categoria: CategoriaPreguntaListable) {
@@ -649,6 +731,7 @@ export default function CategoriasPreguntas({
                       <div className="panel-table-wrap">
                         <table className="panel-table panel-table-faqs">
                           <colgroup>
+                            <col className="col-faq-drag" />
                             <col className="col-faq-pregunta" />
                             <col className="col-faq-orden" />
                             <col className="col-faq-estado" />
@@ -656,6 +739,7 @@ export default function CategoriasPreguntas({
                           </colgroup>
                           <thead>
                             <tr>
+                              <th scope="col" aria-label="Mover" className="th-center" />
                               <th scope="col">Pregunta</th>
                               <th scope="col" className="th-center">
                                 Orden
@@ -678,8 +762,90 @@ export default function CategoriasPreguntas({
                                   ? pregunta.orden
                                   : idx + 1;
 
+                              const esPrimero = idx === 0;
+                              const esUltimo = idx === categoria.preguntas.length - 1;
+                              const esArrastrado =
+                                arrastrandoPregunta?.categoriaId === categoria.id &&
+                                arrastrandoPregunta?.indice === idx;
+                              const esSobre =
+                                sobrePregunta?.categoriaId === categoria.id &&
+                                sobrePregunta?.indice === idx;
+
                               return (
-                                <tr key={pregunta.id}>
+                                <tr
+                                  key={pregunta.id}
+                                  draggable
+                                  onDragStart={() => {
+                                    setArrastrandoPregunta({
+                                      categoriaId: categoria.id,
+                                      indice: idx,
+                                    });
+                                  }}
+                                  onDragOver={(e) => {
+                                    e.preventDefault();
+                                    if (
+                                      arrastrandoPregunta &&
+                                      arrastrandoPregunta.categoriaId === categoria.id &&
+                                      arrastrandoPregunta.indice !== idx
+                                    ) {
+                                      setSobrePregunta({
+                                        categoriaId: categoria.id,
+                                        indice: idx,
+                                      });
+                                    }
+                                  }}
+                                  onDragLeave={() => {
+                                    if (
+                                      sobrePregunta?.categoriaId === categoria.id &&
+                                      sobrePregunta?.indice === idx
+                                    ) {
+                                      setSobrePregunta(null);
+                                    }
+                                  }}
+                                  onDrop={(e) => {
+                                    e.preventDefault();
+                                    if (
+                                      arrastrandoPregunta &&
+                                      arrastrandoPregunta.categoriaId === categoria.id
+                                    ) {
+                                      reordenarPorDrag(
+                                        categoria.id,
+                                        arrastrandoPregunta.indice,
+                                        idx
+                                      );
+                                    }
+                                    setArrastrandoPregunta(null);
+                                    setSobrePregunta(null);
+                                  }}
+                                  onDragEnd={() => {
+                                    setArrastrandoPregunta(null);
+                                    setSobrePregunta(null);
+                                  }}
+                                  className={`faq-fila-arrastrable ${
+                                    esArrastrado ? "faq-fila-arrastrando" : ""
+                                  } ${esSobre ? "faq-fila-sobre" : ""}`}
+                                >
+                                  <td className="td-faq-drag" data-label="Arrastrar">
+                                    <span
+                                      className="faq-drag-handle"
+                                      title="Arrastrar para reordenar"
+                                      aria-hidden="true"
+                                    >
+                                      <svg
+                                        viewBox="0 0 20 20"
+                                        width="16"
+                                        height="16"
+                                        fill="currentColor"
+                                      >
+                                        <circle cx="7" cy="5" r="1.5" />
+                                        <circle cx="13" cy="5" r="1.5" />
+                                        <circle cx="7" cy="10" r="1.5" />
+                                        <circle cx="13" cy="10" r="1.5" />
+                                        <circle cx="7" cy="15" r="1.5" />
+                                        <circle cx="13" cy="15" r="1.5" />
+                                      </svg>
+                                    </span>
+                                  </td>
                                   <td
                                     data-label="Pregunta"
                                     className="td-faq-pregunta"
@@ -692,12 +858,62 @@ export default function CategoriasPreguntas({
                                     data-label="Orden"
                                     className="td-faq-orden td-center"
                                   >
-                                    <span
-                                      className="badge-orden"
-                                      title={`Posición ${posicionOrden}`}
-                                    >
-                                      {posicionOrden}
-                                    </span>
+                                    <div className="faq-control-orden">
+                                      <span
+                                        className="badge-orden"
+                                        title={`Posición ${posicionOrden}`}
+                                      >
+                                        {posicionOrden}
+                                      </span>
+                                      <div className="faq-flechas-orden">
+                                        <button
+                                          type="button"
+                                          className="faq-btn-orden"
+                                          disabled={esPrimero || reordenando}
+                                          onClick={() =>
+                                            moverPregunta(categoria.id, idx, "arriba")
+                                          }
+                                          title="Mover arriba"
+                                          aria-label={`Mover "${pregunta.pregunta}" arriba`}
+                                        >
+                                          <svg
+                                            viewBox="0 0 20 20"
+                                            width="12"
+                                            height="12"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2.4"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          >
+                                            <polyline points="4 13 10 7 16 13" />
+                                          </svg>
+                                        </button>
+                                        <button
+                                          type="button"
+                                          className="faq-btn-orden"
+                                          disabled={esUltimo || reordenando}
+                                          onClick={() =>
+                                            moverPregunta(categoria.id, idx, "abajo")
+                                          }
+                                          title="Mover abajo"
+                                          aria-label={`Mover "${pregunta.pregunta}" abajo`}
+                                        >
+                                          <svg
+                                            viewBox="0 0 20 20"
+                                            width="12"
+                                            height="12"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2.4"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          >
+                                            <polyline points="4 7 10 13 16 7" />
+                                          </svg>
+                                        </button>
+                                      </div>
+                                    </div>
                                   </td>
                                   <td
                                     data-label="Estado"

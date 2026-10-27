@@ -2635,11 +2635,14 @@ a.panel-nav-item:hover {
   table-layout: fixed;
   width: 100%;
 }
+.panel-table-faqs .col-faq-drag {
+  width: 36px;
+}
 .panel-table-faqs .col-faq-pregunta {
   width: auto;
 }
 .panel-table-faqs .col-faq-orden {
-  width: 80px;
+  width: 108px;
 }
 .panel-table-faqs .col-faq-estado {
   width: 110px;
@@ -2664,6 +2667,83 @@ a.panel-nav-item:hover {
 .faq-texto-pregunta {
   font-weight: 600;
   color: var(--cfl-navy);
+}
+
+/* Manija y filas para Drag & Drop */
+.panel-table-faqs tr.faq-fila-arrastrable {
+  transition: background-color 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+}
+.panel-table-faqs tr.faq-fila-arrastrando {
+  opacity: 0.4;
+  background-color: rgba(31, 111, 235, 0.08);
+}
+.panel-table-faqs tr.faq-fila-sobre {
+  background-color: rgba(31, 111, 235, 0.06);
+  border-top: 2px dashed var(--cfl-blue);
+}
+.td-faq-drag {
+  text-align: center;
+  padding-left: 6px;
+  padding-right: 0;
+}
+.faq-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cfl-navy-2);
+  opacity: 0.35;
+  cursor: grab;
+  padding: 4px;
+  border-radius: 4px;
+  transition: opacity 0.15s ease, color 0.15s ease;
+  user-select: none;
+}
+.faq-drag-handle:active {
+  cursor: grabbing;
+}
+.panel-table-faqs tr:hover .faq-drag-handle {
+  opacity: 0.85;
+  color: var(--cfl-navy);
+}
+
+/* Celda y controles de orden (híbrido número + micro-flechas) */
+.faq-control-orden {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.faq-flechas-orden {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.faq-btn-orden {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 14px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--cfl-navy-2);
+  opacity: 0.45;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.panel-table-faqs tr:hover .faq-btn-orden:not(:disabled) {
+  opacity: 0.85;
+}
+.faq-btn-orden:hover:not(:disabled) {
+  opacity: 1;
+  color: var(--cfl-blue);
+  background: rgba(31, 111, 235, 0.1);
+}
+.faq-btn-orden:disabled {
+  opacity: 0.12;
+  cursor: not-allowed;
 }
 .badge-orden {
   display: inline-flex;
