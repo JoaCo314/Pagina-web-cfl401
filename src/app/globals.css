@@ -3035,13 +3035,38 @@ a {
 }
 .foot-bottom {
   border-top: 1px solid var(--cfl-line);
-  padding-top: 18px;
+  padding-top: 20px;
+  font-size: 12.5px;
+}
+.foot-bottom-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.foot-institutional {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  opacity: 0.68;
   font-size: 12px;
-  opacity: 0.5;
+}
+.foot-legal {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 12px;
+  opacity: 0.85;
+}
+.foot-admin-link {
+  color: rgba(255, 255, 255, 0.65);
+  text-decoration: none;
+  font-size: 12px;
+  transition: color 0.15s ease;
+}
+.foot-admin-link:hover {
+  color: var(--cfl-blue-light);
+  text-decoration: underline;
 }
 /* El texto de la columna del CFL tenía un style inline con estas mismas tres
    propiedades. */
