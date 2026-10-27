@@ -2047,6 +2047,105 @@ a {
   max-width: 780px;
   margin: 0 auto;
 }
+.faq-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 36px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(18, 42, 69, 0.1);
+}
+.faq-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.faq-search-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--cfl-muted);
+  pointer-events: none;
+}
+.faq-search-input {
+  width: 100%;
+  padding: 13px 40px 13px 40px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(18, 42, 69, 0.18);
+  font-family: inherit;
+  font-size: 14.5px;
+  background: #fbfcfd;
+  color: var(--cfl-ink);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.faq-search-input:focus {
+  outline: none;
+  border-color: var(--cfl-blue);
+  box-shadow: 0 0 0 3px rgba(62, 143, 204, 0.2);
+  background: var(--cfl-white);
+}
+.faq-clear-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--cfl-muted);
+  font-size: 15px;
+  cursor: pointer;
+  padding: 4px;
+}
+.faq-clear-btn:hover {
+  color: var(--cfl-ink);
+}
+.faq-toggle-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--cfl-muted);
+}
+.faq-action-link {
+  background: none;
+  border: none;
+  color: var(--cfl-blue-deep);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-size: 13px;
+}
+.faq-action-link:hover {
+  text-decoration: underline;
+}
+.faq-search-status {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cfl-navy);
+  margin-bottom: 24px;
+}
+.faq-footer-help {
+  margin-top: 56px;
+  padding: 32px;
+  background: #f4f8fc;
+  border: 1.5px solid rgba(18, 42, 69, 0.1);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.faq-help-content h3 {
+  font-size: 18px;
+  color: var(--cfl-navy);
+  margin-bottom: 6px;
+}
+.faq-help-content p {
+  font-size: 14px;
+  color: var(--cfl-ink);
+  opacity: 0.75;
+  margin: 0;
+  max-width: 480px;
+}
 .faq-categoria {
   margin-bottom: 38px;
 }
