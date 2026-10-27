@@ -78,7 +78,7 @@ export default function ContactoForm({
           <label className="form-field"><span>Título</span><input type="text" value={datos.contactoTitulo} onChange={(e) => setCampo("contactoTitulo", e.target.value)} placeholder="Contacto" /></label>
           <label className="form-field"><span>Subtítulo</span><input type="text" value={datos.contactoSubtitulo} onChange={(e) => setCampo("contactoSubtitulo", e.target.value)} placeholder="Escribinos y te respondemos a la brevedad." /></label>
           <label className="form-field"><span>Email</span><input type="text" inputMode="email" value={datos.contactoEmail} onChange={(e) => setCampo("contactoEmail", e.target.value)} placeholder="cfl401azul@gmail.com" /></label>
-          <label className="form-field"><span>Teléfono</span><input type="text" value={datos.contactoTelefono} onChange={(e) => setCampo("contactoTelefono", e.target.value)} /></label>
+          <label className="form-field"><span>Teléfono</span><input type="tel" inputMode="tel" pattern="[0-9+() \-]*" value={datos.contactoTelefono} onChange={(e) => setCampo("contactoTelefono", e.target.value)} /></label>
           <label className="form-field"><span>Dirección</span><input type="text" value={datos.contactoDireccion} onChange={(e) => setCampo("contactoDireccion", e.target.value)} /></label>
           <label className="form-field"><span>Horarios</span><input type="text" value={datos.contactoHorarios} onChange={(e) => setCampo("contactoHorarios", e.target.value)} /></label>
           <label className="form-field"><span>Email destinatario del formulario</span><input type="text" inputMode="email" value={datos.contactoFormDestinatario} onChange={(e) => setCampo("contactoFormDestinatario", e.target.value)} /></label>

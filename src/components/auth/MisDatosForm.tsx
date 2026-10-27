@@ -124,6 +124,8 @@ export default function MisDatosForm({ inicial }: { inicial: DatosIniciales }) {
         <input
           type="tel"
           name="telefono"
+          inputMode="tel"
+          pattern="[0-9+() \-]*"
           maxLength={25}
           autoComplete="tel"
           placeholder="Ej.: +54 9 2284 12-3456"

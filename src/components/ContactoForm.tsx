@@ -104,6 +104,8 @@ export default function ContactoForm() {
         <input
           type="tel"
           name="celular"
+          inputMode="tel"
+          pattern="[0-9+() \-]*"
           maxLength={60}
           autoComplete="tel"
           placeholder="Ej.: +54 9 2281 55-1234"

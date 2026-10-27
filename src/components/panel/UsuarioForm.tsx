@@ -180,12 +180,13 @@ export default function UsuarioForm({
         <input
           type="text"
           name="dni"
+          pattern="[0-9]*"
           inputMode="numeric"
           required
           maxLength={8}
           autoComplete="off"
           value={dni}
-          onChange={(e) => setDni(e.target.value)}
+          onChange={(e) => setDni(e.target.value.replace(/\D/g, ""))}
           placeholder="Ej: 30123456"
         />
       </label>
