@@ -116,7 +116,7 @@ export default function TablaAuditoria({
               <th scope="col">Usuario</th>
               <th scope="col">Acción</th>
               <th scope="col">Detalle</th>
-              <th scope="col" className="th-right sr-only">Acciones</th>
+              <th scope="col" className="auditoria-th-boton sr-only">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -161,7 +161,7 @@ export default function TablaAuditoria({
                     <span className="auditoria-sin-dato">—</span>
                   )}
                 </td>
-                <td data-label="" className="td-right">
+                <td data-label="" className="auditoria-celda-boton">
                   <button
                     type="button"
                     className="btn-auditoria-ver"

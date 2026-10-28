@@ -4278,8 +4278,13 @@ a {
   width: auto;
 }
 .auditoria-col-boton {
-  width: 115px;
-  text-align: right;
+  width: 130px;
+  text-align: center;
+}
+
+.auditoria-tabla th.auditoria-th-boton,
+.auditoria-tabla td.auditoria-celda-boton {
+  text-align: center;
 }
 
 .auditoria-tabla th.th-right,
@@ -4315,6 +4320,7 @@ a {
   border-radius: 6px;
   cursor: pointer;
   white-space: nowrap;
+  margin: 0 auto;
   transition: all 0.15s ease;
 }
 .btn-auditoria-ver:hover {
@@ -5754,8 +5760,11 @@ a {
   .auditoria-tabla colgroup {
     display: none;
   }
-  .auditoria-tabla td.td-right {
-    text-align: right;
+  .auditoria-tabla td.td-right,
+  .auditoria-tabla td.auditoria-celda-boton {
+    text-align: center;
+    display: flex;
+    justify-content: center;
   }
 }
 
