@@ -9,6 +9,14 @@ import {
   type Noticia,
 } from "@/lib/noticiaUtils";
 
+function sanitizarContenidoHtml(html?: string | null): string | null {
+  if (!html?.trim()) return null;
+  if (typeof window !== "undefined" && typeof DOMPurify?.sanitize === "function") {
+    return DOMPurify.sanitize(html);
+  }
+  return html;
+}
+
 type Estado =
   | { estado: "cargando" }
   | { estado: "no-encontrado" }
@@ -125,9 +133,7 @@ export default function NoticiaDetail({ id }: { id: number }) {
 
   const { noticia } = estado;
   const parrafos = dividirParrafos(noticia.contenido);
-  const cuerpoHtml = noticia.contenidoHtml
-    ? DOMPurify.sanitize(noticia.contenidoHtml)
-    : null;
+  const cuerpoHtml = sanitizarContenidoHtml(noticia.contenidoHtml);
 
   return (
     <section className="wrap detail-body" id="contenido" tabIndex={-1}>

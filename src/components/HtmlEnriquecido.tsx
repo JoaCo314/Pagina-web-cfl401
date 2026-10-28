@@ -1,6 +1,7 @@
 "use client";
 
 import DOMPurify from "dompurify";
+import { useMemo } from "react";
 import {
   ATRIBUTOS_HTML_PERMITIDOS,
   ETIQUETAS_HTML_PERMITIDAS,
@@ -27,9 +28,14 @@ export default function HtmlEnriquecido({
   textoPlano?: string | null;
   className?: string;
 }) {
-  const htmlLimpio = html?.trim()
-    ? DOMPurify.sanitize(html, CONFIG_DOMPURIFY)
-    : null;
+  const htmlLimpio = useMemo(() => {
+    if (!html?.trim()) return null;
+    if (typeof window !== "undefined" && typeof DOMPurify?.sanitize === "function") {
+      return DOMPurify.sanitize(html, CONFIG_DOMPURIFY);
+    }
+    return html;
+  }, [html]);
+
   const clases = ["contenido-enriquecido", className].filter(Boolean).join(" ");
 
   if (htmlLimpio) {
