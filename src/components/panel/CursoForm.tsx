@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { DocenteAsignable, CategoriaCursoOpcion } from "@/lib/cursoAdmin";
 import EditorTextoEnriquecido from "@/components/panel/EditorTextoEnriquecido";
@@ -540,16 +541,9 @@ export default function CursoForm({
               ? "Guardar cambios"
               : "Crear curso"}
         </button>
-        <a
-          href="/panel/cursos"
-          className="btn-ghost-dark"
-          onClick={(e) => {
-            e.preventDefault();
-            router.push("/panel/cursos");
-          }}
-        >
+        <Link href="/panel/cursos" className="btn-ghost-dark">
           Cancelar
-        </a>
+        </Link>
       </div>
     </form>
   );

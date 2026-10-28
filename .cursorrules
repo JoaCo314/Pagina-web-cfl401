@@ -1,0 +1,11 @@
+# Reglas del proyecto CFL 401
+
+## Reconstrucción y despliegue con Docker
+Cada vez que se solicite reconstruir o reiniciar los contenedores locales de Docker:
+1. **Puerto estricto:** El servicio `web` debe mapearse siempre y únicamente al puerto host **4088** (`4088:3000`). Nunca modificar este puerto.
+2. **Variables de entorno:** Preservar intactas las variables del servicio `web` en `docker-compose.yml` (`DATABASE_URL`, `AUTH_SECRET`, etc.).
+3. **Persistencia de datos:** No destruir, recrear ni resetear el contenedor o volumen de la base de datos (`postgres_data`). Reconstruir únicamente el servicio web mediante:
+   ```bash
+   docker compose build web && docker compose up -d web
+   ```
+4. **Verificación de conexión:** Confirmar que `/api/health` responda con estado saludable (`database: { status: 'ok' }`) antes de dar por finalizada la tarea.

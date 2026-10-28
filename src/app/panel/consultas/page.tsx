@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { exigirContrasenaActualizada, getCurrentUser } from "@/lib/auth/session";
 import {
@@ -80,20 +81,20 @@ export default async function ConsultasPanelPage({
           </p>
         </div>
         <nav className="filtros-consultas" aria-label="Filtrar consultas">
-          <a
+          <Link
             href="/panel/consultas"
             className={soloNuevas ? "btn-sm btn-ghost-dark" : "btn-sm btn-primary"}
             aria-current={!soloNuevas ? "page" : undefined}
           >
             Todas
-          </a>
-          <a
+          </Link>
+          <Link
             href="/panel/consultas?filtro=nuevas"
             className={soloNuevas ? "btn-sm btn-primary" : "btn-sm btn-ghost-dark"}
             aria-current={soloNuevas ? "page" : undefined}
           >
             Sin leer{totalNuevas > 0 ? ` (${totalNuevas})` : ""}
-          </a>
+          </Link>
         </nav>
       </div>
 

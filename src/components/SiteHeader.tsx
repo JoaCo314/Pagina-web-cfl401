@@ -17,6 +17,7 @@ export default async function SiteHeader({ active }: SiteHeaderProps) {
       sesionIniciada={user !== null}
       logoUrl={config?.logoUrl ?? "/cfl401azul_logo.jpg"}
       logoAlt={config?.logoAlt ?? "CFL 401 Azul"}
+      telefono={config?.contactoTelefono ?? null}
     />
   );
 }

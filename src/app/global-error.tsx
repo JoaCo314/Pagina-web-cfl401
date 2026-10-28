@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 
-/// Última red de seguridad: atrapa errores que rompan el layout raíz (que
-/// `error.tsx` no alcanza) y por eso necesita su propio <html>/<body>.
+/// Última red de seguridad: atrapa errores que rompan el layout raíz y
+/// por eso necesita su propio <html>/<body>.
 export default function GlobalError({
   error,
   reset,
@@ -17,7 +17,18 @@ export default function GlobalError({
 
   return (
     <html lang="es">
-      <body>
+      <head>
+        <title>Error del servicio — CFL 401 Azul</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
+      <body
+        style={{
+          margin: 0,
+          background: "#122a45",
+          color: "#ffffff",
+          fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        }}
+      >
         <main
           style={{
             minHeight: "100vh",
@@ -25,27 +36,39 @@ export default function GlobalError({
             alignItems: "center",
             justifyContent: "center",
             padding: 24,
-            fontFamily: "system-ui, sans-serif",
             textAlign: "center",
           }}
         >
-          <div>
-            <h1 style={{ fontSize: 24, marginBottom: 8 }}>
+          <div style={{ maxWidth: 520 }}>
+            <div
+              style={{
+                fontSize: 72,
+                fontWeight: 700,
+                opacity: 0.9,
+                lineHeight: 1,
+                marginBottom: 16,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              500
+            </div>
+            <h1 style={{ fontSize: 24, fontWeight: 600, marginBottom: 12 }}>
               Ups, algo salió mal
             </h1>
-            <p style={{ marginBottom: 20 }}>
-              Ocurrió un error inesperado. Recargá la página para intentar de
-              nuevo.
+            <p style={{ fontSize: 16, opacity: 0.85, lineHeight: 1.5, marginBottom: 24 }}>
+              Ocurrió un error inesperado al conectar con el servidor. Recargá la página para intentar de nuevo.
             </p>
             <button
               type="button"
               onClick={reset}
               style={{
-                padding: "10px 18px",
-                borderRadius: 8,
+                padding: "12px 24px",
+                borderRadius: 6,
                 border: "none",
-                background: "#1f4d8f",
-                color: "#fff",
+                background: "#2a6ea3",
+                color: "#ffffff",
+                fontSize: 15,
+                fontWeight: 600,
                 cursor: "pointer",
               }}
             >

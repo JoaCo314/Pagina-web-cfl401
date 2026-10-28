@@ -11,7 +11,11 @@ import PreguntaForm from "@/components/panel/PreguntaForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function NuevaPreguntaPage() {
+export default async function NuevaPreguntaPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ categoriaId?: string }>;
+}) {
   const user = await getCurrentUser();
 
   if (!user) {
@@ -44,6 +48,11 @@ export default async function NuevaPreguntaPage() {
 
   const secciones = obtenerSeccionesPanel(user);
 
+  const params = await searchParams;
+  const categoriaIdPorDefecto = params?.categoriaId
+    ? parseInt(params.categoriaId, 10)
+    : undefined;
+
   return (
     <PanelShell user={user} secciones={secciones}>
       <h1 className="panel-title">Nueva pregunta frecuente</h1>
@@ -51,7 +60,12 @@ export default async function NuevaPreguntaPage() {
         La pregunta y su respuesta son obligatorias. Se publica de inmediato en
         el sitio.
       </p>
-      <PreguntaForm categorias={categorias} />
+      <PreguntaForm
+        categorias={categorias}
+        categoriaIdPorDefecto={
+          Number.isFinite(categoriaIdPorDefecto) ? categoriaIdPorDefecto : undefined
+        }
+      />
     </PanelShell>
   );
 }

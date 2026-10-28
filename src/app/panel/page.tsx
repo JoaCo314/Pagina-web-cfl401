@@ -11,6 +11,7 @@ import {
 import { ROLES } from "@/lib/auth/roles";
 import { prisma } from "@/lib/prisma";
 import PanelShell from "@/components/auth/PanelShell";
+import { IconoSeccion } from "@/components/panel/IconoSeccion";
 
 export const dynamic = "force-dynamic";
 
@@ -103,6 +104,17 @@ export default async function PanelPage() {
     sobreElCentroCargado = sobre !== null;
   }
 
+  let consultasNuevas = 0;
+  if (tienePermiso(user, PERMISOS.CONSULTAS_VER)) {
+    consultasNuevas = await prisma.mensajeContacto.count({
+      where: { leido: false },
+    });
+  }
+
+  const notificacionesSinLeer = await prisma.notificacion.count({
+    where: { usuarioId: user.id, leida: false },
+  });
+
   const atajos = secciones.filter((s) => s.clave !== "inicio");
 
   return (
@@ -134,7 +146,7 @@ export default async function PanelPage() {
         </div>
       )}
 
-      <h2 className="panel-seccion-titulo">Atajos</h2>
+      <h2 className="panel-seccion-titulo">Atajos rápidos</h2>
       <section className="panel-cards">
         {misCursos && (
           <article className="panel-card panel-card-wide">
@@ -166,16 +178,49 @@ export default async function PanelPage() {
           </article>
         )}
 
-        {atajos.map((seccion) => (
-          <Link
-            key={seccion.clave}
-            href={seccion.href ?? "/panel"}
-            className="panel-card panel-card-link"
-          >
-            <h2>{seccion.titulo}</h2>
-            <p>{seccion.descripcion}</p>
-          </Link>
-        ))}
+        {atajos.map((seccion) => {
+          let badge: { texto: string; alerta?: boolean } | null = null;
+          if (seccion.clave === "consultas" && consultasNuevas > 0) {
+            badge = {
+              texto: `${consultasNuevas} ${consultasNuevas === 1 ? "nueva" : "nuevas"}`,
+              alerta: true,
+            };
+          } else if (seccion.clave === "notificaciones" && notificacionesSinLeer > 0) {
+            badge = {
+              texto: `${notificacionesSinLeer} sin leer`,
+              alerta: true,
+            };
+          }
+
+          return (
+            <Link
+              key={seccion.clave}
+              href={seccion.href ?? "/panel"}
+              className="panel-card panel-card-link"
+            >
+              <div className="panel-card-head">
+                <div className="panel-card-title-group">
+                  <span className="panel-card-icon">
+                    <IconoSeccion clave={seccion.clave} size={20} />
+                  </span>
+                  <h2>{seccion.titulo}</h2>
+                </div>
+                {badge ? (
+                  <span
+                    className={`panel-card-badge${badge.alerta ? " alerta" : ""}`}
+                  >
+                    {badge.texto}
+                  </span>
+                ) : (
+                  <span className="panel-card-arrow" aria-hidden="true">
+                    →
+                  </span>
+                )}
+              </div>
+              <p>{seccion.descripcion}</p>
+            </Link>
+          );
+        })}
       </section>
     </PanelShell>
   );

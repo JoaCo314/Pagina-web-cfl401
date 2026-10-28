@@ -72,7 +72,7 @@ export async function obtenerContextoChat(ahora = new Date()): Promise<string> {
     informacionParcial: cursos.length > 100 || preguntas.length > 30 || guia.length > 10,
     cursosVigentes: cursos.slice(0, 100).map((c) => ({
       nombre: texto(c.nombre, 200), enlace: `/cursos/${c.id}`,
-      descripcion: texto(c.descripcion, 400), categoria: texto(c.categoria, 100),
+      descripcion: texto(c.descripcion, 400), categoria: texto(c.categoria?.nombre, 100),
       modalidad: texto(c.modalidad, 100), horarios: texto(c.horarios, 200),
       mesesCursada: texto(c.mesesCursada, 100), sede: texto(c.sede, 200),
       fechaInicio: c.fechaInicio?.toISOString().slice(0, 10) ?? null,

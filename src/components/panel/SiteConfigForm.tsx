@@ -1,6 +1,7 @@
 "use client";
 // Creado por sofia-athos - Formulario editable para banner, logo, footer y contactos
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { SiteConfigData } from "@/lib/siteConfig";
 import CampoImagen from "@/components/panel/CampoImagen";
@@ -179,7 +180,7 @@ export default function SiteConfigForm({ inicial }: Props) {
         {error && <p className="form-error">{error}</p>}
         <div className="form-actions">
           <button type="submit" className="btn-primary btn-sm" disabled={enviando}>{enviando ? "Guardando…" : "Guardar configuración"}</button>
-          <a href="/panel" className="btn-ghost-dark" onClick={(e) => { e.preventDefault(); router.push("/panel"); }}>Cancelar</a>
+          <Link href="/panel" className="btn-ghost-dark">Cancelar</Link>
         </div>
       </form>
     </div>

@@ -14,6 +14,26 @@ import {
   type RegistroAuditoriaUI,
 } from "@/lib/auditoriaPresentacion";
 
+/// Obtiene el estilo de badge correspondiente al tipo de acción
+function badgeAccionClass(accion: string): string {
+  switch (accion) {
+    case "crear":
+    case "activar":
+      return "badge-accion badge-accion-crear";
+    case "editar":
+    case "asignar_docentes":
+      return "badge-accion badge-accion-editar";
+    case "eliminar":
+    case "desactivar":
+      return "badge-accion badge-accion-eliminar";
+    case "blanquear_password":
+    case "bloquear_cuenta":
+      return "badge-accion badge-accion-seguridad";
+    default:
+      return "badge-accion badge-accion-neutro";
+  }
+}
+
 /// Listado de acciones de la auditoría con su panel de detalle. La tabla
 /// muestra lo esencial (fecha compacta, quién, qué hizo y sobre qué); el
 /// detalle no se vuelca en crudo sino en un panel lateral de solo lectura,
@@ -83,12 +103,20 @@ export default function TablaAuditoria({
           <caption className="sr-only">
             Registro de acciones administrativas con su fecha, autor y detalle
           </caption>
+          <colgroup>
+            <col className="auditoria-col-fecha" />
+            <col className="auditoria-col-usuario" />
+            <col className="auditoria-col-accion" />
+            <col className="auditoria-col-detalle" />
+            <col className="auditoria-col-boton" />
+          </colgroup>
           <thead>
             <tr>
               <th scope="col">Fecha y hora</th>
               <th scope="col">Usuario</th>
               <th scope="col">Acción</th>
               <th scope="col">Detalle</th>
+              <th scope="col" className="auditoria-th-boton sr-only">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -99,7 +127,7 @@ export default function TablaAuditoria({
                     {fechaCompacta(registro.createdAt)}
                   </time>
                 </td>
-                <td data-label="Usuario">
+                <td data-label="Usuario" className="auditoria-celda-usuario">
                   {registro.usuarioNombre ? (
                     <>
                       <strong>{registro.usuarioNombre}</strong>
@@ -117,35 +145,51 @@ export default function TablaAuditoria({
                   )}
                 </td>
                 <td data-label="Acción">
-                  <span className="auditoria-accion">
-                    {ETIQUETAS_ACCION[registro.accion] ?? registro.accion}
-                  </span>
-                  <span className="td-sub">
-                    {ETIQUETAS_RECURSO[registro.recurso] ?? registro.recurso}
-                  </span>
+                  <div className="auditoria-celda-accion">
+                    <span className={badgeAccionClass(registro.accion)}>
+                      {ETIQUETAS_ACCION[registro.accion] ?? registro.accion}
+                    </span>
+                    <span className="td-sub">
+                      {ETIQUETAS_RECURSO[registro.recurso] ?? registro.recurso}
+                    </span>
+                  </div>
                 </td>
                 <td data-label="Detalle">
-                  <div className="auditoria-detalle-celda">
-                    {registro.resumen ? (
-                      <p className="auditoria-resumen">{registro.resumen}</p>
-                    ) : (
-                      <span className="auditoria-sin-dato">—</span>
-                    )}
-                    <button
-                      type="button"
-                      className="btn-ghost-dark btn-sm"
-                      onClick={() => setAbierto(registro)}
-                      aria-label={
-                        registro.resumen
-                          ? `Ver detalles de ${registro.resumen}`
-                          : "Ver detalles de la acción"
-                      }
+                  {registro.resumen ? (
+                    <p className="auditoria-resumen">{registro.resumen}</p>
+                  ) : (
+                    <span className="auditoria-sin-dato">—</span>
+                  )}
+                </td>
+                <td data-label="" className="auditoria-celda-boton">
+                  <button
+                    type="button"
+                    className="btn-auditoria-ver"
+                    onClick={() => setAbierto(registro)}
+                    aria-label={
+                      registro.resumen
+                        ? `Ver detalles de ${registro.resumen}`
+                        : "Ver detalles de la acción"
+                    }
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="15"
+                      height="15"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
                     >
-                      {registro.accion === "editar"
-                        ? "Ver cambios"
-                        : "Ver detalles"}
-                    </button>
-                  </div>
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    <span>
+                      {registro.accion === "editar" ? "Cambios" : "Detalles"}
+                    </span>
+                  </button>
                 </td>
               </tr>
             ))}
@@ -316,28 +360,57 @@ function DetalleAcciones({
 
       {jsonTecnico && (
         <section className="detalle-tecnico" aria-label="Datos técnicos">
-          <div className="detalle-tecnico-botones">
+          <div className="detalle-tecnico-header">
             <button
               type="button"
-              className="btn-ghost-dark btn-sm"
+              className="btn-toggle-tecnico"
               aria-expanded={verTecnicos}
               onClick={() => setVerTecnicos((v) => !v)}
             >
-              {verTecnicos ? "Ocultar datos técnicos" : "Ver datos técnicos"}
-            </button>
-            {verTecnicos && (
-              <button
-                type="button"
-                className="btn-ghost-dark btn-sm"
-                onClick={copiarDatos}
+              <svg
+                viewBox="0 0 24 24"
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
               >
-                {copiado ? "Copiado ✓" : "Copiar datos"}
-              </button>
-            )}
+                <polyline points="16 18 22 12 16 6" />
+                <polyline points="8 6 2 12 8 18" />
+              </svg>
+              <span>{verTecnicos ? "Ocultar datos técnicos" : "Ver datos técnicos"}</span>
+            </button>
           </div>
           {verTecnicos && (
             <>
-              <pre className="detalle-json">{jsonTecnico}</pre>
+              <div className="detalle-json-wrap">
+                <button
+                  type="button"
+                  className="btn-copiar-json"
+                  onClick={copiarDatos}
+                  aria-label="Copiar JSON técnico"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="13"
+                    height="13"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                  <span>{copiado ? "Copiado ✓" : "Copiar"}</span>
+                </button>
+                <pre className="detalle-json">{jsonTecnico}</pre>
+              </div>
               <p className="detalle-nota">
                 JSON guardado en la auditoría. No incluye contraseñas ni
                 tokens: esos datos se descartan al registrar la acción.

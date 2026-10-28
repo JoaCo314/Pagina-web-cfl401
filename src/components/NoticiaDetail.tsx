@@ -9,6 +9,14 @@ import {
   type Noticia,
 } from "@/lib/noticiaUtils";
 
+function sanitizarContenidoHtml(html?: string | null): string | null {
+  if (!html?.trim()) return null;
+  if (typeof window !== "undefined" && typeof DOMPurify?.sanitize === "function") {
+    return DOMPurify.sanitize(html);
+  }
+  return html;
+}
+
 type Estado =
   | { estado: "cargando" }
   | { estado: "no-encontrado" }
@@ -21,11 +29,19 @@ const volverAtras = (
   </Link>
 );
 
-function MensajeSinNoticia({ titulo, texto }: { titulo: string; texto: string }) {
+function MensajeSinNoticia({
+  titulo,
+  texto,
+  codigo = "404",
+}: {
+  titulo: string;
+  texto: string;
+  codigo?: string;
+}) {
   return (
     <section className="wrap detail-body" id="contenido" tabIndex={-1}>
       <div className="detail-notfound">
-        <span className="detail-nf-code">404</span>
+        <span className="detail-nf-code">{codigo}</span>
         <h1>{titulo}</h1>
         <p>{texto}</p>
         <Link href="/noticias" className="nav-cta">
@@ -38,6 +54,7 @@ function MensajeSinNoticia({ titulo, texto }: { titulo: string; texto: string })
 
 export default function NoticiaDetail({ id }: { id: number }) {
   const [estado, setEstado] = useState<Estado>({ estado: "cargando" });
+  const [copiado, setCopiado] = useState(false);
 
   useEffect(() => {
     let activo = true;
@@ -67,6 +84,14 @@ export default function NoticiaDetail({ id }: { id: number }) {
       activo = false;
     };
   }, [id]);
+
+  function copiarEnlace() {
+    if (typeof window !== "undefined") {
+      navigator.clipboard.writeText(window.location.href);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2500);
+    }
+  }
 
   if (estado.estado === "cargando") {
     return (
@@ -99,24 +124,47 @@ export default function NoticiaDetail({ id }: { id: number }) {
   if (estado.estado === "error") {
     return (
       <MensajeSinNoticia
-        titulo="No se pudo cargar la noticia"
-        texto="Estamos teniendo un problema temporal. Intentá de nuevo en unos minutos."
+        codigo="500"
+        titulo="Error al cargar la noticia"
+        texto="Estamos teniendo un problema temporal con el servicio. Intentá de nuevo en unos minutos."
       />
     );
   }
 
   const { noticia } = estado;
   const parrafos = dividirParrafos(noticia.contenido);
-  const cuerpoHtml = noticia.contenidoHtml
-    ? DOMPurify.sanitize(noticia.contenidoHtml)
-    : null;
+  const cuerpoHtml = sanitizarContenidoHtml(noticia.contenidoHtml);
 
   return (
     <section className="wrap detail-body" id="contenido" tabIndex={-1}>
+      <nav className="noticia-breadcrumb" aria-label="Ruta de navegación">
+        <Link href="/">Inicio</Link>
+        <span aria-hidden="true">/</span>
+        <Link href="/noticias">Noticias</Link>
+        <span aria-hidden="true">/</span>
+        <span className="noticia-breadcrumb-current">{noticia.titulo}</span>
+      </nav>
+
       {volverAtras}
 
       <article className="noticia-articulo">
         <span className="noticia-date">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
           {formatearFechaLarga(noticia.fecha)}
         </span>
         <h1>{noticia.titulo}</h1>
@@ -132,8 +180,6 @@ export default function NoticiaDetail({ id }: { id: number }) {
         {cuerpoHtml ? (
           <div
             className="noticia-cuerpo"
-            // El HTML ya se sanéa en el servidor (sanitize-html) al guardar y
-            // se vuelve a sanear acá con DOMPurify antes de renderizarse.
             dangerouslySetInnerHTML={{ __html: cuerpoHtml }}
           />
         ) : (
@@ -143,6 +189,50 @@ export default function NoticiaDetail({ id }: { id: number }) {
             ))}
           </div>
         )}
+
+        <div className="noticia-footer-share">
+          <span className="noticia-share-title">Compartir esta noticia:</span>
+          <div className="noticia-share-buttons">
+            <a
+              href={`https://api.whatsapp.com/send?text=${encodeURIComponent(noticia.titulo)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="share-btn share-whatsapp"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+              </svg>
+              Compartir en WhatsApp
+            </a>
+            <button
+              type="button"
+              className="share-btn share-copy"
+              onClick={copiarEnlace}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+              {copiado ? "¡Enlace copiado!" : "Copiar enlace"}
+            </button>
+          </div>
+        </div>
       </article>
     </section>
   );

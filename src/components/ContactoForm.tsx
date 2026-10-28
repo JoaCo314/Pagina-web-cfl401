@@ -50,15 +50,29 @@ export default function ContactoForm() {
 
   if (estado === "ok") {
     return (
-      <div className="form-ok" role="status">
-        <p>¡Gracias! Tu consulta fue enviada. Te responderemos a la brevedad.</p>
+      <div className="form-ok form-ok-card" role="status">
+        <div className="form-ok-icon" aria-hidden="true">
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+        <h3>¡Consulta enviada con éxito!</h3>
+        <p>Tu mensaje fue registrado. Te responderemos a la brevedad a la casilla que indicaste.</p>
         <p className="form-note">
-          La respuesta llega al correo que dejaste cargado. Si en un par de días
-          no tenés novedades, escribinos de nuevo.
+          Revisá tu bandeja de entrada o spam en las próximas 48 horas hábiles.
         </p>
         <button
           type="button"
-          className="btn-ghost-dark btn-sm"
+          className="btn-primary btn-sm"
           onClick={() => setEstado("idle")}
         >
           Enviar otra consulta
@@ -104,11 +118,13 @@ export default function ContactoForm() {
         <input
           type="tel"
           name="celular"
+          inputMode="tel"
+          pattern="[0-9+() \-]*"
           maxLength={60}
           autoComplete="tel"
           placeholder="Ej.: +54 9 2281 55-1234"
           value={celular}
-          onChange={(e) => setCelular(e.target.value)}
+          onChange={(e) => setCelular(e.target.value.replace(/[^0-9+() \-]/g, ""))}
         />
         <small className="form-hint">
           Si preferís, podemos responderte por WhatsApp a este número.

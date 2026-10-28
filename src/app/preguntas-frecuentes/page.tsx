@@ -64,33 +64,41 @@ export default async function PreguntasFrecuentesPage() {
       </div>
 
       <div className="faq-section">
-        {visibles.length > 0 ? (
-          <FaqList categorias={visibles} />
-        ) : (
-          <section className="sobre-section sobre-section-vacio">
-            <div className="wrap">
+        <div className="wrap">
+          {visibles.length > 0 ? (
+            <FaqList categorias={visibles} />
+          ) : (
+            <section className="sobre-section sobre-section-vacio">
               <div className="section-head">
                 <h2>Todavía no hay preguntas publicadas</h2>
                 <p>
                   Muy pronto vas a encontrar acá las respuestas a las dudas más
                   frecuentes del Centro. Si tenés una consulta, escribinos.
                 </p>
-                <Link href="#contacto" className="btn-primary">
-                  Escribinos por WhatsApp
+                <Link href="/contacto" className="btn-primary">
+                  Hacer una consulta
                 </Link>
               </div>
-            </div>
-          </section>
-        )}
+            </section>
+          )}
+        </div>
       </div>
 
       <section className="cta-band" id="contacto">
         <div className="wrap">
           <h2>¿No encontraste tu respuesta?</h2>
-          <p>Escribinos y te ayudamos con tu consulta.</p>
-          <Link href="/cursos" className="btn-primary">
-            Ver oferta de cursos
-          </Link>
+          <p>
+            Podés consultarnos directamente a través de nuestro formulario de
+            contacto o consultarle a nuestro asistente virtual.
+          </p>
+          <div className="cta-actions">
+            <Link href="/contacto" className="btn-primary">
+              Hacer una consulta
+            </Link>
+            <Link href="/cursos" className="btn-ghost">
+              Ver oferta de cursos
+            </Link>
+          </div>
         </div>
       </section>
 

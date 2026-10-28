@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import EditorTextoEnriquecido from "@/components/panel/EditorTextoEnriquecido";
 import { extraerTextoPlano, valorInicialEditor } from "@/lib/htmlEnriquecidoUtil";
@@ -20,9 +21,11 @@ export type CategoriaOpcion = { id: number; nombre: string; activo: boolean };
 export default function PreguntaForm({
   inicial,
   categorias,
+  categoriaIdPorDefecto,
 }: {
   inicial?: PreguntaFormInicial;
   categorias: CategoriaOpcion[];
+  categoriaIdPorDefecto?: number;
 }) {
   const esEdicion = Boolean(inicial);
   const router = useRouter();
@@ -32,9 +35,13 @@ export default function PreguntaForm({
   const [respuestaHtml, setRespuestaHtml] = useState<string>(
     valorInicialEditor(inicial?.respuestaHtml, inicial?.respuesta)
   );
-  const [categoriaId, setCategoriaId] = useState<number>(
-    inicial?.categoriaId ?? categorias[0]?.id ?? 0
-  );
+  const [categoriaId, setCategoriaId] = useState<number>(() => {
+    if (inicial?.categoriaId) return inicial.categoriaId;
+    if (categoriaIdPorDefecto && categorias.some((c) => c.id === categoriaIdPorDefecto)) {
+      return categoriaIdPorDefecto;
+    }
+    return categorias[0]?.id ?? 0;
+  });
   const [orden, setOrden] = useState(
     inicial?.orden !== null && inicial?.orden !== undefined
       ? String(inicial.orden)
@@ -182,16 +189,9 @@ export default function PreguntaForm({
               ? "Guardar cambios"
               : "Publicar pregunta"}
         </button>
-        <a
-          href="/panel/preguntas-frecuentes"
-          className="btn-ghost-dark"
-          onClick={(e) => {
-            e.preventDefault();
-            router.push("/panel/preguntas-frecuentes");
-          }}
-        >
+        <Link href="/panel/preguntas-frecuentes" className="btn-ghost-dark">
           Cancelar
-        </a>
+        </Link>
       </div>
     </form>
   );
