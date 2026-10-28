@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import EditorTextoEnriquecido from "@/components/panel/EditorTextoEnriquecido";
 import { extraerTextoPlano, valorInicialEditor } from "@/lib/htmlEnriquecidoUtil";
@@ -188,16 +189,9 @@ export default function PreguntaForm({
               ? "Guardar cambios"
               : "Publicar pregunta"}
         </button>
-        <a
-          href="/panel/preguntas-frecuentes"
-          className="btn-ghost-dark"
-          onClick={(e) => {
-            e.preventDefault();
-            router.push("/panel/preguntas-frecuentes");
-          }}
-        >
+        <Link href="/panel/preguntas-frecuentes" className="btn-ghost-dark">
           Cancelar
-        </a>
+        </Link>
       </div>
     </form>
   );

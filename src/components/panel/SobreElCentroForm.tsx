@@ -2,6 +2,7 @@
 "use client";
 
 import { FormEvent, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import EditorTextoEnriquecido from "@/components/panel/EditorTextoEnriquecido";
 import { extraerTextoPlano, htmlDesdeTextoPlano } from "@/lib/htmlEnriquecidoUtil";
@@ -603,16 +604,9 @@ export default function SobreElCentroForm({
         <button type="submit" className="btn-primary btn-sm" disabled={enviando}>
           {enviando ? "Guardando…" : "Guardar cambios"}
         </button>
-        <a
-          href="/panel"
-          className="btn-ghost-dark"
-          onClick={(e) => {
-            e.preventDefault();
-            router.push("/panel");
-          }}
-        >
+        <Link href="/panel" className="btn-ghost-dark">
           Cancelar
-        </a>
+        </Link>
       </div>
     </form>
   );

@@ -1,7 +1,7 @@
 // Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 "use client";
 
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { SeccionPanel } from "@/lib/auth/autorizacion";
@@ -39,6 +39,8 @@ const DEFINICION_GRUPOS: {
   },
 ];
 
+const DentroDePanelContext = createContext<boolean>(false);
+
 export default function PanelShell({
   user,
   secciones,
@@ -48,24 +50,34 @@ export default function PanelShell({
   secciones: SeccionPanel[];
   children: ReactNode;
 }) {
+  const yaEnPanel = useContext(DentroDePanelContext);
+  if (yaEnPanel) {
+    return <>{children}</>;
+  }
   const router = useRouter();
   const pathname = usePathname();
   const [cerrando, setCerrando] = useState(false);
   const [sidebarAbierto, setSidebarAbierto] = useState(false);
   const bloqueado = user.debeCambiarContrasena;
 
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
+    setSidebarAbierto(false);
+  }
+
   // Con contraseña temporal no se puede operar el panel: se manda al cambio
   // obligatorio y el shell no renderiza nada del contenido.
   useEffect(() => {
-    if (bloqueado) {
+    if (bloqueado && pathname !== "/panel/cambiar-mi-contrasena") {
       router.replace("/panel/cambiar-mi-contrasena");
     }
-  }, [bloqueado, router]);
+  }, [bloqueado, pathname, router]);
 
-  // Cierra el sidebar al navegar
-  useEffect(() => {
-    setSidebarAbierto(false);
-  }, [pathname]);
+  // Rutas especiales del panel que no llevan el shell administrativo completo
+  if (pathname === "/panel/login" || (bloqueado && pathname === "/panel/cambiar-mi-contrasena")) {
+    return <>{children}</>;
+  }
 
   async function cerrarSesion() {
     setCerrando(true);
@@ -134,7 +146,8 @@ export default function PanelShell({
   const iniciales = `${user.nombre.charAt(0)}${user.apellido.charAt(0)}`.toUpperCase();
 
   return (
-    <div className="panel-layout">
+    <DentroDePanelContext.Provider value={true}>
+      <div className="panel-layout">
       {/* Telón de fondo oscuro para cerrar en móvil */}
       {sidebarAbierto && (
         <div
@@ -341,5 +354,6 @@ export default function PanelShell({
         <main className="panel-main">{children}</main>
       </div>
     </div>
+    </DentroDePanelContext.Provider>
   );
 }

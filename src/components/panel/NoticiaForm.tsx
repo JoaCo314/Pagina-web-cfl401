@@ -2,6 +2,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CampoImagen from "@/components/panel/CampoImagen";
 import type { EstadoImagen } from "@/components/panel/CampoImagen";
@@ -259,16 +260,9 @@ export default function NoticiaForm({
                 ? "Guardar cambios"
                 : "Publicar noticia"}
         </button>
-        <a
-          href="/panel/noticias"
-          className="btn-ghost-dark"
-          onClick={(e) => {
-            e.preventDefault();
-            router.push("/panel/noticias");
-          }}
-        >
+        <Link href="/panel/noticias" className="btn-ghost-dark">
           Cancelar
-        </a>
+        </Link>
       </div>
     </form>
   );

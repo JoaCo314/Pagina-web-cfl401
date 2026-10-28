@@ -2,6 +2,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { esEmailValido, REGEX_DNI } from "@/lib/validaciones";
 import { fetchConTimeout, TimeoutError } from "@/lib/fetchTimeout";
@@ -201,16 +202,9 @@ export default function EditarUsuarioForm({
         <button type="submit" className="btn-primary btn-sm" disabled={enviando}>
           {enviando ? "Guardando…" : "Guardar cambios"}
         </button>
-        <a
-          href="/panel/usuarios"
-          className="btn-ghost-dark"
-          onClick={(e) => {
-            e.preventDefault();
-            router.push("/panel/usuarios");
-          }}
-        >
+        <Link href="/panel/usuarios" className="btn-ghost-dark">
           Cancelar
-        </a>
+        </Link>
       </div>
     </form>
   );

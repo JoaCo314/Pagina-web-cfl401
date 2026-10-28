@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { SiteConfigData } from "@/lib/siteConfig";
 
@@ -92,7 +93,7 @@ export default function ContactoForm({
         {error && <p className="form-error">{error}</p>}
         <div className="form-actions">
           <button type="submit" className="btn-primary btn-sm" disabled={enviando}>{enviando ? "Guardando…" : "Guardar contacto"}</button>
-          <a href="/panel" className="btn-ghost-dark" onClick={(e) => { e.preventDefault(); router.push("/panel"); }}>Cancelar</a>
+          <Link href="/panel" className="btn-ghost-dark">Cancelar</Link>
         </div>
       </form>
     </div>

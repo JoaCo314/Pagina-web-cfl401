@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { esEmailValido, REGEX_DNI } from "@/lib/validaciones";
 import { fetchConTimeout, TimeoutError } from "@/lib/fetchTimeout";
@@ -247,16 +248,12 @@ export default function UsuarioForm({
         <button type="submit" className="btn-primary btn-sm" disabled={enviando}>
           {enviando ? "Creando…" : "Crear usuario"}
         </button>
-        <a
+        <Link
           href={puedeVerListado ? "/panel/usuarios" : "/panel"}
           className="btn-ghost-dark"
-          onClick={(e) => {
-            e.preventDefault();
-            router.push(puedeVerListado ? "/panel/usuarios" : "/panel");
-          }}
         >
           Cancelar
-        </a>
+        </Link>
       </div>
     </form>
   );

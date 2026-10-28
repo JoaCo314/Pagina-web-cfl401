@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import EditorTextoEnriquecido from "@/components/panel/EditorTextoEnriquecido";
 import { extraerTextoPlano, htmlDesdeTextoPlano } from "@/lib/htmlEnriquecidoUtil";
@@ -156,16 +157,9 @@ export default function GuiaForm({ bloques }: { bloques: BloqueGuia[] }) {
           >
             {enviando ? "Guardando…" : "Guardar guía"}
           </button>
-          <a
-            href="/panel"
-            className="btn-ghost-dark"
-            onClick={(e) => {
-              e.preventDefault();
-              router.push("/panel");
-            }}
-          >
+          <Link href="/panel" className="btn-ghost-dark">
             Cancelar
-          </a>
+          </Link>
         </div>
       </form>
     </div>
