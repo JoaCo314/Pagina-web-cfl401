@@ -21,11 +21,19 @@ const volverAtras = (
   </Link>
 );
 
-function MensajeSinNoticia({ titulo, texto }: { titulo: string; texto: string }) {
+function MensajeSinNoticia({
+  titulo,
+  texto,
+  codigo = "404",
+}: {
+  titulo: string;
+  texto: string;
+  codigo?: string;
+}) {
   return (
     <section className="wrap detail-body" id="contenido" tabIndex={-1}>
       <div className="detail-notfound">
-        <span className="detail-nf-code">404</span>
+        <span className="detail-nf-code">{codigo}</span>
         <h1>{titulo}</h1>
         <p>{texto}</p>
         <Link href="/noticias" className="nav-cta">
@@ -108,8 +116,9 @@ export default function NoticiaDetail({ id }: { id: number }) {
   if (estado.estado === "error") {
     return (
       <MensajeSinNoticia
-        titulo="No se pudo cargar la noticia"
-        texto="Estamos teniendo un problema temporal. Intentá de nuevo en unos minutos."
+        codigo="500"
+        titulo="Error al cargar la noticia"
+        texto="Estamos teniendo un problema temporal con el servicio. Intentá de nuevo en unos minutos."
       />
     );
   }

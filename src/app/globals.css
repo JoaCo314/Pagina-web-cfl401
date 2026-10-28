@@ -1227,7 +1227,8 @@ a {
   font-family: var(--font-poppins), "Poppins", sans-serif;
   font-size: 64px;
   font-weight: 700;
-  color: var(--cfl-blue-light);
+  color: var(--cfl-blue-deep);
+  opacity: 0.35;
   line-height: 1;
   display: block;
   margin-bottom: 12px;

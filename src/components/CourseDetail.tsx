@@ -42,12 +42,20 @@ const volverAlCatalogo = (
   </Link>
 );
 
-function MensajeSinCurso({ titulo, texto }: { titulo: string; texto: string }) {
+function MensajeSinCurso({
+  titulo,
+  texto,
+  codigo = "404",
+}: {
+  titulo: string;
+  texto: string;
+  codigo?: string;
+}) {
   return (
     <section className="wrap detail-body" id="contenido" tabIndex={-1}>
       {volverAlCatalogo}
       <div className="detail-notfound">
-        <span className="detail-nf-code">404</span>
+        <span className="detail-nf-code">{codigo}</span>
         <h1>{titulo}</h1>
         <p>{texto}</p>
         <Link href="/cursos" className="nav-cta">
@@ -130,8 +138,9 @@ export default function CourseDetail({ id }: { id: number }) {
   if (estado.estado === "error") {
     return (
       <MensajeSinCurso
-        titulo="No se pudo cargar el curso"
-        texto="Estamos teniendo un problema temporal. Intentá de nuevo en unos minutos."
+        codigo="500"
+        titulo="Error al cargar el curso"
+        texto="Estamos teniendo un problema temporal con el servicio. Intentá de nuevo en unos minutos."
       />
     );
   }

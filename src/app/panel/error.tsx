@@ -32,7 +32,7 @@ export default function PanelError({
             <button type="button" className="btn-primary btn-sm" onClick={reset}>
               Reintentar
             </button>
-            <Link href="/panel" className="btn-secondary btn-sm">
+            <Link href="/panel" className="btn-ghost-dark btn-sm">
               Ir al resumen
             </Link>
           </div>
