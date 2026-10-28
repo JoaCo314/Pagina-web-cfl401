@@ -181,10 +181,12 @@ export default function CourseCatalog() {
 
   const hayFiltros = busqueda.trim() !== "" || rubro !== "";
 
-  // Cualquier cambio de filtro vuelve a la primera página
-  useEffect(() => {
+  // Cualquier cambio de filtro vuelve a la primera página sin causar renders en cascada
+  const [prevFiltros, setPrevFiltros] = useState({ busqueda, rubro });
+  if (prevFiltros.busqueda !== busqueda || prevFiltros.rubro !== rubro) {
+    setPrevFiltros({ busqueda, rubro });
     setPagina(1);
-  }, [busqueda, rubro]);
+  }
 
   const totalPaginas = Math.max(
     1,

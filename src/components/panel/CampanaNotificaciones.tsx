@@ -13,15 +13,15 @@ export default function CampanaNotificaciones() {
   const pathname = usePathname();
   const [sinLeer, setSinLeer] = useState(0);
 
-  const cargar = useCallback(async () => {
-    try {
-      const res = await fetch("/api/notificaciones", { cache: "no-store" });
-      if (!res.ok) return;
-      const data = (await res.json()) as { sinLeer?: number };
-      setSinLeer(data.sinLeer ?? 0);
-    } catch {
-      // silencioso: la campana es accesoria
-    }
+  const cargar = useCallback(() => {
+    fetch("/api/notificaciones", { cache: "no-store" })
+      .then((res) => (res.ok ? (res.json() as Promise<{ sinLeer?: number }>) : null))
+      .then((data) => {
+        if (data && typeof data.sinLeer === "number") {
+          setSinLeer(data.sinLeer);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {

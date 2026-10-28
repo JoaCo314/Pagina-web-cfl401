@@ -244,9 +244,11 @@ export default function CategoriasPreguntas({
   } | null>(null);
   const inputNuevaCategoriaRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  const [prevIniciales, setPrevIniciales] = useState(categoriasIniciales);
+  if (prevIniciales !== categoriasIniciales) {
+    setPrevIniciales(categoriasIniciales);
     setCategorias(categoriasIniciales);
-  }, [categoriasIniciales]);
+  }
 
   useEffect(() => {
     if (mostrarCrearCategoria) {

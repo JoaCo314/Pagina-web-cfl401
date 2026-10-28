@@ -67,6 +67,7 @@ export default async function NoticiasPanelPage() {
                   <td data-label="Noticia">
                     <div className="celda-con-thumbnail">
                       {noticia.imagenUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={noticia.imagenUrl}
                           alt=""

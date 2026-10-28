@@ -51,9 +51,6 @@ export default function PanelShell({
   children: ReactNode;
 }) {
   const yaEnPanel = useContext(DentroDePanelContext);
-  if (yaEnPanel) {
-    return <>{children}</>;
-  }
   const router = useRouter();
   const pathname = usePathname();
   const [cerrando, setCerrando] = useState(false);
@@ -73,11 +70,6 @@ export default function PanelShell({
       router.replace("/panel/cambiar-mi-contrasena");
     }
   }, [bloqueado, pathname, router]);
-
-  // Rutas especiales del panel que no llevan el shell administrativo completo
-  if (pathname === "/panel/login" || (bloqueado && pathname === "/panel/cambiar-mi-contrasena")) {
-    return <>{children}</>;
-  }
 
   async function cerrarSesion() {
     setCerrando(true);
@@ -127,6 +119,16 @@ export default function PanelShell({
       ) ?? null
     );
   }, [pathname, secciones]);
+
+  // Si ya estamos dentro del shell persistente o en vistas especiales de autenticación,
+  // solo renderizamos el contenido hijo sin duplicar el shell
+  if (
+    yaEnPanel ||
+    pathname === "/panel/login" ||
+    (bloqueado && pathname === "/panel/cambiar-mi-contrasena")
+  ) {
+    return <>{children}</>;
+  }
 
   if (bloqueado) {
     return (
