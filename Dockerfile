@@ -36,7 +36,7 @@ COPY . .
 
 RUN npx prisma generate
 
-CMD ["sh", "-c", "npx prisma migrate deploy && if [ \"$RUN_SEED\" = \"true\" ]; then npx tsx prisma/seed.ts; fi"]
+CMD ["sh", "-c", "attempts=0; max_attempts=30; until npx prisma migrate deploy; do attempts=$((attempts + 1)); if [ \"$attempts\" -ge \"$max_attempts\" ]; then echo 'ERROR: No se pudo conectar a la base de datos tras '$attempts' intentos.' >&2; exit 1; fi; echo 'Esperando a la base de datos (intento '$attempts'/'$max_attempts')...'; sleep 2; done; if [ \"$RUN_SEED\" = \"true\" ]; then npx tsx prisma/seed.ts; fi"]
 # Nota: RUN_SEED viene apagado por defecto (ver docker-compose.yml y .env.example).
 # El seed solo crea lo que falta y nunca pisa contraseñas.
 
