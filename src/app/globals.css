@@ -2124,6 +2124,45 @@ a {
   color: var(--cfl-navy);
   margin-bottom: 24px;
 }
+.faq-sin-resultados {
+  text-align: center;
+  padding: 44px 24px;
+  background: #f8fbfe;
+  border: 1.5px dashed rgba(18, 42, 69, 0.15);
+  border-radius: 12px;
+  margin: 16px 0 36px;
+}
+.faq-sin-resultados-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--cfl-blue-light);
+  color: var(--cfl-blue-deep);
+  margin-bottom: 14px;
+}
+.faq-sin-resultados h3 {
+  font-size: 20px;
+  color: var(--cfl-navy);
+  margin-bottom: 8px;
+}
+.faq-sin-resultados p {
+  font-size: 14.5px;
+  color: var(--cfl-ink);
+  opacity: 0.8;
+  max-width: 520px;
+  margin: 0 auto 22px;
+  line-height: 1.5;
+}
+.faq-sin-resultados-acciones {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
 .faq-footer-help {
   margin-top: 56px;
   padding: 32px;

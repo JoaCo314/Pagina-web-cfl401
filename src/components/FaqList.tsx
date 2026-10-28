@@ -111,11 +111,46 @@ export default function FaqList({ categorias }: { categorias: FaqCategoria[] }) 
       </div>
 
       {termino && (
-        <p className="faq-search-status" role="status">
-          {categoriasFiltradas.length === 0
-            ? `No se encontraron preguntas para "${busqueda}". Probá con otro término.`
-            : `Resultados para "${busqueda}":`}
-        </p>
+        categoriasFiltradas.length === 0 ? (
+          <div className="faq-sin-resultados" role="status">
+            <div className="faq-sin-resultados-icono" aria-hidden="true">
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </div>
+            <h3>¿No encontraste lo que buscabas?</h3>
+            <p>
+              No encontramos preguntas para &ldquo;{busqueda}&rdquo;. Probá con
+              otros términos, restablecé la búsqueda o consultanos directamente.
+            </p>
+            <div className="faq-sin-resultados-acciones">
+              <button
+                type="button"
+                className="btn-ghost-dark"
+                onClick={() => setBusqueda("")}
+              >
+                Ver todas las preguntas
+              </button>
+              <Link href="/contacto" className="btn-primary">
+                Hacer una consulta
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <p className="faq-search-status" role="status">
+            Resultados para &ldquo;{busqueda}&rdquo;:
+          </p>
+        )
       )}
 
       {categoriasFiltradas.map((categoria) => (
@@ -153,19 +188,6 @@ export default function FaqList({ categorias }: { categorias: FaqCategoria[] }) 
           </div>
         </section>
       ))}
-
-      <div className="faq-footer-help">
-        <div className="faq-help-content">
-          <h3>¿No encontraste lo que buscabas?</h3>
-          <p>
-            Podés consultarnos directamente a través de nuestro formulario de
-            contacto o consultarle al asistente virtual del sitio.
-          </p>
-        </div>
-        <Link href="/contacto" className="btn-primary">
-          Hacer una consulta
-        </Link>
-      </div>
     </div>
   );
 }
