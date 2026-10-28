@@ -64,11 +64,11 @@ export default async function PreguntasFrecuentesPage() {
       </div>
 
       <div className="faq-section">
-        {visibles.length > 0 ? (
-          <FaqList categorias={visibles} />
-        ) : (
-          <section className="sobre-section sobre-section-vacio">
-            <div className="wrap">
+        <div className="wrap">
+          {visibles.length > 0 ? (
+            <FaqList categorias={visibles} />
+          ) : (
+            <section className="sobre-section sobre-section-vacio">
               <div className="section-head">
                 <h2>Todavía no hay preguntas publicadas</h2>
                 <p>
@@ -79,9 +79,9 @@ export default async function PreguntasFrecuentesPage() {
                   Escribinos por WhatsApp
                 </Link>
               </div>
-            </div>
-          </section>
-        )}
+            </section>
+          )}
+        </div>
       </div>
 
       <section className="cta-band" id="contacto">

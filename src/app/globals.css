@@ -2045,6 +2045,7 @@ a {
   background: var(--cfl-white);
 }
 .faq-wrap {
+  width: 100%;
   max-width: 780px;
   margin: 0 auto;
 }
@@ -5372,7 +5373,7 @@ a {
   }
 }
 
-/* Tablet / laptops chicos: el catálogo pasa de 3 a 2 columnas. */
+/* Tablet / laptops chicos: el catálogo pasa de 2 columnas y el navbar pasa a hamburguesa para evitar desbordes en modo ventana. */
 @media (max-width: 1024px) {
   .course-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -5380,10 +5381,6 @@ a {
   .noticias-home {
     grid-template-columns: repeat(2, 1fr);
   }
-}
-
-/* Tablet vertical y teléfonos apaisados (navbar a hamburguesa). */
-@media (max-width: 900px) {
   .navlinks {
     display: none;
   }
@@ -5401,6 +5398,10 @@ a {
   .site-nav {
     gap: 12px;
   }
+}
+
+/* Tablet vertical y teléfonos apaisados */
+@media (max-width: 900px) {
   .filters-grid {
     grid-template-columns: 1fr;
   }
@@ -5447,6 +5448,20 @@ a {
   }
   .site-header .wrap {
     padding: 0 24px;
+  }
+  .topbar .wrap {
+    justify-content: center;
+    text-align: center;
+    gap: 6px;
+  }
+  .topbar-badges {
+    justify-content: center;
+  }
+  .topbar-right {
+    justify-content: center;
+  }
+  .foot-institutional span:nth-child(2) {
+    display: none;
   }
   .course-grid {
     grid-template-columns: 1fr;
