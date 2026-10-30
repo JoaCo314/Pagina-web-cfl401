@@ -2,6 +2,7 @@ services:
   db:
     image: postgres:16-alpine
     container_name: cfl401-db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       # Obligatoria: sin una contraseña ya definida el contenedor arrancaría con
@@ -43,6 +44,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: cfl401-web
+    restart: unless-stopped
     ports:
       - '4088:3000'
     healthcheck:
