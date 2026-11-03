@@ -3938,39 +3938,145 @@ a {
 .panel-table-usuarios {
   table-layout: fixed;
   width: 100%;
+  min-width: 820px;
+}
+.panel-table-usuarios th,
+.panel-table-usuarios td {
+  padding: 12px 14px;
+}
+.panel-table-usuarios th.celda-principal,
+.panel-table-usuarios td.celda-principal {
+  padding: 12px 14px;
 }
 .panel-table-usuarios .col-usuario-nombre {
-  width: auto;
-  min-width: 180px;
+  width: 24%;
 }
 .panel-table-usuarios .col-usuario-email {
   width: 24%;
 }
 .panel-table-usuarios .col-usuario-telefono {
-  width: 110px;
+  width: 12%;
 }
 .panel-table-usuarios .col-usuario-rol {
-  width: 120px;
+  width: 12%;
 }
 .panel-table-usuarios .col-usuario-estado {
-  width: 175px;
+  width: 14%;
 }
 .panel-table-usuarios .col-usuario-acciones {
-  width: 135px;
+  width: 14%;
+}
+
+/* En vista de solo docentes (5 columnas sin rol) */
+.panel-table-usuarios:not(:has(.col-usuario-rol)) .col-usuario-nombre {
+  width: 28%;
+}
+.panel-table-usuarios:not(:has(.col-usuario-rol)) .col-usuario-email {
+  width: 27%;
+}
+.panel-table-usuarios:not(:has(.col-usuario-rol)) .col-usuario-telefono {
+  width: 14%;
+}
+.panel-table-usuarios:not(:has(.col-usuario-rol)) .col-usuario-estado {
+  width: 16%;
+}
+.panel-table-usuarios:not(:has(.col-usuario-rol)) .col-usuario-acciones {
+  width: 15%;
+}
+
+/* Celdas con recorte de texto fluido (ellipsis) para que ningún dato rompa el ancho */
+.panel-table-usuarios .celda-principal {
+  overflow: hidden;
+}
+.panel-table-usuarios .nombre-usuario-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+}
+.panel-table-usuarios .nombre-usuario-texto {
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.panel-table-usuarios .celda-email,
+.panel-table-usuarios .celda-telefono,
+.panel-table-usuarios .celda-rol {
+  overflow: hidden;
 }
 .panel-table-usuarios .corta-texto {
+  display: block;
+  width: 100%;
   max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .panel-table-usuarios .estado-badges {
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 4px;
+  max-width: 100%;
 }
 .panel-table-usuarios .badge-estado {
   max-width: 100%;
   text-overflow: ellipsis;
   overflow: hidden;
+  white-space: nowrap;
+  font-size: 11.5px;
+  padding: 3px 8px;
+}
+
+/* Columna y contenedor de acciones */
+.panel-table-usuarios th:last-child,
+.panel-table-usuarios td.celda-acciones {
+  text-align: right;
+  padding-left: 6px;
+  padding-right: 14px;
+  white-space: nowrap;
+}
+.panel-table-usuarios .acciones-usuario {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  gap: 8px;
+  white-space: nowrap;
+}
+.panel-table-usuarios .acciones-usuario .btn-sm {
+  padding: 6px 14px;
+  font-size: 13px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.panel-table-usuarios .mas-acciones {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 6px;
+  border: 1px solid rgba(18, 42, 69, 0.15);
+  background: var(--cfl-white);
+  color: var(--cfl-navy-2);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.panel-table-usuarios .mas-acciones:hover {
+  background: var(--cfl-blue-light);
+  border-color: var(--cfl-blue);
+  color: var(--cfl-blue-deep);
+}
+.panel-table-usuarios .mas-acciones[aria-expanded="true"] {
+  background: var(--cfl-blue-light);
+  border-color: var(--cfl-blue);
+  color: var(--cfl-blue-deep);
 }
 /* Etiqueta discreta que marca la fila del usuario que está mirando («Vos»),
    junto al nombre y sin cambiar el layout de la fila. */
@@ -4232,7 +4338,13 @@ a {
   background-color: color-mix(in srgb, currentColor 10%, transparent);
 }
 /* Rojo para desactivar y eliminar; verde para reactivar; ámbar para
-   blanquear (es un aviso de atención, no una baja). */
+   blanquear (es un aviso de atención, no una baja); azul/navy para ver datos. */
+.menu-acciones [role="menuitem"].menu-item-info {
+  color: var(--cfl-navy-2);
+}
+.menu-acciones [role="menuitem"].menu-item-info:hover {
+  color: var(--cfl-blue-deep);
+}
 .menu-acciones [role="menuitem"].menu-item-peligro {
   color: var(--cfl-warn-low-fg);
 }
@@ -4241,6 +4353,165 @@ a {
 }
 .menu-acciones [role="menuitem"].menu-item-atencion {
   color: var(--cfl-warn-fg);
+}
+
+/* Modal de ficha detallada del usuario */
+.modal-detalle-usuario {
+  width: min(520px, 100%);
+  padding: 24px 26px 22px;
+  border-radius: 12px;
+  background: var(--cfl-white);
+  box-shadow: 0 20px 50px rgba(9, 20, 34, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.modal-detalle-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  border-bottom: 1px solid rgba(18, 42, 69, 0.08);
+  padding-bottom: 14px;
+}
+.modal-detalle-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: var(--cfl-blue-light);
+  color: var(--cfl-blue-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.modal-detalle-header-text {
+  flex: 1;
+  min-width: 0;
+}
+.modal-detalle-titulo {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--cfl-navy);
+  margin: 0;
+  line-height: 1.25;
+}
+.modal-detalle-subtitulo {
+  font-size: 13px;
+  color: var(--cfl-navy-2);
+  opacity: 0.75;
+  margin: 2px 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.modal-detalle-cerrar {
+  background: transparent;
+  border: none;
+  font-size: 17px;
+  color: var(--cfl-navy-2);
+  opacity: 0.55;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  line-height: 1;
+  transition: all 0.15s ease;
+}
+.modal-detalle-cerrar:hover {
+  opacity: 1;
+  background: rgba(18, 42, 69, 0.06);
+}
+.modal-detalle-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.detalle-dato-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #f8fafc;
+  font-size: 13.5px;
+}
+.detalle-dato-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--cfl-navy-2);
+  opacity: 0.75;
+  flex-shrink: 0;
+}
+.detalle-dato-valor {
+  color: var(--cfl-ink);
+  text-align: right;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  flex: 1;
+}
+.valor-con-copiar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.detalle-email-link {
+  color: var(--cfl-blue-deep);
+  text-decoration: none;
+  font-weight: 600;
+  word-break: break-all;
+}
+.detalle-email-link:hover {
+  text-decoration: underline;
+}
+.detalle-tel-link {
+  color: var(--cfl-blue-deep);
+  text-decoration: none;
+  font-weight: 600;
+}
+.detalle-tel-link:hover {
+  text-decoration: underline;
+}
+.btn-copiar-email {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(18, 42, 69, 0.15);
+  background: var(--cfl-white);
+  color: var(--cfl-navy-2);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn-copiar-email:hover {
+  background: var(--cfl-blue-light);
+  border-color: var(--cfl-blue);
+  color: var(--cfl-blue-deep);
+}
+.detalle-estado-bloque {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.modal-detalle-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid rgba(18, 42, 69, 0.08);
+  padding-top: 14px;
+}
+.modal-detalle-footer .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
 }
 /* Diálogo de confirmación del panel (ConfirmDialog). */
 .dialogo-fondo {
@@ -6011,6 +6282,7 @@ a {
   }
   .panel-table-usuarios {
     table-layout: auto;
+    min-width: 0;
   }
   .panel-table-usuarios colgroup {
     display: none;

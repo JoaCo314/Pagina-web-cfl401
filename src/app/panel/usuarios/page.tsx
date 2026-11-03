@@ -279,42 +279,40 @@ export default async function UsuariosPanelPage({
                         debajo, en un estilo secundario, y la etiqueta «Vos»
                         marca la fila propia sin cambiar su layout. */}
                     <th scope="row" data-label="Nombre" className="celda-principal">
-                      <strong>
-                        {nombre}
+                      <span className="nombre-usuario-wrap" title={nombre}>
+                        <strong className="nombre-usuario-texto">{nombre}</strong>
                         {esPropio && <span className="chip-vos">Vos</span>}
-                      </strong>
+                      </span>
                       <span className="td-sub dni-valor">
                         <span className="sr-only">DNI </span>
                         {u.dni}
                       </span>
                     </th>
-                    {/* El email se muestra en una sola línea con puntos
-                        suspensivos: un mail largo marcaba el ancho de la
-                        columna y forzaba cortes arbitrarios. El título deja ver
-                        el valor completo y el texto íntegro lo leen los
-                        lectores de pantalla. */}
-                    <td data-label="Email">
+                    <td data-label="Email" className="celda-email">
                       <span className="corta-texto" title={u.email}>
                         {u.email}
                       </span>
                     </td>
-                    {/* El teléfono lo carga cada persona desde su propia cuenta
-                        ("Mis datos") y acá se muestra solo al personal del
-                        centro: nunca se publica en el sitio. */}
-                    <td data-label="Teléfono">
-                      {u.telefono || (
+                    <td data-label="Teléfono" className="celda-telefono">
+                      {u.telefono ? (
+                        <span className="corta-texto" title={u.telefono}>
+                          {u.telefono}
+                        </span>
+                      ) : (
                         <span className="td-vacio" title="Sin teléfono cargado">
                           —
                         </span>
                       )}
                     </td>
-                    {!soloDocentes && <td data-label="Rol">{u.rol.nombre}</td>}
-                    <td data-label="Estado">
+                    {!soloDocentes && (
+                      <td data-label="Rol" className="celda-rol">
+                        <span className="corta-texto" title={u.rol.nombre}>
+                          {u.rol.nombre}
+                        </span>
+                      </td>
+                    )}
+                    <td data-label="Estado" className="celda-estado">
                       <span className="estado-badges">
-                        {/* Un solo badge de estado principal: si la cuenta está
-                            bloqueada se muestra "Bloqueada" en lugar de
-                            "Activo/Inactivo" para no apilar etiquetas
-                            contradictorias. */}
                         {u.bloqueada ? (
                           <span
                             className="badge-estado bloqueada"
@@ -349,6 +347,11 @@ export default async function UsuariosPanelPage({
                       <AccionesUsuario
                         usuarioId={u.id}
                         nombre={nombre}
+                        dni={u.dni}
+                        email={u.email}
+                        telefono={u.telefono}
+                        rolNombre={u.rol.nombre}
+                        debeCambiarContrasena={u.debeCambiarContrasena}
                         activo={u.activo}
                         bloqueada={u.bloqueada}
                         esPropio={esPropio}

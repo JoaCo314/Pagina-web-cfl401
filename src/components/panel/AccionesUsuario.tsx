@@ -6,23 +6,22 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import BlanquearContrasena from "@/components/panel/BlanquearContrasena";
 import EliminarUsuario from "@/components/panel/EliminarUsuario";
 import ToggleUsuario from "@/components/panel/ToggleUsuario";
+import ModalDetalleUsuario from "@/components/panel/ModalDetalleUsuario";
 
-type Accion = "blanquear" | "alternar" | "eliminar";
+type Accion = "ver" | "blanquear" | "alternar" | "eliminar";
 
 /// Acciones de una fila del listado de usuarios. «Editar» es un botón azul
-/// visible; las operaciones sensibles (blanquear, desactivar/activar y
-/// eliminar) viven en un menú ⋮ para que la celda no quede apilada. Cada
-/// operación conserva su propio ConfirmDialog con su confirmación y su aviso
-/// de error: el menú solo elige cuál se abre.
-///
-/// El menú se monta siempre y se oculta con `visibility: hidden` para poder
-/// medirlo en el momento de abrirlo y calcular su posición exacta. Va con
-/// `position: fixed` anclado al disparador porque `.panel-table-wrap` tiene
-/// `overflow-x: auto` y, en escritorio, un menú posicionado dentro de la celda
-/// se cortaría en las filas del fondo.
+/// visible; las operaciones sensibles y de consulta (ver datos, blanquear,
+/// desactivar/activar y eliminar) viven en un menú ⋮ para que la celda mantenga
+/// un ancho uniforme en todas las filas.
 export default function AccionesUsuario({
   usuarioId,
   nombre,
+  dni,
+  email,
+  telefono,
+  rolNombre,
+  debeCambiarContrasena,
   activo,
   bloqueada,
   esPropio,
@@ -31,6 +30,11 @@ export default function AccionesUsuario({
 }: {
   usuarioId: number;
   nombre: string;
+  dni: string;
+  email: string;
+  telefono: string | null;
+  rolNombre: string;
+  debeCambiarContrasena: boolean;
   activo: boolean;
   bloqueada: boolean;
   esPropio: boolean;
@@ -106,11 +110,7 @@ export default function AccionesUsuario({
 
   // El menú está anclado con position: fixed: si la página se mueve (scroll,
   // resize) se recalcula la posición para que siga al disparador en vez de
-  // quedar tapando contenido; si el ancla se va del viewport, se cierra. El
-  // tercer argumento en true hace que el listener capture y también agarre el
-  // scroll horizontal del .panel-table-wrap. Repositionar en lugar de cerrar
-  // evita además el caso de un scroll en cola que llega justo después de
-  // abrir (p. ej. el scroll automático al hacer clic en un ⋮ lejano).
+  // quedar tapando contenido; si el ancla se va del viewport, se cierra.
   useEffect(() => {
     if (!menuAbierto) return;
     function alMoverVista() {
@@ -125,8 +125,7 @@ export default function AccionesUsuario({
   }, [menuAbierto, cerrarMenu, posicionarMenu]);
 
   // Teclado del menú: Escape devuelve el foco al disparador y las flechas
-  // recorren los items. Tab no se atrapa: al salir, onBlur cierra el menú sin
-  // robarle el foco al elemento donde sigue el usuario.
+  // recorren los items.
   function alTeclar(evento: React.KeyboardEvent<HTMLDivElement>) {
     const items = Array.from(
       menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []
@@ -160,108 +159,128 @@ export default function AccionesUsuario({
   }
 
   function elegir(tipo: Accion) {
-    // El foco vuelve al disparador ANTES de cerrar: el ConfirmDialog se monta
-    // en el mismo commit, captura el elemento activo y se lo devuelve cuando
-    // la operación termina.
     disparadorRef.current?.focus();
     setMenuAbierto(false);
     setAccion(tipo);
   }
 
-  // En la propia fila no hay menú: solo queda «Editar». Las operaciones sobre
-  // la propia cuenta (blanqueo, baja, eliminación) no se ofrecen desde acá.
   return (
-    <span
-      className={
-        esPropio ? "acciones-usuario acciones-propias" : "acciones-usuario"
-      }
-    >
+    <span className="acciones-usuario">
       <Link
         href={`/panel/usuarios/${usuarioId}/editar`}
         className="btn-primary btn-sm"
       >
         Editar
       </Link>
-      {!esPropio && (
+      <button
+        ref={disparadorRef}
+        type="button"
+        className="mas-acciones"
+        aria-haspopup="menu"
+        aria-expanded={menuAbierto}
+        aria-controls={menuId}
+        aria-label={`Más acciones de ${nombre}`}
+        onClick={() => {
+          if (menuAbierto) {
+            cerrarMenu(true);
+            return;
+          }
+          abrirMenu();
+        }}
+      >
+        <svg
+          viewBox="0 0 20 20"
+          width="18"
+          height="18"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <circle cx="10" cy="4.2" r="1.8" fill="currentColor" />
+          <circle cx="10" cy="10" r="1.8" fill="currentColor" />
+          <circle cx="10" cy="15.8" r="1.8" fill="currentColor" />
+        </svg>
+      </button>
+
+      <div
+        id={menuId}
+        ref={menuRef}
+        className="menu-acciones"
+        role="menu"
+        aria-label={`Acciones de ${nombre}`}
+        aria-orientation="vertical"
+        aria-hidden={!menuAbierto}
+        style={{
+          top: posicion.top,
+          left: posicion.left,
+          visibility: menuAbierto ? "visible" : "hidden",
+          pointerEvents: menuAbierto ? "auto" : "none",
+        }}
+        onBlur={(evento) => {
+          const destino = evento.relatedTarget as Node | null;
+          if (destino && evento.currentTarget.contains(destino)) return;
+          cerrarMenu(false);
+        }}
+        onKeyDown={alTeclar}
+      >
         <button
-          ref={disparadorRef}
           type="button"
-          className="mas-acciones"
-          aria-haspopup="menu"
-          aria-expanded={menuAbierto}
-          aria-controls={menuId}
-          aria-label={`Más acciones de ${nombre}`}
-          onClick={() => {
-            if (menuAbierto) {
-              cerrarMenu(true);
-              return;
-            }
-            abrirMenu();
-          }}
+          role="menuitem"
+          className="menu-item-info"
+          onClick={() => elegir("ver")}
         >
-          <svg
-            viewBox="0 0 20 20"
-            width="18"
-            height="18"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <circle cx="10" cy="4.2" r="1.8" fill="currentColor" />
-            <circle cx="10" cy="10" r="1.8" fill="currentColor" />
-            <circle cx="10" cy="15.8" r="1.8" fill="currentColor" />
-          </svg>
+          Ver datos completos
         </button>
-      )}
-      {!esPropio && (
-        <div
-          id={menuId}
-          ref={menuRef}
-          className="menu-acciones"
-          role="menu"
-          aria-label={`Acciones de ${nombre}`}
-          aria-orientation="vertical"
-          aria-hidden={!menuAbierto}
-          style={{
-            top: posicion.top,
-            left: posicion.left,
-            visibility: menuAbierto ? "visible" : "hidden",
-            pointerEvents: menuAbierto ? "auto" : "none",
-          }}
-          onBlur={(evento) => {
-            const destino = evento.relatedTarget as Node | null;
-            if (destino && evento.currentTarget.contains(destino)) return;
-            cerrarMenu(false);
-          }}
-          onKeyDown={alTeclar}
-        >
-          <button
-            type="button"
-            role="menuitem"
-            className="menu-item-atencion"
-            onClick={() => elegir("blanquear")}
-          >
-            Blanquear contraseña
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            className={activo ? "menu-item-peligro" : "menu-item-ok"}
-            onClick={() => elegir("alternar")}
-          >
-            {activo ? "Desactivar" : "Activar"}
-          </button>
-          {!activo && puedeEliminar && (
+
+        {!esPropio && (
+          <>
             <button
               type="button"
               role="menuitem"
-              className="menu-item-peligro"
-              onClick={() => elegir("eliminar")}
+              className="menu-item-atencion"
+              onClick={() => elegir("blanquear")}
             >
-              Eliminar
+              Blanquear contraseña
             </button>
-          )}
-        </div>
-      )}
+            <button
+              type="button"
+              role="menuitem"
+              className={activo ? "menu-item-peligro" : "menu-item-ok"}
+              onClick={() => elegir("alternar")}
+            >
+              {activo ? "Desactivar" : "Activar"}
+            </button>
+            {!activo && puedeEliminar && (
+              <button
+                type="button"
+                role="menuitem"
+                className="menu-item-peligro"
+                onClick={() => elegir("eliminar")}
+              >
+                Eliminar
+              </button>
+            )}
+          </>
+        )}
+      </div>
+
+      <ModalDetalleUsuario
+        abierto={accion === "ver"}
+        onCerrar={cerrarAccion}
+        usuario={{
+          id: usuarioId,
+          nombre,
+          dni,
+          email,
+          telefono,
+          rolNombre,
+          activo,
+          bloqueada,
+          debeCambiarContrasena,
+          esPropio,
+          cursosAsignados,
+        }}
+      />
+
       {!esPropio && (
         <BlanquearContrasena
           usuarioId={usuarioId}
@@ -293,3 +312,4 @@ export default function AccionesUsuario({
     </span>
   );
 }
+
