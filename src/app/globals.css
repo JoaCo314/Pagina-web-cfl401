@@ -3808,6 +3808,45 @@ a {
 .panel-table .celda-principal {
   min-width: 190px;
 }
+
+/* Tabla estructurada de usuarios con anchos estables y diseño fijo independiente de badges */
+.panel-table-usuarios {
+  table-layout: fixed;
+  width: 100%;
+}
+.panel-table-usuarios .col-usuario-nombre {
+  width: auto;
+  min-width: 180px;
+}
+.panel-table-usuarios .col-usuario-email {
+  width: 24%;
+}
+.panel-table-usuarios .col-usuario-telefono {
+  width: 110px;
+}
+.panel-table-usuarios .col-usuario-rol {
+  width: 120px;
+}
+.panel-table-usuarios .col-usuario-estado {
+  width: 175px;
+}
+.panel-table-usuarios .col-usuario-acciones {
+  width: 135px;
+}
+.panel-table-usuarios .corta-texto {
+  max-width: 100%;
+}
+.panel-table-usuarios .estado-badges {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.panel-table-usuarios .badge-estado {
+  max-width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
 /* Etiqueta discreta que marca la fila del usuario que está mirando («Vos»),
    junto al nombre y sin cambiar el layout de la fila. */
 /* Miniatura de imagen en filas de tablas (noticias, etc.) */
@@ -5833,6 +5872,15 @@ a {
   }
   .corta-texto {
     max-width: 100%;
+  }
+  .panel-table-usuarios {
+    table-layout: auto;
+  }
+  .panel-table-usuarios colgroup {
+    display: none;
+  }
+  .panel-table-usuarios .estado-badges {
+    align-items: flex-end;
   }
   .acciones-curso {
     justify-content: flex-end;

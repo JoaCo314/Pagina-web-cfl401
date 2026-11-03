@@ -242,12 +242,20 @@ export default async function UsuariosPanelPage({
         </p>
       ) : (
         <div className="panel-table-wrap">
-          <table className="panel-table">
+          <table className="panel-table panel-table-usuarios">
             <caption className="sr-only">
               {soloDocentes
                 ? "Docentes del centro, con su DNI, teléfono, estado y acciones"
                 : "Usuarios del centro, con su DNI, teléfono, rol, estado y acciones"}
             </caption>
+            <colgroup>
+              <col className="col-usuario-nombre" />
+              <col className="col-usuario-email" />
+              <col className="col-usuario-telefono" />
+              {!soloDocentes && <col className="col-usuario-rol" />}
+              <col className="col-usuario-estado" />
+              <col className="col-usuario-acciones" />
+            </colgroup>
             <thead>
               <tr>
                 <th scope="col">Nombre</th>
