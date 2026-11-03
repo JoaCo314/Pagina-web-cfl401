@@ -4109,14 +4109,37 @@ a {
 }
 .dialogo-mensaje {
   font-size: 14px;
+  line-height: 1.55;
+  color: var(--cfl-ink);
+}
+.dialogo-mensaje p {
+  margin: 0 0 10px;
+}
+.dialogo-mensaje p:last-child {
+  margin-bottom: 0;
+}
+.dialogo-nota {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--cfl-navy-2);
+  background: var(--cfl-blue-light);
+  border: 1px solid rgba(42, 110, 163, 0.2);
+  border-radius: 6px;
+  padding: 9px 12px;
+  margin-top: 10px;
+}
+.dialogo-nota svg {
+  flex-shrink: 0;
+  margin-top: 2px;
   color: var(--cfl-blue-deep);
-  white-space: pre-line;
 }
 .dialogo-acciones {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 /* Aviso de error que los componentes de acción repiten dentro del diálogo
    (ConfirmDialog): afuera quedaría tapado por el fondo oscuro. */
