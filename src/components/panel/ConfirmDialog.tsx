@@ -1,6 +1,11 @@
 "use client";
 
-import { ReactNode, useEffect, useId, useRef } from "react";
+import { ReactNode, useEffect, useId, useRef, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
+
+const subscribe = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 /// Diálogo de confirmación propio del panel. Reemplaza a `window.confirm` /
 /// `window.alert`, que bloquean el hilo principal y no se pueden estilizar ni
@@ -27,6 +32,7 @@ export default function ConfirmDialog({
   onConfirmar: () => void;
   onCancelar: () => void;
 }) {
+  const montado = useSyncExternalStore(subscribe, getClientSnapshot, getServerSnapshot);
   const tituloId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   // Elemento que tenía el foco antes de abrir el diálogo (el botón que lo
@@ -58,6 +64,7 @@ export default function ConfirmDialog({
 
       const primero = foco[0];
       const ultimo = foco[foco.length - 1];
+
       if (evento.shiftKey && document.activeElement === primero) {
         evento.preventDefault();
         ultimo.focus();
@@ -78,9 +85,9 @@ export default function ConfirmDialog({
     };
   }, [abierto, onCancelar]);
 
-  if (!abierto) return null;
+  if (!abierto || !montado) return null;
 
-  return (
+  return createPortal(
     <div className="dialogo-fondo" onMouseDown={onCancelar}>
       <div
         className="dialogo"
@@ -114,6 +121,7 @@ export default function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

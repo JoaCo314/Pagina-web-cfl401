@@ -4254,7 +4254,7 @@ a {
   background: rgba(9, 20, 34, 0.55);
 }
 .dialogo {
-  width: min(460px, 100%);
+  width: min(480px, 100%);
   background: var(--cfl-white);
   border-radius: 10px;
   padding: 22px 24px 20px;
@@ -4262,6 +4262,8 @@ a {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  white-space: normal;
+  text-align: left;
 }
 .dialogo:focus {
   outline: none;
@@ -4270,14 +4272,21 @@ a {
   font-size: 18px;
   font-weight: 700;
   color: var(--cfl-navy-2);
+  white-space: normal;
+  text-align: left;
 }
 .dialogo-mensaje {
   font-size: 14px;
   line-height: 1.55;
   color: var(--cfl-ink);
+  white-space: normal;
+  text-align: left;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 .dialogo-mensaje p {
   margin: 0 0 10px;
+  white-space: normal;
 }
 .dialogo-mensaje p:last-child {
   margin-bottom: 0;
@@ -4293,6 +4302,8 @@ a {
   border-radius: 6px;
   padding: 9px 12px;
   margin-top: 10px;
+  white-space: normal;
+  text-align: left;
 }
 .dialogo-nota svg {
   flex-shrink: 0;
