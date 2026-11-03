@@ -3099,16 +3099,6 @@ a {
   gap: 12px;
   opacity: 0.85;
 }
-.foot-admin-link {
-  color: rgba(255, 255, 255, 0.65);
-  text-decoration: none;
-  font-size: 12px;
-  transition: color 0.15s ease;
-}
-.foot-admin-link:hover {
-  color: var(--cfl-blue-light);
-  text-decoration: underline;
-}
 /* El texto de la columna del CFL tenía un style inline con estas mismas tres
    propiedades. */
 .foot-texto {

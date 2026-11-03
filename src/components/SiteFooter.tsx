@@ -83,9 +83,6 @@ export default async function SiteFooter() {
               <span>
                 {config?.footerCopy || `© ${anio} CFL 401 Azul. Todos los derechos reservados.`}
               </span>
-              <Link href="/panel/login" className="foot-admin-link">
-                Acceso del equipo docente y administrativo →
-              </Link>
             </div>
           </div>
         </div>
