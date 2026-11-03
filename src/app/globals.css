@@ -6280,15 +6280,87 @@ a {
   .corta-texto {
     max-width: 100%;
   }
+  /* La tabla de usuarios mantiene su formato de tabla tabular tanto en pantalla completa como en modo ventana */
+  .panel-table-usuarios-wrap {
+    border: 1.5px solid rgba(18, 42, 69, 0.1) !important;
+    background: var(--cfl-white) !important;
+    border-radius: 8px !important;
+    overflow-x: auto !important;
+  }
   .panel-table-usuarios {
-    table-layout: auto;
-    min-width: 0;
+    display: table !important;
+    width: 100% !important;
+    min-width: 780px !important;
+    table-layout: fixed !important;
   }
   .panel-table-usuarios colgroup {
-    display: none;
+    display: table-column-group !important;
+  }
+  .panel-table-usuarios col {
+    display: table-column !important;
+  }
+  .panel-table-usuarios thead {
+    display: table-header-group !important;
+  }
+  .panel-table-usuarios tbody {
+    display: table-row-group !important;
+  }
+  .panel-table-usuarios tr {
+    display: table-row !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .panel-table-usuarios tbody tr:hover {
+    background: #f2f7fd !important;
+  }
+  .panel-table-usuarios th {
+    display: table-cell !important;
+    text-align: left !important;
+    padding: 12px 14px !important;
+    border-bottom: 1.5px solid rgba(18, 42, 69, 0.1) !important;
+    font-size: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: var(--cfl-navy-2) !important;
+    opacity: 0.85 !important;
+    white-space: nowrap !important;
+  }
+  .panel-table-usuarios tbody th {
+    display: table-cell !important;
+    text-align: left !important;
+    padding: 12px 14px !important;
+    border-bottom: 1px solid rgba(18, 42, 69, 0.06) !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    text-transform: none !important;
+    color: inherit !important;
+    opacity: 1 !important;
+  }
+  .panel-table-usuarios td {
+    display: table-cell !important;
+    text-align: left !important;
+    padding: 12px 14px !important;
+    border-bottom: 1px solid rgba(18, 42, 69, 0.06) !important;
+    vertical-align: middle !important;
+  }
+  .panel-table-usuarios td::before {
+    display: none !important;
+    content: none !important;
+  }
+  .panel-table-usuarios th:last-child,
+  .panel-table-usuarios td.celda-acciones {
+    text-align: right !important;
+    padding-left: 6px !important;
+    padding-right: 14px !important;
+  }
+  .panel-table-usuarios td .td-sub {
+    text-align: left !important;
   }
   .panel-table-usuarios .estado-badges {
-    align-items: flex-end;
+    align-items: flex-start !important;
   }
   .acciones-curso {
     justify-content: flex-end;

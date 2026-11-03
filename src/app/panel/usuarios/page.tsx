@@ -241,7 +241,7 @@ export default async function UsuariosPanelPage({
             : `Todavía no hay ${soloDocentes ? "docentes" : "usuarios"} cargados. Creá el primero desde “Nuevo usuario”.`}
         </p>
       ) : (
-        <div className="panel-table-wrap">
+        <div className="panel-table-wrap panel-table-usuarios-wrap">
           <table className="panel-table panel-table-usuarios">
             <caption className="sr-only">
               {soloDocentes
