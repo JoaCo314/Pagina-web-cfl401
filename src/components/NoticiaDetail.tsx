@@ -23,9 +23,23 @@ type Estado =
   | { estado: "error" }
   | { estado: "ok"; noticia: Noticia };
 
-const volverAtras = (
-  <Link href="/noticias" className="detail-back">
-    ← Volver a las noticias
+const botonVolver = (
+  <Link href="/noticias" className="noticia-back-link">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <line x1="19" y1="12" x2="5" y2="12" />
+      <polyline points="12 19 5 12 12 5" />
+    </svg>
+    <span>Volver a las noticias</span>
   </Link>
 );
 
@@ -96,8 +110,8 @@ export default function NoticiaDetail({ id }: { id: number }) {
   if (estado.estado === "cargando") {
     return (
       <section className="wrap detail-body" id="contenido" tabIndex={-1}>
-        {volverAtras}
-        <div className="skeleton-detalle" aria-hidden="true">
+        <div className="noticia-top-nav">{botonVolver}</div>
+        <div className="skeleton-detalle noticia-articulo" aria-hidden="true">
           <div className="skeleton skeleton-linea corta" />
           <div className="skeleton skeleton-titulo" />
           <div className="skeleton skeleton-img" />
@@ -137,38 +151,42 @@ export default function NoticiaDetail({ id }: { id: number }) {
 
   return (
     <section className="wrap detail-body" id="contenido" tabIndex={-1}>
-      <nav className="noticia-breadcrumb" aria-label="Ruta de navegación">
-        <Link href="/">Inicio</Link>
-        <span aria-hidden="true">/</span>
-        <Link href="/noticias">Noticias</Link>
-        <span aria-hidden="true">/</span>
-        <span className="noticia-breadcrumb-current">{noticia.titulo}</span>
-      </nav>
+      <div className="noticia-top-nav">
+        <nav className="noticia-breadcrumb" aria-label="Ruta de navegación">
+          <Link href="/">Inicio</Link>
+          <span className="noticia-breadcrumb-sep" aria-hidden="true">/</span>
+          <Link href="/noticias">Noticias</Link>
+          <span className="noticia-breadcrumb-sep" aria-hidden="true">/</span>
+          <span className="noticia-breadcrumb-current">{noticia.titulo}</span>
+        </nav>
 
-      {volverAtras}
+        {botonVolver}
+      </div>
 
       <article className="noticia-articulo">
-        <span className="noticia-date">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-          </svg>
-          {formatearFechaLarga(noticia.fecha)}
-        </span>
-        <h1>{noticia.titulo}</h1>
-        {noticia.resumen && <p className="noticia-bajada">{noticia.resumen}</p>}
+        <header className="noticia-header">
+          <span className="noticia-date">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            {formatearFechaLarga(noticia.fecha)}
+          </span>
+          <h1>{noticia.titulo}</h1>
+          {noticia.resumen && <p className="noticia-bajada">{noticia.resumen}</p>}
+        </header>
         {noticia.imagenUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
