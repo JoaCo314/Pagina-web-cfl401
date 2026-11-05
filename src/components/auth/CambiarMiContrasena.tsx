@@ -9,6 +9,9 @@ export default function CambiarMiContrasena({ nombre }: { nombre: string }) {
   const [passwordActual, setPasswordActual] = useState("");
   const [passwordNueva, setPasswordNueva] = useState("");
   const [repetir, setRepetir] = useState("");
+  const [mostrarActual, setMostrarActual] = useState(false);
+  const [mostrarNueva, setMostrarNueva] = useState(false);
+  const [mostrarRepetir, setMostrarRepetir] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [saliendo, setSaliendo] = useState(false);
@@ -86,51 +89,178 @@ export default function CambiarMiContrasena({ nombre }: { nombre: string }) {
 
   return (
     <form className="auth-form" onSubmit={onSubmit} noValidate>
-      <p className="auth-note sin-seleccion">
-        Hola {nombre}: para seguir usando el panel necesitás definir una
-        contraseña propia. Usá la contraseña temporal que te entregaron y elegí
-        una nueva.
-      </p>
+      <div className="auth-note sin-seleccion">
+        <svg
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="auth-note-icon"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <span>
+          Hola <strong>{nombre}</strong>: para seguir usando el panel necesitás definir una contraseña propia. Usá la contraseña temporal que te entregaron y elegí una nueva.
+        </span>
+      </div>
 
       <label className="auth-field">
         <span>Contraseña temporal (actual)</span>
-        <input
-          type="password"
-          name="passwordActual"
-          autoComplete="current-password"
-          required
-          maxLength={72}
-          value={passwordActual}
-          onChange={(e) => setPasswordActual(e.target.value)}
-        />
+        <div className="auth-input-wrapper">
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="auth-input-icon"
+            aria-hidden="true"
+          >
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          <input
+            type={mostrarActual ? "text" : "password"}
+            name="passwordActual"
+            autoComplete="current-password"
+            className="has-toggle"
+            required
+            maxLength={72}
+            value={passwordActual}
+            onChange={(e) => setPasswordActual(e.target.value)}
+          />
+          <button
+            type="button"
+            className="auth-toggle-pwd"
+            onClick={() => setMostrarActual((prev) => !prev)}
+            aria-label={mostrarActual ? "Ocultar contraseña" : "Ver contraseña"}
+            title={mostrarActual ? "Ocultar contraseña" : "Ver contraseña"}
+          >
+            {mostrarActual ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                <line x1="1" y1="1" x2="23" y2="23" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            )}
+          </button>
+        </div>
       </label>
 
       <label className="auth-field">
         <span>Contraseña nueva (mínimo 8 caracteres)</span>
-        <input
-          type="password"
-          name="passwordNueva"
-          autoComplete="new-password"
-          required
-          minLength={8}
-          maxLength={72}
-          value={passwordNueva}
-          onChange={(e) => setPasswordNueva(e.target.value)}
-        />
+        <div className="auth-input-wrapper">
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="auth-input-icon"
+            aria-hidden="true"
+          >
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          <input
+            type={mostrarNueva ? "text" : "password"}
+            name="passwordNueva"
+            autoComplete="new-password"
+            className="has-toggle"
+            required
+            minLength={8}
+            maxLength={72}
+            value={passwordNueva}
+            onChange={(e) => setPasswordNueva(e.target.value)}
+          />
+          <button
+            type="button"
+            className="auth-toggle-pwd"
+            onClick={() => setMostrarNueva((prev) => !prev)}
+            aria-label={mostrarNueva ? "Ocultar contraseña" : "Ver contraseña"}
+            title={mostrarNueva ? "Ocultar contraseña" : "Ver contraseña"}
+          >
+            {mostrarNueva ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                <line x1="1" y1="1" x2="23" y2="23" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            )}
+          </button>
+        </div>
       </label>
 
       <label className="auth-field">
         <span>Repetí la contraseña nueva</span>
-        <input
-          type="password"
-          name="repetir"
-          autoComplete="new-password"
-          required
-          minLength={8}
-          maxLength={72}
-          value={repetir}
-          onChange={(e) => setRepetir(e.target.value)}
-        />
+        <div className="auth-input-wrapper">
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="auth-input-icon"
+            aria-hidden="true"
+          >
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          <input
+            type={mostrarRepetir ? "text" : "password"}
+            name="repetir"
+            autoComplete="new-password"
+            className="has-toggle"
+            required
+            minLength={8}
+            maxLength={72}
+            value={repetir}
+            onChange={(e) => setRepetir(e.target.value)}
+          />
+          <button
+            type="button"
+            className="auth-toggle-pwd"
+            onClick={() => setMostrarRepetir((prev) => !prev)}
+            aria-label={mostrarRepetir ? "Ocultar contraseña" : "Ver contraseña"}
+            title={mostrarRepetir ? "Ocultar contraseña" : "Ver contraseña"}
+          >
+            {mostrarRepetir ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                <line x1="1" y1="1" x2="23" y2="23" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            )}
+          </button>
+        </div>
       </label>
 
       <p className="auth-error" role="alert" aria-live="assertive">
@@ -138,7 +268,7 @@ export default function CambiarMiContrasena({ nombre }: { nombre: string }) {
       </p>
 
       <button type="submit" className="auth-submit" disabled={enviando}>
-        {enviando ? "Guardando…" : "Guardar contraseña"}
+        {enviando ? "Guardando contraseña…" : "Guardar contraseña"}
       </button>
 
       <button
@@ -147,7 +277,7 @@ export default function CambiarMiContrasena({ nombre }: { nombre: string }) {
         onClick={onSalir}
         disabled={enviando || saliendo}
       >
-        {saliendo ? "Saliendo…" : "Salir de la cuenta"}
+        {saliendo ? "Cerrando sesión…" : "Salir de la cuenta"}
       </button>
     </form>
   );

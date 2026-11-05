@@ -80,7 +80,30 @@ export default function BlanquearContrasena({
         confirmar="Blanquear"
         mensaje={
           <>
-            {`La contraseña de ${nombre} va a volver a ser la temporal (los últimos 4 dígitos de su DNI). Hay que comunicárselos a la persona por un canal seguro: al ingresar, el sistema le va a pedir que elija una contraseña nueva. Además se cierran las sesiones que tenga abiertas en otros equipos.`}
+            <p>
+              Se restablecerá la contraseña de <strong>{nombre}</strong> a la clave temporal inicial (<strong>los últimos 4 dígitos de su DNI</strong>).
+            </p>
+            <p>
+              Al iniciar sesión, el sistema le solicitará definir una nueva contraseña y se cerrarán las sesiones activas en otros dispositivos.
+            </p>
+            <div className="dialogo-nota">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+              <span>Recordá comunicarle la clave temporal por un canal seguro.</span>
+            </div>
             {/* El error también se repite adentro del diálogo: afuera quedaría
                 tapado por el fondo del ConfirmDialog. */}
             {error && <p className="form-error">{error}</p>}
