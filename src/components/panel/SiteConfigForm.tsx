@@ -29,8 +29,13 @@ export default function SiteConfigForm({ inicial }: Props) {
     archivo: null,
     quitar: false,
   });
+  const [estadoFavicon, setEstadoFavicon] = useState<EstadoImagen>({
+    archivo: null,
+    quitar: false,
+  });
   const bannerActual = inicial.bannerImagenUrl ?? null;
   const logoActual = inicial.logoUrl ?? null;
+  const faviconActual = inicial.faviconUrl ?? null;
 
   function setCampo<K extends keyof SiteConfigData>(key: K, val: string) {
     setDatos((prev) => ({ ...prev, [key]: val }));
@@ -96,6 +101,26 @@ export default function SiteConfigForm({ inicial }: Props) {
         subidas.push(subidaLogo.url);
       }
 
+      let faviconUrl: string | null = faviconActual;
+      if (estadoFavicon.quitar) {
+        faviconUrl = null;
+      } else if (estadoFavicon.archivo) {
+        const errorFavicon = validarArchivoImagen(estadoFavicon.archivo);
+        if (errorFavicon) {
+          setError(errorFavicon);
+          for (const url of subidas) void eliminarImagenHuerfana(url);
+          return;
+        }
+        const subidaFavicon = await subirImagen(estadoFavicon.archivo);
+        if (!subidaFavicon.ok) {
+          setError(subidaFavicon.error);
+          for (const url of subidas) void eliminarImagenHuerfana(url);
+          return;
+        }
+        faviconUrl = subidaFavicon.url;
+        subidas.push(subidaFavicon.url);
+      }
+
       const sinContacto = Object.fromEntries(
         Object.entries(datos).filter(([clave]) => !clave.startsWith("contacto"))
       );
@@ -107,6 +132,7 @@ export default function SiteConfigForm({ inicial }: Props) {
           ...sinContacto,
           bannerImagenUrl: bannerImagenUrl ?? "",
           logoUrl: logoUrl ?? "",
+          faviconUrl: faviconUrl ?? "",
         }),
       });
       if (!res.ok) {
@@ -153,6 +179,19 @@ export default function SiteConfigForm({ inicial }: Props) {
             etiqueta="Logo (imagen)"
           />
           <label className="form-field"><span>Alt del logo</span><input type="text" value={datos.logoAlt ?? ""} onChange={(e) => setCampo("logoAlt", e.target.value)} /></label>
+        </fieldset>
+
+        <fieldset className="guia-bloque">
+          <legend>Favicon (ícono de la pestaña)</legend>
+          <CampoImagen
+            valorActual={faviconActual}
+            onChange={setEstadoFavicon}
+            contexto="favicon"
+            etiqueta="Favicon del sitio (ícono del navegador)"
+          />
+          <small className="form-hint">
+            Se muestra en las pestañas del navegador, marcadores y accesos directos. Podés subir una imagen cuadrada (PNG, ICO, JPG, WEBP) o recortarla directamente aquí. Si se quita, se utilizará el favicon institucional predeterminado.
+          </small>
         </fieldset>
 
         <fieldset className="guia-bloque">

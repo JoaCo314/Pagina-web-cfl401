@@ -26,6 +26,7 @@ const CAMPOS_PERMITIDOS = [
   "bannerImagenUrl",
   "logoUrl",
   "logoAlt",
+  "faviconUrl",
   "footerCflTitulo",
   "footerCflTexto",
   "footerContactosTitulo",
@@ -142,7 +143,7 @@ export async function PUT(request: NextRequest) {
 
   // El banner y el logo se inyectan como background-image / <img src>, así que
   // solo se aceptan imágenes administradas o URLs http(s), nunca otros esquemas.
-  for (const campo of ["bannerImagenUrl", "logoUrl"]) {
+  for (const campo of ["bannerImagenUrl", "logoUrl", "faviconUrl"]) {
     if (campo in data) {
       const imagen = validarImagenUrl(data[campo]);
       if (imagen.error) {
@@ -162,6 +163,9 @@ export async function PUT(request: NextRequest) {
     }
     if (config.logoUrl !== antes.logoUrl) {
       await borrarImagenPorUrl(antes.logoUrl);
+    }
+    if (config.faviconUrl !== antes.faviconUrl) {
+      await borrarImagenPorUrl(antes.faviconUrl);
     }
 
     await registrarAuditoria({

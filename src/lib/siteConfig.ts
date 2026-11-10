@@ -10,6 +10,7 @@ export type SiteConfigData = {
   bannerImagenUrl: string | null;
   logoUrl: string | null;
   logoAlt: string | null;
+  faviconUrl: string | null;
   footerCflTitulo: string | null;
   footerCflTexto: string | null;
   footerContactosTitulo: string | null;
@@ -37,6 +38,7 @@ const DEFAULTS: Omit<SiteConfigData, "id"> = {
   bannerImagenUrl: null,
   logoUrl: "/cfl401azul_logo.jpg",
   logoAlt: "CFL 401 Azul",
+  faviconUrl: null,
   footerCflTitulo: "CFL 401 Azul",
   footerCflTexto: "Cursos y capacitaciones gratuitas para la comunidad de Azul.",
   footerContactosTitulo: "Contacto",

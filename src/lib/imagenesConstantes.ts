@@ -6,6 +6,8 @@ export const TIPOS_IMAGEN_PERMITIDOS = [
   "image/png",
   "image/webp",
   "image/gif",
+  "image/x-icon",
+  "image/vnd.microsoft.icon",
 ] as const;
 
 export const TAMANO_MAXIMO_IMAGEN = 5 * 1024 * 1024;

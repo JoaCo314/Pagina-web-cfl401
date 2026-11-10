@@ -280,6 +280,9 @@ model SiteConfig {
   logoUrl String? // ej: "/cfl401azul_logo.jpg" o /api/imagenes/<id>
   logoAlt String? // alt del logo
 
+  // Favicon
+  faviconUrl String? // ej: "/favicon.ico" o /api/imagenes/<id>
+
   // Footer
   footerCflTitulo String? // "CFL 401 Azul"
   footerCflTexto  String? // párrafo debajo de CFL 401 Azul

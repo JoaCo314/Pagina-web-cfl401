@@ -24,7 +24,7 @@ export function validarArchivoImagen(archivo: File): string | null {
       archivo.type as (typeof TIPOS_IMAGEN_PERMITIDOS)[number]
     )
   ) {
-    return "Formato no permitido. Se aceptan imágenes JPG, PNG, WEBP o GIF.";
+    return "Formato no permitido. Se aceptan imágenes JPG, PNG, WEBP, GIF o ICO.";
   }
   if (archivo.size === 0) {
     return "El archivo de imagen está vacío.";

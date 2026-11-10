@@ -4,13 +4,14 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 export type EstadoImagen = { archivo: File | null; quitar: boolean };
 
-type Contexto = "tarjeta" | "banner" | "logo";
+type Contexto = "tarjeta" | "banner" | "logo" | "favicon";
 
 /// Proporciones y formato de salida según dónde se muestra la imagen.
 const CONTEXTOS = {
   tarjeta: { aspecto: { w: 16, h: 9 }, formato: "image/jpeg" as const },
   banner: { aspecto: { w: 21, h: 9 }, formato: "image/jpeg" as const },
   logo: { aspecto: { w: 1, h: 1 }, formato: "image/png" as const },
+  favicon: { aspecto: { w: 1, h: 1 }, formato: "image/png" as const },
 } as const;
 
 const SALIDA_MAX = 1600;
@@ -273,7 +274,7 @@ function EditorRecorte({
               <span className="preview-banner-fake" aria-hidden="true" />
             </div>
           )}
-          {contexto === "logo" && (
+          {(contexto === "logo" || contexto === "favicon") && (
             <div className="preview-logo" ref={previewBoxRef}>
               <canvas ref={previewLienzoRef} className="preview-lienzo" />
             </div>
@@ -411,7 +412,15 @@ export default function CampoImagen({
       {mostrar ? (
         <div className="imagen-visual">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="imagen-preview" src={mostrar} alt="Vista previa" />
+          <img
+            className={`imagen-preview ${
+              contexto === "logo" || contexto === "favicon"
+                ? "imagen-preview-cuadrada"
+                : ""
+            }`}
+            src={mostrar}
+            alt="Vista previa"
+          />
         </div>
       ) : (
         <p className="form-aviso">Sin imagen cargada.</p>
@@ -422,7 +431,7 @@ export default function CampoImagen({
           <input
             ref={inputRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
+            accept="image/jpeg,image/png,image/webp,image/gif,image/x-icon,image/vnd.microsoft.icon,.ico"
             onChange={onFile}
             aria-label={etiqueta}
           />
@@ -514,8 +523,8 @@ export default function CampoImagen({
       </div>
 
       <small className="form-hint">
-        JPG, PNG, WEBP o GIF, hasta 5 MB. Al elegir el archivo podés mover y
-        hacer zoom sobre una grilla para recortarla; la imagen recortada
+        JPG, PNG, WEBP, GIF o ICO, hasta 5 MB. Al elegir el archivo podés mover
+        y hacer zoom sobre una grilla para recortarla; la imagen recortada
         reemplaza a la anterior al guardar.
       </small>
 
