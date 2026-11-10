@@ -1,21 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import DOMPurify from "dompurify";
 import { useEffect, useState } from "react";
-import {
-  dividirParrafos,
-  formatearFechaLarga,
-  type Noticia,
-} from "@/lib/noticiaUtils";
-
-function sanitizarContenidoHtml(html?: string | null): string | null {
-  if (!html?.trim()) return null;
-  if (typeof window !== "undefined" && typeof DOMPurify?.sanitize === "function") {
-    return DOMPurify.sanitize(html);
-  }
-  return html;
-}
+import { formatearFechaLarga, type Noticia } from "@/lib/noticiaUtils";
+import HtmlEnriquecido from "@/components/HtmlEnriquecido";
 
 type Estado =
   | { estado: "cargando" }
@@ -146,8 +134,6 @@ export default function NoticiaDetail({ id }: { id: number }) {
   }
 
   const { noticia } = estado;
-  const parrafos = dividirParrafos(noticia.contenido);
-  const cuerpoHtml = sanitizarContenidoHtml(noticia.contenidoHtml);
 
   return (
     <section className="wrap detail-body" id="contenido" tabIndex={-1}>
@@ -195,18 +181,11 @@ export default function NoticiaDetail({ id }: { id: number }) {
             alt={noticia.titulo}
           />
         )}
-        {cuerpoHtml ? (
-          <div
-            className="noticia-cuerpo"
-            dangerouslySetInnerHTML={{ __html: cuerpoHtml }}
-          />
-        ) : (
-          <div className="noticia-cuerpo">
-            {parrafos.map((parrafo, indice) => (
-              <p key={indice}>{parrafo}</p>
-            ))}
-          </div>
-        )}
+        <HtmlEnriquecido
+          html={noticia.contenidoHtml}
+          textoPlano={noticia.contenido}
+          className="noticia-cuerpo"
+        />
 
         <div className="noticia-footer-share">
           <span className="noticia-share-title">Compartir esta noticia:</span>
@@ -218,36 +197,41 @@ export default function NoticiaDetail({ id }: { id: number }) {
               className="share-btn share-whatsapp"
             >
               <svg
-                width="14"
-                height="14"
+                width="16"
+                height="16"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
                 aria-hidden="true"
               >
                 <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
               </svg>
-              Compartir en WhatsApp
+              <span>WhatsApp</span>
             </a>
             <button
               type="button"
-              className="share-btn share-copy"
               onClick={copiarEnlace}
+              className="share-btn share-copy"
+              aria-label="Copiar enlace de la noticia"
             >
               <svg
-                width="14"
-                height="14"
+                width="16"
+                height="16"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
                 aria-hidden="true"
               >
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
               </svg>
-              {copiado ? "¡Enlace copiado!" : "Copiar enlace"}
+              <span>{copiado ? "¡Enlace copiado!" : "Copiar enlace"}</span>
             </button>
           </div>
         </div>
