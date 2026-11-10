@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import SiteHeaderCliente from "@/components/SiteHeaderCliente";
+import SiteFooterCliente from "@/components/SiteFooterCliente";
 
 /// Boundary de error de todo el sitio (páginas públicas). Reemplaza el
 /// pantallazo del dev server por un mensaje claro, diseño institucional y botón de reintento.
@@ -45,6 +46,8 @@ export default function ErrorGlobal({
           </div>
         </div>
       </div>
+
+      <SiteFooterCliente />
     </>
   );
 }
