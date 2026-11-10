@@ -1,6 +1,7 @@
 // Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 // Creado por sofia-athos - API editable para banner, logo, footer y contactos
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth/session";
 import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
@@ -176,6 +177,8 @@ export async function PUT(request: NextRequest) {
       detalle: { campos: Object.keys(data).join(", ") },
       ip: ipCliente(request),
     });
+
+    revalidatePath("/", "layout");
 
     return NextResponse.json({ config });
   } catch (err) {

@@ -15,6 +15,7 @@ const CONTEXTOS = {
 } as const;
 
 const SALIDA_MAX = 1600;
+const SALIDA_FAVICON_MAX = 256;
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 5;
 const PASO_ZOOM = 0.25;
@@ -27,16 +28,17 @@ function clampa(tx: number, tamañoImg: number, tamañoVista: number): number {
   return Math.min(Math.max(tx, min), 0);
 }
 
-function dimensionesSalida(aspecto: { w: number; h: number }) {
+function dimensionesSalida(aspecto: { w: number; h: number }, contexto?: Contexto) {
+  const max = contexto === "favicon" ? SALIDA_FAVICON_MAX : SALIDA_MAX;
   if (aspecto.w >= aspecto.h) {
     return {
-      w: SALIDA_MAX,
-      h: Math.round((SALIDA_MAX * aspecto.h) / aspecto.w),
+      w: max,
+      h: Math.round((max * aspecto.h) / aspecto.w),
     };
   }
   return {
-    w: Math.round((SALIDA_MAX * aspecto.w) / aspecto.h),
-    h: SALIDA_MAX,
+    w: Math.round((max * aspecto.w) / aspecto.h),
+    h: max,
   };
 }
 
@@ -199,7 +201,7 @@ function EditorRecorte({
 
   function exportar() {
     if (!lienzoRef.current || rect.w <= 0 || rect.h <= 0) return;
-    const out = dimensionesSalida(aspecto);
+    const out = dimensionesSalida(aspecto, contexto);
     lienzoRef.current.width = out.w;
     lienzoRef.current.height = out.h;
     const ctx = lienzoRef.current.getContext("2d");
