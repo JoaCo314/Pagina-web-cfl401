@@ -1,6 +1,7 @@
 // Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 // Creado por sofia-athos - API editable para banner, logo, footer y contactos
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth/session";
 import { respuestaSiContrasenaTemporal } from "@/lib/auth/guardias";
 import { PERMISOS, tienePermiso } from "@/lib/auth/autorizacion";
@@ -26,6 +27,7 @@ const CAMPOS_PERMITIDOS = [
   "bannerImagenUrl",
   "logoUrl",
   "logoAlt",
+  "faviconUrl",
   "footerCflTitulo",
   "footerCflTexto",
   "footerContactosTitulo",
@@ -142,7 +144,7 @@ export async function PUT(request: NextRequest) {
 
   // El banner y el logo se inyectan como background-image / <img src>, así que
   // solo se aceptan imágenes administradas o URLs http(s), nunca otros esquemas.
-  for (const campo of ["bannerImagenUrl", "logoUrl"]) {
+  for (const campo of ["bannerImagenUrl", "logoUrl", "faviconUrl"]) {
     if (campo in data) {
       const imagen = validarImagenUrl(data[campo]);
       if (imagen.error) {
@@ -163,6 +165,9 @@ export async function PUT(request: NextRequest) {
     if (config.logoUrl !== antes.logoUrl) {
       await borrarImagenPorUrl(antes.logoUrl);
     }
+    if (config.faviconUrl !== antes.faviconUrl) {
+      await borrarImagenPorUrl(antes.faviconUrl);
+    }
 
     await registrarAuditoria({
       usuario: user,
@@ -172,6 +177,8 @@ export async function PUT(request: NextRequest) {
       detalle: { campos: Object.keys(data).join(", ") },
       ip: ipCliente(request),
     });
+
+    revalidatePath("/", "layout");
 
     return NextResponse.json({ config });
   } catch (err) {

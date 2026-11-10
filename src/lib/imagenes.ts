@@ -53,7 +53,7 @@ export function validarImagenUrl(
 export async function referenciasImagen(id: number): Promise<string[]> {
   const url = urlImagenInterna(id);
 
-  const [curso, noticia, banner, logo, sobreElCentro] = await Promise.all([
+  const [curso, noticia, banner, logo, favicon, sobreElCentro] = await Promise.all([
     prisma.curso.findFirst({ where: { imagenUrl: url }, select: { id: true } }),
     prisma.noticia.findFirst({ where: { imagenUrl: url }, select: { id: true } }),
     prisma.siteConfig.findFirst({
@@ -64,6 +64,10 @@ export async function referenciasImagen(id: number): Promise<string[]> {
       where: { logoUrl: url },
       select: { id: true },
     }),
+    prisma.siteConfig.findFirst({
+      where: { faviconUrl: url },
+      select: { id: true },
+    }),
     prisma.sobreElCentro.findMany({ select: { galeria: true } }),
   ]);
 
@@ -72,6 +76,7 @@ export async function referenciasImagen(id: number): Promise<string[]> {
   if (noticia) usos.push("una noticia");
   if (banner) usos.push("el banner de la portada");
   if (logo) usos.push("el logo");
+  if (favicon) usos.push("el favicon del sitio");
   if (
     sobreElCentro.some((fila) => {
       const galeria = fila.galeria;

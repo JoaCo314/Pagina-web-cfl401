@@ -471,6 +471,7 @@ Felicitamos a todos los egresados y los invitamos a continuar su formación en l
       bannerImagenUrl: null,
       logoUrl: "/cfl401azul_logo.jpg",
       logoAlt: "CFL 401 Azul",
+      faviconUrl: null,
       footerCflTitulo: "CFL 401 Azul",
       footerCflTexto: "Cursos y capacitaciones gratuitas para la comunidad de Azul.",
       footerContactosTitulo: "Contacto",

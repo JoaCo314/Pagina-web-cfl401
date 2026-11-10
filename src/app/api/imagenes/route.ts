@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error:
-          "Formato no permitido. Se aceptan imágenes JPG, PNG, WEBP o GIF.",
+          "Formato no permitido. Se aceptan imágenes JPG, PNG, WEBP, GIF o ICO.",
       },
       { status: 400 }
     );

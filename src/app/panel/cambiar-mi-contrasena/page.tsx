@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/session";
+import { getSiteConfig } from "@/lib/siteConfig";
 import CambiarMiContrasena from "@/components/auth/CambiarMiContrasena";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,10 @@ export default async function CambiarMiContrasenaPage() {
     redirect("/panel");
   }
 
+  const config = await getSiteConfig().catch(() => null);
+  const logoUrl = config?.logoUrl ?? "/cfl401azul_logo.jpg";
+  const logoAlt = config?.logoAlt ?? "CFL 401 Azul";
+
   return (
     <main className="auth-page">
       <div className="auth-card">
@@ -25,8 +30,8 @@ export default async function CambiarMiContrasenaPage() {
           <Link href="/" className="auth-brand" title="Volver al portal público del CFL 401">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/cfl401azul_logo.jpg"
-              alt="CFL 401 Azul"
+              src={logoUrl}
+              alt={logoAlt}
               className="auth-brand-logo"
               width={46}
               height={46}
@@ -61,16 +66,10 @@ export default async function CambiarMiContrasenaPage() {
               <line x1="19" y1="12" x2="5" y2="12" />
               <polyline points="12 19 5 12 12 5" />
             </svg>
-            Volver al sitio público
+            <span>Volver al portal web</span>
           </Link>
         </div>
       </div>
-
-      <footer className="auth-page-footer">
-        <span>Centro de Formación Laboral N° 401 · Azul, Buenos Aires</span>
-        <span className="auth-footer-dot" aria-hidden="true">·</span>
-        <span>DGCyE / IPFL</span>
-      </footer>
     </main>
   );
 }

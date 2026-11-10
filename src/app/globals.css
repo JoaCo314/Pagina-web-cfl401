@@ -5418,6 +5418,13 @@ a {
   border: 1.5px solid rgba(18, 42, 69, 0.12);
   background: var(--cfl-blue-light);
 }
+.imagen-preview.imagen-preview-cuadrada {
+  max-width: 130px;
+  height: 130px;
+  object-fit: contain;
+  background: rgba(18, 42, 69, 0.03);
+  padding: 8px;
+}
 .imagen-controles {
   display: flex;
   flex-wrap: wrap;

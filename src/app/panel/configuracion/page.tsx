@@ -21,7 +21,7 @@ export default async function ConfiguracionPanelPage() {
       <div className="panel-head">
         <div>
           <h1 className="panel-title">Configuración del sitio</h1>
-          <p className="panel-lead">Editá el banner azul de la front page, el logo, el pie de página y el mapa de ubicación. Los datos de la página /contacto se editan en la sección Contacto.</p>
+          <p className="panel-lead">Editá el banner azul de la front page, el logo, el favicon, el pie de página y el mapa de ubicación. Los datos de la página /contacto se editan en la sección Contacto.</p>
         </div>
       </div>
       <SiteConfigForm inicial={config} />

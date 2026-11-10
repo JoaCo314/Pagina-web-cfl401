@@ -18,13 +18,16 @@ export default function NavPaginacion({
 
   const anterior = construirHref(Math.max(1, pagina - 1));
   const siguiente = construirHref(Math.min(totalPaginas, pagina + 1));
+  const deshabilitadoAnterior = pagina <= 1;
+  const deshabilitadoSiguiente = pagina >= totalPaginas;
 
   return (
     <nav className="paginacion" aria-label={etiqueta}>
       <Link
-        href={anterior}
+        href={deshabilitadoAnterior ? "#" : anterior}
         className="btn-sm btn-ghost-dark"
-        aria-disabled={pagina <= 1}
+        aria-disabled={deshabilitadoAnterior}
+        tabIndex={deshabilitadoAnterior ? -1 : undefined}
         aria-label="Página anterior"
       >
         ← Anterior
@@ -33,9 +36,10 @@ export default function NavPaginacion({
         Página {pagina} de {totalPaginas}
       </span>
       <Link
-        href={siguiente}
+        href={deshabilitadoSiguiente ? "#" : siguiente}
         className="btn-sm btn-ghost-dark"
-        aria-disabled={pagina >= totalPaginas}
+        aria-disabled={deshabilitadoSiguiente}
+        tabIndex={deshabilitadoSiguiente ? -1 : undefined}
         aria-label="Página siguiente"
       >
         Siguiente →

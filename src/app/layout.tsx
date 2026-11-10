@@ -6,6 +6,7 @@ import {
   NOMBRE_SITIO,
   urlSitio,
 } from "@/lib/meta";
+import { getSiteConfig } from "@/lib/siteConfig";
 import "./globals.css";
 import ChatPublico from "@/components/ChatPublico";
 
@@ -24,19 +25,29 @@ const plex = IBM_Plex_Sans({
 // Metadatos base de todo el sitio (SEO): el `template` de título hace que cada
 // página con `title: "Sección"` publique "Sección — CFL 401 Azul". La URL base
 // (metadataBase) habilita los enlaces absolutos de Open Graph.
-export const metadata: Metadata = {
-  metadataBase: new URL(urlSitio()),
-  title: { default: DEFAULT_TITLE, template: `%s — ${NOMBRE_SITIO}` },
-  description: DESCRIPCION_SITIO,
-  openGraph: {
-    type: "website",
-    locale: "es_AR",
-    siteName: NOMBRE_SITIO,
-    title: DEFAULT_TITLE,
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getSiteConfig();
+  const favicon = config.faviconUrl || "/favicon.ico";
+
+  return {
+    metadataBase: new URL(urlSitio()),
+    title: { default: DEFAULT_TITLE, template: `%s — ${NOMBRE_SITIO}` },
     description: DESCRIPCION_SITIO,
-  },
-  robots: { index: true, follow: true },
-};
+    icons: {
+      icon: favicon,
+      shortcut: favicon,
+      apple: favicon,
+    },
+    openGraph: {
+      type: "website",
+      locale: "es_AR",
+      siteName: NOMBRE_SITIO,
+      title: DEFAULT_TITLE,
+      description: DESCRIPCION_SITIO,
+    },
+    robots: { index: true, follow: true },
+  };
+}
 
 export default function RootLayout({
   children,
