@@ -60,15 +60,21 @@ const DEFAULTS: Omit<SiteConfigData, "id"> = {
 };
 
 export async function getSiteConfig(): Promise<SiteConfigData> {
-  const config = await prisma.siteConfig.findUnique({ where: { id: 1 } });
-  if (!config) return { id: 1, ...DEFAULTS } as SiteConfigData;
-  // Se re-valida el mapa también al leer: si alguna vez quedó un valor que no
-  // pasaría el saneo actual (por una edición directa en la base), no se usa.
-  const mapa = config.mapaUrl ? normalizarUrlMapa(config.mapaUrl) : null;
-  return {
-    ...(config as SiteConfigData),
-    mapaUrl: mapa?.valor ?? null,
-  };
+  try {
+    const config = await prisma.siteConfig.findUnique({ where: { id: 1 } });
+    if (!config) return { id: 1, ...DEFAULTS } as SiteConfigData;
+    // Se re-valida el mapa también al leer: si alguna vez quedó un valor que no
+    // pasaría el saneo actual (por una edición directa en la base), no se usa.
+    const mapa = config.mapaUrl ? normalizarUrlMapa(config.mapaUrl) : null;
+    return {
+      ...(config as SiteConfigData),
+      mapaUrl: mapa?.valor ?? null,
+    };
+  } catch {
+    // Si la base no está disponible (ej: durante el build en Docker o arranque temprano),
+    // se devuelven los valores por defecto sin interrumpir el proceso.
+    return { id: 1, ...DEFAULTS } as SiteConfigData;
+  }
 }
 
 /// Normaliza y valida el mapa de la portada. Acepta un iframe de Google Maps
