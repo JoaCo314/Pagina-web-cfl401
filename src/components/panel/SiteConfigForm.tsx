@@ -33,9 +33,9 @@ export default function SiteConfigForm({ inicial }: Props) {
     archivo: null,
     quitar: false,
   });
-  const bannerActual = inicial.bannerImagenUrl ?? null;
-  const logoActual = inicial.logoUrl ?? null;
-  const faviconActual = inicial.faviconUrl ?? null;
+  const bannerActual = datos.bannerImagenUrl ?? null;
+  const logoActual = datos.logoUrl ?? null;
+  const faviconActual = datos.faviconUrl ?? null;
 
   function setCampo<K extends keyof SiteConfigData>(key: K, val: string) {
     setDatos((prev) => ({ ...prev, [key]: val }));
@@ -135,12 +135,21 @@ export default function SiteConfigForm({ inicial }: Props) {
           faviconUrl: faviconUrl ?? "",
         }),
       });
+      const data = (await res.json().catch(() => null)) as {
+        config?: SiteConfigData;
+        error?: string;
+      } | null;
       if (!res.ok) {
-        const data = (await res.json().catch(() => null)) as { error?: string } | null;
         setError(data?.error ?? "No se pudo guardar.");
         for (const url of subidas) void eliminarImagenHuerfana(url);
         return;
       }
+      if (data?.config) {
+        setDatos(data.config);
+      }
+      setEstadoBanner({ archivo: null, quitar: false });
+      setEstadoLogo({ archivo: null, quitar: false });
+      setEstadoFavicon({ archivo: null, quitar: false });
       setGuardado(true);
       router.refresh();
     } catch {
