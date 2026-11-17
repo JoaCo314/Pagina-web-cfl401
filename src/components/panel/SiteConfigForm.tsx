@@ -33,9 +33,9 @@ export default function SiteConfigForm({ inicial }: Props) {
     archivo: null,
     quitar: false,
   });
-  const bannerActual = inicial.bannerImagenUrl ?? null;
-  const logoActual = inicial.logoUrl ?? null;
-  const faviconActual = inicial.faviconUrl ?? null;
+  const bannerActual = datos.bannerImagenUrl ?? null;
+  const logoActual = datos.logoUrl ?? null;
+  const faviconActual = datos.faviconUrl ?? null;
 
   function setCampo<K extends keyof SiteConfigData>(key: K, val: string) {
     setDatos((prev) => ({ ...prev, [key]: val }));
@@ -135,12 +135,21 @@ export default function SiteConfigForm({ inicial }: Props) {
           faviconUrl: faviconUrl ?? "",
         }),
       });
+      const data = (await res.json().catch(() => null)) as {
+        config?: SiteConfigData;
+        error?: string;
+      } | null;
       if (!res.ok) {
-        const data = (await res.json().catch(() => null)) as { error?: string } | null;
         setError(data?.error ?? "No se pudo guardar.");
         for (const url of subidas) void eliminarImagenHuerfana(url);
         return;
       }
+      if (data?.config) {
+        setDatos(data.config);
+      }
+      setEstadoBanner({ archivo: null, quitar: false });
+      setEstadoLogo({ archivo: null, quitar: false });
+      setEstadoFavicon({ archivo: null, quitar: false });
       setGuardado(true);
       router.refresh();
     } catch {
@@ -163,6 +172,7 @@ export default function SiteConfigForm({ inicial }: Props) {
           <label className="form-field"><span>Título</span><input type="text" value={datos.bannerTitulo ?? ""} onChange={(e) => setCampo("bannerTitulo", e.target.value)} /></label>
           <label className="form-field"><span>Subtítulo</span><textarea rows={3} value={datos.bannerSubtitulo ?? ""} onChange={(e) => setCampo("bannerSubtitulo", e.target.value)} /></label>
           <CampoImagen
+            key={bannerActual ?? "sin-banner"}
             valorActual={bannerActual}
             onChange={setEstadoBanner}
             contexto="banner"
@@ -173,6 +183,7 @@ export default function SiteConfigForm({ inicial }: Props) {
         <fieldset className="guia-bloque">
           <legend>Logo</legend>
           <CampoImagen
+            key={logoActual ?? "sin-logo"}
             valorActual={logoActual}
             onChange={setEstadoLogo}
             contexto="logo"
@@ -184,6 +195,7 @@ export default function SiteConfigForm({ inicial }: Props) {
         <fieldset className="guia-bloque">
           <legend>Favicon (ícono de la pestaña)</legend>
           <CampoImagen
+            key={faviconActual ?? "sin-favicon"}
             valorActual={faviconActual}
             onChange={setEstadoFavicon}
             contexto="favicon"

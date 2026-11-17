@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans, Poppins } from "next/font/google";
 import {
   DEFAULT_TITLE,
@@ -22,6 +22,10 @@ const plex = IBM_Plex_Sans({
   variable: "--font-plex",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#224259",
+};
+
 // Metadatos base de todo el sitio (SEO): el `template` de título hace que cada
 // página con `title: "Sección"` publique "Sección — CFL 401 Azul". La URL base
 // (metadataBase) habilita los enlaces absolutos de Open Graph.
@@ -33,10 +37,17 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(urlSitio()),
     title: { default: DEFAULT_TITLE, template: `%s — ${NOMBRE_SITIO}` },
     description: DESCRIPCION_SITIO,
+    manifest: "/site.webmanifest",
     icons: {
-      icon: favicon,
+      icon: [
+        { url: favicon, type: "image/x-icon" },
+        { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+        { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      ],
       shortcut: favicon,
-      apple: favicon,
+      apple: [
+        { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      ],
     },
     openGraph: {
       type: "website",

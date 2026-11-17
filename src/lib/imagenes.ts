@@ -20,8 +20,9 @@ export function idImagenDesdeUrl(url: string | null | undefined): number | null 
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-/// Valida el campo imagenUrl de cursos y noticias. Acepta vacío (sin imagen),
-/// una URL externa http(s) heredada, o una URL interna `/api/imagenes/<id>`.
+/// Valida el campo imagenUrl de cursos, noticias y configuración del sitio.
+/// Acepta vacío (sin imagen), una URL externa http(s), una URL interna
+/// `/api/imagenes/<id>`, o una ruta estática relativa raíz `/...` (ej: logo institucional).
 export function validarImagenUrl(
   valor: unknown
 ): { error?: string; valor: string | null } {
@@ -34,7 +35,10 @@ export function validarImagenUrl(
   if (texto.length > 1000) {
     return { error: "La URL de la imagen no puede superar 1000 caracteres.", valor: null };
   }
-  if (/^https?:\/\/\S+$/i.test(texto) || /^\/api\/imagenes\/\d+$/.test(texto)) {
+  if (
+    /^https?:\/\/\S+$/i.test(texto) ||
+    /^\/(?!\/)[a-zA-Z0-9_\-./?=&%#:@+]+$/.test(texto)
+  ) {
     return { valor: texto };
   }
   return {

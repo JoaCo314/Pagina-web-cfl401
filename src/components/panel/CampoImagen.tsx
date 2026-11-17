@@ -335,6 +335,7 @@ export default function CampoImagen({
     if (url) URL.revokeObjectURL(url);
   }
 
+
   function precargar(url: string, ok: (img: HTMLImageElement) => void) {
     const img = new Image();
     img.onload = () => ok(img);
