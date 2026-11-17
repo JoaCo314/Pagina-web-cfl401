@@ -335,13 +335,6 @@ export default function CampoImagen({
     if (url) URL.revokeObjectURL(url);
   }
 
-  useEffect(() => {
-    setQuitar(false);
-    setAplicado((prev) => {
-      if (prev) limpiarUrl(prev.url);
-      return null;
-    });
-  }, [valorActual]);
 
   function precargar(url: string, ok: (img: HTMLImageElement) => void) {
     const img = new Image();

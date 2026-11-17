@@ -172,6 +172,7 @@ export default function SiteConfigForm({ inicial }: Props) {
           <label className="form-field"><span>Título</span><input type="text" value={datos.bannerTitulo ?? ""} onChange={(e) => setCampo("bannerTitulo", e.target.value)} /></label>
           <label className="form-field"><span>Subtítulo</span><textarea rows={3} value={datos.bannerSubtitulo ?? ""} onChange={(e) => setCampo("bannerSubtitulo", e.target.value)} /></label>
           <CampoImagen
+            key={bannerActual ?? "sin-banner"}
             valorActual={bannerActual}
             onChange={setEstadoBanner}
             contexto="banner"
@@ -182,6 +183,7 @@ export default function SiteConfigForm({ inicial }: Props) {
         <fieldset className="guia-bloque">
           <legend>Logo</legend>
           <CampoImagen
+            key={logoActual ?? "sin-logo"}
             valorActual={logoActual}
             onChange={setEstadoLogo}
             contexto="logo"
@@ -193,6 +195,7 @@ export default function SiteConfigForm({ inicial }: Props) {
         <fieldset className="guia-bloque">
           <legend>Favicon (ícono de la pestaña)</legend>
           <CampoImagen
+            key={faviconActual ?? "sin-favicon"}
             valorActual={faviconActual}
             onChange={setEstadoFavicon}
             contexto="favicon"
