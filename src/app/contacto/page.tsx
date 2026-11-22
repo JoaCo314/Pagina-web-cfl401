@@ -45,14 +45,15 @@ export default async function ContactoPage() {
   return (
     <>
       <SiteHeader active="contacto" />
-      <div className="page-header" id="contenido" tabIndex={-1}>
-        <div className="wrap">
-          <h1>{config?.contactoTitulo ?? "Contacto"}</h1>
-          {config?.contactoSubtitulo ? <p>{config.contactoSubtitulo}</p> : null}
+      <main id="contenido" tabIndex={-1}>
+        <div className="page-header">
+          <div className="wrap">
+            <h1>{config?.contactoTitulo ?? "Contacto"}</h1>
+            {config?.contactoSubtitulo ? <p>{config.contactoSubtitulo}</p> : null}
+          </div>
         </div>
-      </div>
-      <main className="wrap contacto-main">
-        <div className="contacto-grid">
+        <div className="wrap contacto-main">
+          <div className="contacto-grid">
           <div className="contacto-info-column">
             <h2>Canales de atención</h2>
             <p className="contacto-info-lead">
@@ -188,8 +189,9 @@ export default async function ContactoPage() {
             <ContactoForm />
           </div>
         </div>
-      </main>
-      <SiteFooter />
+      </div>
+    </main>
+    <SiteFooter />
     </>
   );
 }

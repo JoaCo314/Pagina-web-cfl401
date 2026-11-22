@@ -40,17 +40,19 @@ export default function NoticiasPage() {
     <>
       <SiteHeader active="noticias" />
 
-      <div className="page-header" id="contenido" tabIndex={-1}>
-        <div className="wrap">
-          <h1>Noticias y Novedades</h1>
-          <p>
-            Mantenete al tanto de convocatorias, aperturas de inscripciones y
-            actividades institucionales.
-          </p>
+      <main id="contenido" tabIndex={-1}>
+        <div className="page-header">
+          <div className="wrap">
+            <h1>Noticias y Novedades</h1>
+            <p>
+              Mantenete al tanto de convocatorias, aperturas de inscripciones y
+              actividades institucionales.
+            </p>
+          </div>
         </div>
-      </div>
 
-      <NoticiasList />
+        <NoticiasList />
+      </main>
 
       <SiteFooter />
     </>

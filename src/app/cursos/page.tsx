@@ -45,17 +45,19 @@ export default function CursosPage() {
     <>
       <SiteHeader active="cursos" />
 
-      <div className="page-header" id="contenido" tabIndex={-1}>
-        <div className="wrap">
-          <h1>Oferta Educativa {anio}</h1>
-          <p>
-            Formación profesional gratuita y de calidad. Consultá la nómina de
-            capacitaciones e iniciá tu formación con validez oficial.
-          </p>
+      <main id="contenido" tabIndex={-1}>
+        <div className="page-header">
+          <div className="wrap">
+            <h1>Oferta Educativa {anio}</h1>
+            <p>
+              Formación profesional gratuita y de calidad. Consultá la nómina de
+              capacitaciones e iniciá tu formación con validez oficial.
+            </p>
+          </div>
         </div>
-      </div>
 
-      <CourseCatalog />
+        <CourseCatalog />
+      </main>
 
       <SiteFooter />
     </>
