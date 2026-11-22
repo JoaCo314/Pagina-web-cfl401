@@ -9,6 +9,10 @@ export const DEFAULT_TITLE = "CFL 401 Azul — Formación Profesional";
 export const DESCRIPCION_SITIO =
   "Centro de Formación Laboral N° 401 de Azul (Buenos Aires). Cursos de formación profesional gratuitos y con validez oficial, noticias e inscripciones.";
 
+/// Imagen Open Graph y Twitter Card por defecto para enlaces institucionales
+/// o cuando un recurso (curso/noticia) no cuenta con imagen propia.
+export const DEFAULT_OG_IMAGE = "/opengraph-image.png";
+
 /// URL base del sitio para metadatos, sitemap y robots. En producción se define
 /// `SITE_URL` (ej: https://cfl401.ejemplo.edu.ar). Si falta no se rompe, pero se
 /// avisa por log: en producción el fallback a localhost haría que los metadatos

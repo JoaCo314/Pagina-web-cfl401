@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans, Poppins } from "next/font/google";
 import {
+  DEFAULT_OG_IMAGE,
   DEFAULT_TITLE,
   DESCRIPCION_SITIO,
   NOMBRE_SITIO,
@@ -49,12 +50,30 @@ export async function generateMetadata(): Promise<Metadata> {
         { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
       ],
     },
+    alternates: {
+      canonical: "./",
+    },
     openGraph: {
       type: "website",
       locale: "es_AR",
       siteName: NOMBRE_SITIO,
       title: DEFAULT_TITLE,
       description: DESCRIPCION_SITIO,
+      url: urlSitio(),
+      images: [
+        {
+          url: DEFAULT_OG_IMAGE,
+          width: 1200,
+          height: 630,
+          alt: NOMBRE_SITIO,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: DEFAULT_TITLE,
+      description: DESCRIPCION_SITIO,
+      images: [DEFAULT_OG_IMAGE],
     },
     robots: { index: true, follow: true },
   };
