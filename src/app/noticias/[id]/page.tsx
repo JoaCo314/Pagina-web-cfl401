@@ -4,8 +4,10 @@ import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import NoticiaDetail from "@/components/NoticiaDetail";
+import JsonLd from "@/components/JsonLd";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_OG_IMAGE, urlSitio } from "@/lib/meta";
+import { generarEsquemaNoticia } from "@/lib/schema";
 
 export const dynamic = "force-dynamic";
 
@@ -78,10 +80,35 @@ export default async function NoticiaDetallePage({
     notFound();
   }
 
+  let noticia = null;
+  try {
+    noticia = await prisma.noticia.findFirst({
+      where: { id: noticiaId, activo: true, borrador: false },
+      select: {
+        id: true,
+        titulo: true,
+        resumen: true,
+        contenido: true,
+        contenidoHtml: true,
+        fecha: true,
+        imagenUrl: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  } catch {
+    // Si la base no está disponible en este momento
+  }
+
+  const schemaNoticia = noticia ? generarEsquemaNoticia(noticia) : null;
+
   return (
     <>
+      {schemaNoticia && <JsonLd schema={schemaNoticia} />}
       <SiteHeader active="noticias" />
-      <NoticiaDetail id={noticiaId} />
+      <main id="contenido" tabIndex={-1}>
+        <NoticiaDetail id={noticiaId} />
+      </main>
       <SiteFooter />
     </>
   );

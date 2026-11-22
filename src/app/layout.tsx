@@ -10,6 +10,8 @@ import {
 import { getSiteConfig } from "@/lib/siteConfig";
 import "./globals.css";
 import ChatPublico from "@/components/ChatPublico";
+import JsonLd from "@/components/JsonLd";
+import { generarEsquemaOrganizacion } from "@/lib/schema";
 
 const poppins = Poppins({
   weight: ["500", "600", "700"],
@@ -84,12 +86,15 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const schemaOrganizacion = generarEsquemaOrganizacion();
+
   return (
     <html
       lang="es"
       className={`${poppins.variable} ${plex.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <JsonLd schema={schemaOrganizacion} />
         {children}
         <ChatPublico />
       </body>

@@ -2,10 +2,12 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import FaqList, { type FaqCategoria } from "@/components/FaqList";
+import JsonLd from "@/components/JsonLd";
 import { prisma } from "@/lib/prisma";
 import { sanitizarHtmlLectura } from "@/lib/htmlEnriquecido";
 import type { Metadata } from "next";
 import { DEFAULT_OG_IMAGE, NOMBRE_SITIO, urlSitio } from "@/lib/meta";
+import { generarEsquemaFaq } from "@/lib/schema";
 
 const title = "Preguntas frecuentes";
 const description =
@@ -76,12 +78,20 @@ export default async function PreguntasFrecuentesPage() {
       })),
     }));
 
+  const todasLasPreguntas = visibles.flatMap((c) => c.preguntas);
+  const schemaFaq =
+    todasLasPreguntas.length > 0
+      ? generarEsquemaFaq(todasLasPreguntas)
+      : null;
+
   return (
     <>
+      {schemaFaq && <JsonLd schema={schemaFaq} />}
       <SiteHeader active="faq" />
 
-      <div className="page-header" id="contenido" tabIndex={-1}>
-        <div className="wrap">
+      <main id="contenido" tabIndex={-1}>
+        <div className="page-header">
+          <div className="wrap">
           <h1>Preguntas frecuentes</h1>
           <p>
             Respuestas a las dudas más comunes sobre inscripción, cursada y
@@ -128,6 +138,8 @@ export default async function PreguntasFrecuentesPage() {
           </div>
         </div>
       </section>
+
+      </main>
 
       <SiteFooter />
     </>
