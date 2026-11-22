@@ -13,21 +13,20 @@ export default async function Home() {
     <>
       <SiteHeader />
 
-      <section
-        className="hero"
-        id="contenido"
-        tabIndex={-1}
-        style={
-          config?.bannerImagenUrl
-            ? {
-                backgroundImage: `linear-gradient(rgba(0,61,128,0.85), rgba(0,61,128,0.85)), url(${config.bannerImagenUrl})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }
-            : undefined
-        }
-      >
-        <div className="wrap">
+      <main id="contenido" tabIndex={-1}>
+        <section
+          className="hero"
+          style={
+            config?.bannerImagenUrl
+              ? {
+                  backgroundImage: `linear-gradient(rgba(0,61,128,0.85), rgba(0,61,128,0.85)), url(${config.bannerImagenUrl})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }
+              : undefined
+          }
+        >
+          <div className="wrap">
           <div className="badge-row">
             {config?.bannerPill ? (
               <div className="pill">
@@ -171,6 +170,7 @@ export default async function Home() {
           </div>
         </div>
       </section>
+      </main>
 
       <SiteFooter />
     </>
