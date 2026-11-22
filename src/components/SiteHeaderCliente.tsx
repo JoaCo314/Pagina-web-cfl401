@@ -23,7 +23,7 @@ export default function SiteHeaderCliente({
   active,
   sesionIniciada,
   logoUrl = "/cfl401azul_logo.jpg",
-  logoAlt = "CFL 401 Azul",
+  logoAlt = "Logo institucional CFL 401 Azul — Centro de Formación Laboral",
   telefono,
 }: SiteHeaderClienteProps) {
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -135,7 +135,13 @@ export default function SiteHeaderCliente({
         <nav className="wrap site-nav">
           <Link href="/" className="logo" onClick={cerrarMenu}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logoUrl} alt={logoAlt} width={46} height={46} />
+            <img
+              src={logoUrl}
+              alt={logoAlt || "Logo institucional CFL 401 Azul — Centro de Formación Laboral"}
+              width={46}
+              height={46}
+              fetchPriority="high"
+            />
             <span className="logo-text">
               <span className="name name-full">
                 Centro de Formación Laboral 401
@@ -203,9 +209,9 @@ export default function SiteHeaderCliente({
             aria-expanded={menuAbierto}
             onClick={() => setMenuAbierto((v) => !v)}
           >
-            <span className="burger-line" />
-            <span className="burger-line" />
-            <span className="burger-line" />
+            <span className="burger-line" aria-hidden="true" />
+            <span className="burger-line" aria-hidden="true" />
+            <span className="burger-line" aria-hidden="true" />
           </button>
         </nav>
 

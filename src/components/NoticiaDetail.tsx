@@ -41,7 +41,7 @@ function MensajeSinNoticia({
   codigo?: string;
 }) {
   return (
-    <section className="wrap detail-body" id="contenido" tabIndex={-1}>
+    <section className="wrap detail-body">
       <div className="detail-notfound">
         <span className="detail-nf-code">{codigo}</span>
         <h1>{titulo}</h1>
@@ -97,7 +97,7 @@ export default function NoticiaDetail({ id }: { id: number }) {
 
   if (estado.estado === "cargando") {
     return (
-      <section className="wrap detail-body" id="contenido" tabIndex={-1}>
+      <section className="wrap detail-body">
         <div className="noticia-top-nav">{botonVolver}</div>
         <div className="skeleton-detalle noticia-articulo" aria-hidden="true">
           <div className="skeleton skeleton-linea corta" />
@@ -136,7 +136,7 @@ export default function NoticiaDetail({ id }: { id: number }) {
   const { noticia } = estado;
 
   return (
-    <section className="wrap detail-body" id="contenido" tabIndex={-1}>
+    <section className="wrap detail-body">
       <div className="noticia-top-nav">
         <nav className="noticia-breadcrumb" aria-label="Ruta de navegación">
           <Link href="/">Inicio</Link>
@@ -178,7 +178,8 @@ export default function NoticiaDetail({ id }: { id: number }) {
           <img
             className="noticia-hero"
             src={noticia.imagenUrl}
-            alt={noticia.titulo}
+            alt={`Imagen representativa: ${noticia.titulo}`}
+            loading="lazy"
           />
         )}
         <HtmlEnriquecido

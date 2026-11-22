@@ -39,10 +39,15 @@ function CourseCard({ curso }: { curso: Curso }) {
     <article className="course-card">
       {curso.imagenUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img className="course-img" src={curso.imagenUrl} alt={curso.nombre} />
+        <img
+          className="course-img"
+          src={curso.imagenUrl}
+          alt={`Curso de ${curso.nombre} — CFL 401 Azul`}
+          loading="lazy"
+        />
       ) : (
         <div className="course-img-placeholder" aria-hidden="true">
-          <span className="course-placeholder-icon">
+          <span className="course-placeholder-icon" aria-hidden="true">
             {iconoCurso(curso.emoji, curso.categoria?.nombre)}
           </span>
           <span className="course-placeholder-tag">
@@ -52,7 +57,7 @@ function CourseCard({ curso }: { curso: Curso }) {
       )}
 
       <div className="course-top">
-        <div className="course-icon">
+        <div className="course-icon" aria-hidden="true">
           {iconoCurso(curso.emoji, curso.categoria?.nombre)}
         </div>
         {curso.cupos !== null && (
@@ -250,7 +255,7 @@ export default function CourseCatalog() {
                   aria-label="Limpiar búsqueda"
                   onClick={() => setBusqueda("")}
                 >
-                  ✕
+                  <span aria-hidden="true">✕</span>
                 </button>
               )}
             </div>

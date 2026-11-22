@@ -8,7 +8,12 @@ export default function NoticiaCard({ noticia }: { noticia: Noticia }) {
     >
       {noticia.imagenUrl && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img className="noticia-img" src={noticia.imagenUrl} alt={noticia.titulo} />
+        <img
+          className="noticia-img"
+          src={noticia.imagenUrl}
+          alt={`Imagen representativa: ${noticia.titulo}`}
+          loading="lazy"
+        />
       )}
       <div className="noticia-body">
         <span className="noticia-date">

@@ -16,7 +16,10 @@ export default async function PanelLoginPage() {
 
   const config = await getSiteConfig().catch(() => null);
   const logoUrl = config?.logoUrl ?? "/cfl401azul_logo.jpg";
-  const logoAlt = config?.logoAlt ?? "CFL 401 Azul";
+  const logoAlt =
+    config?.logoAlt && config.logoAlt !== "CFL 401 Azul"
+      ? config.logoAlt
+      : "Logo institucional CFL 401 Azul — Centro de Formación Laboral";
 
   return (
     <main className="auth-page">

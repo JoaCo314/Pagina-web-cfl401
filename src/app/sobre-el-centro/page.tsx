@@ -75,8 +75,9 @@ export default async function SobreElCentroPage() {
     <>
       <SiteHeader active="sobre" />
 
-      <div className="page-header" id="contenido" tabIndex={-1}>
-        <div className="wrap">
+      <main id="contenido" tabIndex={-1}>
+        <div className="page-header">
+          <div className="wrap">
           <h1>Sobre el Centro</h1>
           {sobre?.intro ? (
             <HtmlEnriquecido
@@ -197,7 +198,11 @@ export default async function SobreElCentroPage() {
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={foto.url}
-                        alt={foto.leyenda || "Foto histórica del CFL 401"}
+                        alt={
+                          foto.leyenda
+                            ? `${foto.leyenda} — CFL 401 Azul`
+                            : "Instalaciones y actividades del CFL 401 Azul"
+                        }
                         loading="lazy"
                       />
                       {foto.leyenda ? (
@@ -211,6 +216,8 @@ export default async function SobreElCentroPage() {
           )}
         </>
       )}
+
+      </main>
 
       <SiteFooter />
     </>

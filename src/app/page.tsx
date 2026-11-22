@@ -31,11 +31,15 @@ export default async function Home() {
           <div className="badge-row">
             {config?.bannerPill ? (
               <div className="pill">
-                <span className="dot"></span>{config.bannerPill}
+                <span className="dot" aria-hidden="true"></span>{config.bannerPill}
               </div>
             ) : null}
           </div>
-          {config?.bannerTitulo ? <h1>{config.bannerTitulo}</h1> : null}
+          <h1>
+            {config?.bannerTitulo?.trim()
+              ? config.bannerTitulo
+              : "Centro de Formación Laboral N° 401 — Azul"}
+          </h1>
           {config?.bannerSubtitulo ? (
             <p className="lead">{config.bannerSubtitulo}</p>
           ) : null}

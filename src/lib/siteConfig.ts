@@ -37,7 +37,7 @@ const DEFAULTS: Omit<SiteConfigData, "id"> = {
   bannerSubtitulo: "Cursos presenciales dictados por profesionales. Oferta abierta a la comunidad de Azul.",
   bannerImagenUrl: null,
   logoUrl: "/cfl401azul_logo.jpg",
-  logoAlt: "CFL 401 Azul",
+  logoAlt: "Logo institucional CFL 401 Azul — Centro de Formación Laboral",
   faviconUrl: null,
   footerCflTitulo: "CFL 401 Azul",
   footerCflTexto: "Cursos y capacitaciones gratuitas para la comunidad de Azul.",

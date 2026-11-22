@@ -52,7 +52,7 @@ function MensajeSinCurso({
   codigo?: string;
 }) {
   return (
-    <section className="wrap detail-body" id="contenido" tabIndex={-1}>
+    <section className="wrap detail-body">
       {volverAlCatalogo}
       <div className="detail-notfound">
         <span className="detail-nf-code">{codigo}</span>
@@ -109,7 +109,7 @@ export default function CourseDetail({ id }: { id: number }) {
 
   if (estado.estado === "cargando") {
     return (
-      <section className="wrap detail-body" id="contenido" tabIndex={-1}>
+      <section className="wrap detail-body">
         {volverAlCatalogo}
         <div className="skeleton-detalle" aria-hidden="true">
           <div className="skeleton skeleton-img" />
@@ -149,7 +149,7 @@ export default function CourseDetail({ id }: { id: number }) {
   const cuposText = curso.cupos === null ? "A consultar" : `${curso.cupos} cupos`;
 
   return (
-    <section className="wrap detail-body" id="contenido" tabIndex={-1}>
+    <section className="wrap detail-body">
       {volverAlCatalogo}
 
       <div className="detail-layout">
@@ -159,11 +159,12 @@ export default function CourseDetail({ id }: { id: number }) {
             <img
               className="detail-img"
               src={curso.imagenUrl}
-              alt={curso.nombre}
+              alt={`Curso de ${curso.nombre} — CFL 401 Azul`}
+              loading="lazy"
             />
           )}
           <div className="detail-head">
-            <div className="course-icon">
+            <div className="course-icon" aria-hidden="true">
               {iconoCurso(curso.emoji, curso.categoria?.nombre)}
             </div>
             <div>
