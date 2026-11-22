@@ -2,13 +2,40 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import ContactoForm from "@/components/ContactoForm";
 import { getSiteConfig } from "@/lib/siteConfig";
+import type { Metadata } from "next";
+import { DEFAULT_OG_IMAGE, NOMBRE_SITIO, urlSitio } from "@/lib/meta";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Contacto",
-  description:
-    "Escribinos por el formulario de contacto del CFL 401 Azul: dirección, teléfono, horarios y medios de consulta.",
+const title = "Contacto";
+const description =
+  "Escribinos por el formulario de contacto del CFL 401 Azul: dirección, teléfono, horarios y medios de consulta.";
+
+export const metadata: Metadata = {
+  title,
+  description,
+  alternates: {
+    canonical: "/contacto",
+  },
+  openGraph: {
+    title,
+    description,
+    url: `${urlSitio()}/contacto`,
+    images: [
+      {
+        url: DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: `${title} — ${NOMBRE_SITIO}`,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
 
 // Creado por sofia-athos - Página /contacto funcional y editable desde panel/configuracion

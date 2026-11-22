@@ -4,11 +4,38 @@ import SiteFooter from "@/components/SiteFooter";
 import FaqList, { type FaqCategoria } from "@/components/FaqList";
 import { prisma } from "@/lib/prisma";
 import { sanitizarHtmlLectura } from "@/lib/htmlEnriquecido";
+import type { Metadata } from "next";
+import { DEFAULT_OG_IMAGE, NOMBRE_SITIO, urlSitio } from "@/lib/meta";
 
-export const metadata = {
-  title: "Preguntas frecuentes",
-  description:
-    "Respuestas a las dudas más comunes sobre inscripción, cursada y documentación en el CFL 401 Azul.",
+const title = "Preguntas frecuentes";
+const description =
+  "Respuestas a las dudas más comunes sobre inscripción, cursada y documentación en el CFL 401 Azul.";
+
+export const metadata: Metadata = {
+  title,
+  description,
+  alternates: {
+    canonical: "/preguntas-frecuentes",
+  },
+  openGraph: {
+    title,
+    description,
+    url: `${urlSitio()}/preguntas-frecuentes`,
+    images: [
+      {
+        url: DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: `${title} — ${NOMBRE_SITIO}`,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
 
 export const dynamic = "force-dynamic";
