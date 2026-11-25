@@ -23,6 +23,15 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   // No exponer la cabecera "X-Powered-By: Next.js".
   poweredByHeader: false,
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+  },
   async headers() {
     return [
       {

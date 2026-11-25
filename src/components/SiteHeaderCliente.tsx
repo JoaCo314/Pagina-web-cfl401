@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -134,13 +135,13 @@ export default function SiteHeaderCliente({
       <header className={`site-header${conSombra ? " con-sombra" : ""}`}>
         <nav className="wrap site-nav">
           <Link href="/" className="logo" onClick={cerrarMenu}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={logoUrl}
               alt={logoAlt || "Logo institucional CFL 401 Azul — Centro de Formación Laboral"}
               width={46}
               height={46}
-              fetchPriority="high"
+              priority
+              unoptimized={logoUrl.startsWith("http:") || logoUrl.endsWith(".svg")}
             />
             <span className="logo-text">
               <span className="name name-full">
