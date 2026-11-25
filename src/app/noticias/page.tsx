@@ -3,6 +3,13 @@ import SiteFooter from "@/components/SiteFooter";
 import NoticiasList from "@/components/NoticiasList";
 import type { Metadata } from "next";
 import { DEFAULT_OG_IMAGE, NOMBRE_SITIO, urlSitio } from "@/lib/meta";
+import { prisma } from "@/lib/prisma";
+import { NOTICIA_SELECT } from "@/lib/noticiaAdmin";
+import type { Noticia } from "@/lib/noticiaUtils";
+
+export const dynamic = "force-dynamic";
+
+const POR_PAGINA = 12;
 
 const title = "Noticias y Novedades";
 const description =
@@ -35,7 +42,32 @@ export const metadata: Metadata = {
   },
 };
 
-export default function NoticiasPage() {
+export default async function NoticiasPage() {
+  let noticias: Noticia[] | undefined;
+  let total = 0;
+
+  try {
+    const [noticiasDb, count] = await Promise.all([
+      prisma.noticia.findMany({
+        where: { activo: true, borrador: false },
+        select: NOTICIA_SELECT,
+        orderBy: [{ fecha: "desc" }, { createdAt: "desc" }],
+        take: POR_PAGINA,
+      }),
+      prisma.noticia.count({ where: { activo: true, borrador: false } }),
+    ]);
+
+    noticias = noticiasDb.map((n) => ({
+      ...n,
+      fecha: n.fecha.toISOString(),
+      createdAt: n.createdAt.toISOString(),
+      updatedAt: n.updatedAt.toISOString(),
+    }));
+    total = count;
+  } catch {
+    // Si la base no está disponible en este momento
+  }
+
   return (
     <>
       <SiteHeader active="noticias" />
@@ -51,7 +83,7 @@ export default function NoticiasPage() {
           </div>
         </div>
 
-        <NoticiasList />
+        <NoticiasList noticiasIniciales={noticias} totalInicial={total} />
       </main>
 
       <SiteFooter />
