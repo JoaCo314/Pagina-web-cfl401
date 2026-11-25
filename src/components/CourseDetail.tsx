@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import HtmlEnriquecido from "@/components/HtmlEnriquecido";
@@ -9,7 +10,7 @@ import {
   nombresDocentes,
 } from "@/lib/cursoUtils";
 
-type CursoDetail = {
+export type CursoDetail = {
   id: number;
   nombre: string;
   descripcion: string | null;
@@ -66,14 +67,33 @@ function MensajeSinCurso({
   );
 }
 
-export default function CourseDetail({ id }: { id: number }) {
-  const [estado, setEstado] = useState<Estado>({ estado: "cargando" });
+export type CourseDetailProps = {
+  id?: number;
+  cursoInicial?: CursoDetail;
+};
+
+export default function CourseDetail({ id, cursoInicial }: CourseDetailProps) {
+  const [estado, setEstado] = useState<Estado>(
+    cursoInicial ? { estado: "ok", curso: cursoInicial } : { estado: "cargando" }
+  );
   const [copiado, setCopiado] = useState(false);
+  const currentKey = `${id ?? ""}-${cursoInicial?.id ?? ""}`;
+  const [prevKey, setPrevKey] = useState(currentKey);
+  const [imgError, setImgError] = useState(false);
+
+  if (prevKey !== currentKey) {
+    setPrevKey(currentKey);
+    setImgError(false);
+  }
 
   useEffect(() => {
+    if (cursoInicial) return;
+    const targetId = id;
+    if (!targetId) return;
+
     let activo = true;
 
-    fetch(`/api/cursos/${id}`)
+    fetch(`/api/cursos/${targetId}`)
       .then(async (res) => {
         if (res.status === 404 || res.status === 400) {
           throw new Error("no-encontrado");
@@ -97,7 +117,7 @@ export default function CourseDetail({ id }: { id: number }) {
     return () => {
       activo = false;
     };
-  }, [id]);
+  }, [id, cursoInicial]);
 
   function copiarEnlace() {
     if (typeof window !== "undefined") {
@@ -154,13 +174,20 @@ export default function CourseDetail({ id }: { id: number }) {
 
       <div className="detail-layout">
         <div className="detail-main">
-          {curso.imagenUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+          {curso.imagenUrl && !imgError && (
+            <Image
               className="detail-img"
               src={curso.imagenUrl}
               alt={`Curso de ${curso.nombre} — CFL 401 Azul`}
-              loading="lazy"
+              width={1200}
+              height={675}
+              priority
+              sizes="(max-width: 900px) 100vw, 760px"
+              onError={() => setImgError(true)}
+              unoptimized={
+                curso.imagenUrl.startsWith("http:") ||
+                curso.imagenUrl.endsWith(".svg")
+              }
             />
           )}
           <div className="detail-head">
