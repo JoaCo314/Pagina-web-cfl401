@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatearFechaLarga, type Noticia } from "@/lib/noticiaUtils";
@@ -54,14 +55,33 @@ function MensajeSinNoticia({
   );
 }
 
-export default function NoticiaDetail({ id }: { id: number }) {
-  const [estado, setEstado] = useState<Estado>({ estado: "cargando" });
+export type NoticiaDetailProps = {
+  id?: number;
+  noticiaInicial?: Noticia;
+};
+
+export default function NoticiaDetail({ id, noticiaInicial }: NoticiaDetailProps) {
+  const [estado, setEstado] = useState<Estado>(
+    noticiaInicial ? { estado: "ok", noticia: noticiaInicial } : { estado: "cargando" }
+  );
   const [copiado, setCopiado] = useState(false);
+  const currentKey = `${id ?? ""}-${noticiaInicial?.id ?? ""}`;
+  const [prevKey, setPrevKey] = useState(currentKey);
+  const [imgError, setImgError] = useState(false);
+
+  if (prevKey !== currentKey) {
+    setPrevKey(currentKey);
+    setImgError(false);
+  }
 
   useEffect(() => {
+    if (noticiaInicial) return;
+    const targetId = id;
+    if (!targetId) return;
+
     let activo = true;
 
-    fetch(`/api/noticias/${id}`)
+    fetch(`/api/noticias/${targetId}`)
       .then(async (res) => {
         if (res.status === 404 || res.status === 400) {
           throw new Error("no-encontrado");
@@ -85,7 +105,7 @@ export default function NoticiaDetail({ id }: { id: number }) {
     return () => {
       activo = false;
     };
-  }, [id]);
+  }, [id, noticiaInicial]);
 
   function copiarEnlace() {
     if (typeof window !== "undefined") {
@@ -173,13 +193,20 @@ export default function NoticiaDetail({ id }: { id: number }) {
           <h1>{noticia.titulo}</h1>
           {noticia.resumen && <p className="noticia-bajada">{noticia.resumen}</p>}
         </header>
-        {noticia.imagenUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+        {noticia.imagenUrl && !imgError && (
+          <Image
             className="noticia-hero"
             src={noticia.imagenUrl}
             alt={`Imagen representativa: ${noticia.titulo}`}
-            loading="lazy"
+            width={1200}
+            height={675}
+            priority
+            sizes="(max-width: 900px) 100vw, 820px"
+            onError={() => setImgError(true)}
+            unoptimized={
+              noticia.imagenUrl.startsWith("http:") ||
+              noticia.imagenUrl.endsWith(".svg")
+            }
           />
         )}
         <HtmlEnriquecido

@@ -8,6 +8,8 @@ import JsonLd from "@/components/JsonLd";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_OG_IMAGE, urlSitio } from "@/lib/meta";
 import { generarEsquemaNoticia } from "@/lib/schema";
+import { NOTICIA_SELECT } from "@/lib/noticiaAdmin";
+import type { Noticia } from "@/lib/noticiaUtils";
 
 export const dynamic = "force-dynamic";
 
@@ -80,34 +82,35 @@ export default async function NoticiaDetallePage({
     notFound();
   }
 
-  let noticia = null;
+  let noticiaDb = null;
   try {
-    noticia = await prisma.noticia.findFirst({
+    noticiaDb = await prisma.noticia.findFirst({
       where: { id: noticiaId, activo: true, borrador: false },
-      select: {
-        id: true,
-        titulo: true,
-        resumen: true,
-        contenido: true,
-        contenidoHtml: true,
-        fecha: true,
-        imagenUrl: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: NOTICIA_SELECT,
     });
   } catch {
     // Si la base no está disponible en este momento
   }
 
-  const schemaNoticia = noticia ? generarEsquemaNoticia(noticia) : null;
+  if (!noticiaDb) {
+    notFound();
+  }
+
+  const noticia: Noticia = {
+    ...noticiaDb,
+    fecha: noticiaDb.fecha.toISOString(),
+    createdAt: noticiaDb.createdAt.toISOString(),
+    updatedAt: noticiaDb.updatedAt.toISOString(),
+  };
+
+  const schemaNoticia = generarEsquemaNoticia(noticia);
 
   return (
     <>
       {schemaNoticia && <JsonLd schema={schemaNoticia} />}
       <SiteHeader active="noticias" />
       <main id="contenido" tabIndex={-1}>
-        <NoticiaDetail id={noticiaId} />
+        <NoticiaDetail noticiaInicial={noticia} />
       </main>
       <SiteFooter />
     </>
