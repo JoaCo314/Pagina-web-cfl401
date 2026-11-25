@@ -1,6 +1,7 @@
 // Creado por Joaquin para la pagina web del CFL 401 (Centro de Formacion Laboral 401).
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -12,9 +13,9 @@ import {
 /// Cantidad de cursos por página en el catálogo público.
 const CURSOS_POR_PAGINA = 6;
 
-type Docente = { id: number; nombre: string; apellido: string };
+export type Docente = { id: number; nombre: string; apellido: string };
 
-type Curso = {
+export type Curso = {
   id: number;
   nombre: string;
   descripcion: string | null;
@@ -30,23 +31,46 @@ type Curso = {
   docentes: { docente: Docente }[];
 };
 
-type Categoria = { categoria: string; cursos: Curso[] };
+export type Categoria = { categoria: string; cursos: Curso[] };
+
+export type CourseCatalogProps = {
+  categoriasIniciales?: Categoria[];
+};
 
 function CourseCard({ curso }: { curso: Curso }) {
+  const [prevUrl, setPrevUrl] = useState(curso.imagenUrl);
+  const [imgError, setImgError] = useState(false);
+
+  if (prevUrl !== curso.imagenUrl) {
+    setPrevUrl(curso.imagenUrl);
+    setImgError(false);
+  }
+
   const cuposBajos = curso.cupos !== null && curso.cupos <= 5;
+  const tieneImagen = Boolean(curso.imagenUrl) && !imgError;
 
   return (
     <article className="course-card">
-      {curso.imagenUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          className="course-img"
-          src={curso.imagenUrl}
-          alt={`Curso de ${curso.nombre} — CFL 401 Azul`}
-          loading="lazy"
-        />
+      {tieneImagen ? (
+        <div className="aspect-video relative overflow-hidden rounded-md w-full">
+          <Image
+            className="object-cover"
+            src={curso.imagenUrl!}
+            alt={`Curso de ${curso.nombre} — CFL 401 Azul`}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            onError={() => setImgError(true)}
+            unoptimized={
+              curso.imagenUrl!.startsWith("http:") ||
+              curso.imagenUrl!.endsWith(".svg")
+            }
+          />
+        </div>
       ) : (
-        <div className="course-img-placeholder" aria-hidden="true">
+        <div
+          className="course-img-placeholder aspect-video !h-auto relative overflow-hidden rounded-md w-full"
+          aria-label={`Curso de ${curso.nombre} — CFL 401 Azul`}
+        >
           <span className="course-placeholder-icon" aria-hidden="true">
             {iconoCurso(curso.emoji, curso.categoria?.nombre)}
           </span>
@@ -146,14 +170,20 @@ function CourseCard({ curso }: { curso: Curso }) {
   );
 }
 
-export default function CourseCatalog() {
-  const [categorias, setCategorias] = useState<Categoria[] | null>(null);
+export default function CourseCatalog({
+  categoriasIniciales,
+}: CourseCatalogProps = {}) {
+  const [categorias, setCategorias] = useState<Categoria[] | null>(
+    categoriasIniciales ?? null
+  );
   const [error, setError] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [rubro, setRubro] = useState("");
   const [pagina, setPagina] = useState(1);
 
   useEffect(() => {
+    if (categoriasIniciales) return;
+
     fetch("/api/cursos?groupBy=categoria")
       .then((res) =>
         res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))
@@ -162,7 +192,7 @@ export default function CourseCatalog() {
       .catch((err) =>
         setError(err instanceof Error ? err.message : "Error desconocido")
       );
-  }, []);
+  }, [categoriasIniciales]);
 
   const rubros = useMemo(
     () => (categorias ?? []).map((c) => c.categoria),
