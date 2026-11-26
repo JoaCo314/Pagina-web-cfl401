@@ -4,7 +4,8 @@ Sitio web del **Centro de Formación Laboral N° 401**. Plataforma para presenta
 
 ## 🚀 Tecnologías
 
-- **Frontend + Backend:** Next.js 16 (App Router, TypeScript, API Routes)
+- **Frontend + Backend:** Next.js 16 (App Router, Server-Side Rendering con hidratación inicial, React 19, TypeScript, API Routes, `next/image`)
+- **Estilos:** Tailwind CSS 4
 - **Base de datos:** PostgreSQL 16 con **Prisma ORM 7** (migraciones + cliente tipado)
 - **DevOps:** Docker + Docker Compose
 
@@ -16,26 +17,28 @@ Pagina-web-cfl401/
 │   ├── app/                  # Rutas (App Router)
 │   │   ├── api/              # Endpoints (auth, cursos, usuarios, noticias, ...)
 │   │   ├── panel/            # Panel de administración (secciones por rol)
-│   │   ├── cursos/           # Catálogo público de cursos
-│   │   ├── noticias/         # Sección pública de noticias
+│   │   ├── cursos/           # Catálogo público de cursos (SSR)
+│   │   ├── noticias/         # Sección pública de noticias (SSR)
 │   │   ├── contacto/         # Página y formulario de contacto
-│   │   ├── preguntas-frecuentes/  # Página pública de FAQ
+│   │   ├── preguntas-frecuentes/  # Página pública de FAQ (Schema FAQPage)
 │   │   ├── sobre-el-centro/  # Página institucional
 │   │   ├── login/            # Ingreso al panel
-│   │   ├── layout.tsx        # Layout raíz
+│   │   ├── layout.tsx        # Layout raíz (metadatos globales, Open Graph)
 │   │   ├── page.tsx          # Página principal
-│   │   ├── sitemap.ts        # Sitemap para SEO
+│   │   ├── sitemap.ts        # Sitemap dinámico para SEO
+│   │   ├── robots.ts         # Reglas para motores de búsqueda
 │   │   └── globals.css       # Estilos globales
 │   ├── components/           # Componentes de UI (auth/, panel/, sitios públicos)
-│   ├── lib/                  # Lógica de dominio y helpers (auth/, *Admin.ts, ...)
+│   ├── lib/                  # Lógica de dominio y helpers (auth/, schema.ts, *Admin.ts, ...)
 │   ├── proxy.ts              # Middleware de sesión (el "proxy" de Next 16)
 │   └── generated/            # Cliente Prisma generado (no se commitea)
 ├── prisma/
 │   ├── schema.prisma         # Modelo de datos (entidades y relaciones)
 │   ├── seed.ts               # Datos de ejemplo (seed)
 │   └── migrations/           # Migraciones versionadas
+├── tests/                    # Pruebas unitarias (chat, esquemas Schema.org)
 ├── docs/                     # Documentación de cambios y reportes de QA
-├── public/                   # Imágenes y recursos estáticos
+├── public/                   # Imágenes, logos y recursos estáticos (OG images 1200x630)
 ├── assets/                   # Assets originales del sitio (referencia)
 ├── Dockerfile                # Build de producción (web + init)
 ├── docker-compose.yml        # Orquestación (web + db + init)
@@ -201,7 +204,7 @@ El modelo de datos se define en `prisma/schema.prisma`. Entidades:
 **Acceso y personas**
 
 - **Rol** — los 3 roles que se persisten (Administrador, Preceptor, Docente) con campo `nivel` para la jerarquía. El Visitante no tiene rol: es todo usuario sin sesión.
-- **Usuario** — cuentas del sistema. `activo` desactiva el login; `bloqueada` la marca tras 5 intentos fallidos; `dni` es único y es la fuente de la contraseña temporal; `email` es único (se normaliza a minúsculas); `telefono` es opcional y solo lo ven Administrador y Preceptor; `debeCambiarContrasena` fuerza el cambio en el primer ingreso; `versionSesion` invalida sesiones al cambiar o blanquear una contraseña.
+- **Usuario** — cuentas del sistema. `activo` desactiva el login; `bloqueada` la marca tras 5 intentos fallidos; `dni` es único; `email` es único (se normaliza a minúsculas); `telefono` es opcional y solo lo ven Administrador y Preceptor; `debeCambiarContrasena` fuerza el cambio en el primer ingreso; `versionSesion` invalida sesiones al cambiar o blanquear una contraseña.
 - **IntentoRateLimit** — contadores del rate limit (login, cambio de contraseña y formulario de contacto). Viven en la base, no en memoria del proceso.
 - **AuditoriaAccion** — registro de acciones administrativas (quién, qué, cuándo). Guarda un snapshot del usuario, no contraseñas; exclusivo del Administrador.
 - **Notificacion** — avisos internos de cada cuenta (p. ej. la asignación a un curso); se marcan como leídas.
@@ -237,10 +240,20 @@ npm run db:studio     # Abre Prisma Studio (GUI para ver/editar datos)
 
 ### Sitio público
 
-- Home con oferta destacada, últimas noticias y accesos a la información de inscripción.
-- Catálogo de cursos con búsqueda, filtro por categoría y paginación; detalle de cada curso.
-- Noticias (listado y detalle), "Sobre el centro", preguntas frecuentes y formulario de contacto.
-- Sitemap para SEO (`/sitemap.xml`).
+- **Renderizado en Servidor (SSR) con Hidratación Inicial:** Las rutas principales (`/cursos`, `/noticias`, `/cursos/[id]` y `/noticias/[id]`) consultan directamente la base de datos desde los Server Components de Next.js 16, entregando el HTML completo para indexación y eliminando skeletons iniciales. Los Client Components se hidratan en el navegador omitiendo peticiones duplicadas.
+- **Rendimiento e Imágenes (`next/image`):** Uso de imágenes optimizadas con formatos modernos (WebP/AVIF), relaciones de aspecto fijas (`aspect-ratio: 16/9`) para eliminar Cumulative Layout Shift (CLS) y atributos `priority` para optimizar Largest Contentful Paint (LCP).
+- **SEO Avanzado y Datos Estructurados:**
+  - Metadatos dinámicos, etiquetas Open Graph (incluyendo tipo `article` en noticias) y Twitter Cards en todas las páginas públicas con imágenes oficiales de 1200x630.
+  - URLs canónicas globales y por ruta.
+  - Marcado Schema.org mediante JSON-LD (`EducationalOrganization`, `Course`, `NewsArticle` y `FAQPage`) para Rich Snippets en Google.
+  - Sitemap dinámico (`/sitemap.xml`) y `robots.txt`.
+- **Accesibilidad Web (A11y):** Estructuración de landmark principal `main#contenido` con `tabIndex={-1}`, íconos decorativos con `aria-hidden="true"` y textos descriptivos en atributos `alt`.
+- **Catálogo de Cursos:** Búsqueda textual en tiempo real, filtro por rubro y paginación reactiva. Ficha de detalle con programa, contenidos HTML enriquecidos, docentes y botón de compartir.
+- **Noticias Institucionales:** Listado con paginación incremental ("Ver más publicaciones") y vista individual con enlaces para compartir y metadatos de autoría.
+- **Institucional y FAQ:** Páginas "Sobre el centro" (con hitos y galería histórica) y preguntas frecuentes agrupadas por categoría.
+- **Contacto:** Formulario con validación y límites por IP/correo para mitigar spam.
+- **Chat Institucional Asistido por IA:** Asistente conversacional con OpenAI Responses API, contexto institucional dinámico, persistencia en `localStorage` y rate limiting.
+- **Manejo de Errores HTTP:** Invocación de `notFound()` desde el servidor (código 404 real) cuando un curso o noticia no existe o fue dado de baja.
 
 ### Panel de administración (`/panel`)
 
@@ -263,7 +276,7 @@ Roles:
 | Docente | Solo sus cursos asignados y sus propios datos. |
 | Visitante (sin sesión) | Sitio público. |
 
-El ingreso acepta **correo o DNI**. Tras 5 intentos fallidos la cuenta queda bloqueada hasta que la reactive un Administrador o Preceptor. La contraseña temporal (derivada del DNI) obliga a cambiarla antes de operar.
+El ingreso acepta **correo o DNI**. Tras 5 intentos fallidos la cuenta queda bloqueada hasta que la reactive un Administrador o Preceptor. La contraseña temporal asignada obliga a cambiarla antes de operar.
 
 Las mejoras incorporadas sobre el MVP (auditoría, bloqueo de cuenta, edición y eliminación de usuarios, correo y teléfono propios, login por DNI, notificaciones in-app, categorías de cursos, borradores de noticias y drag & drop en Sobre el centro) están documentadas en [`docs/CAMBIOS-MEJORAS-2026-10.md`](docs/CAMBIOS-MEJORAS-2026-10.md).
 
@@ -295,6 +308,7 @@ npm run dev          # Desarrollo (hot-reload)
 npm run build        # Build de producción
 npm run start        # Iniciar el build de producción
 npm run lint         # ESLint
+npm run test:chat    # Pruebas del chat institucional (mock OpenAI)
 npm run db:migrate   # Crea/aplica migraciones en dev
 npm run db:studio    # Abre Prisma Studio
 docker compose down        # Detener contenedores
@@ -324,7 +338,7 @@ Opciones al desplegar:
 - El sitio público estático original (HTML/CSS) se conserva en las raíces del repo (`index.html`, `cursos.html`, etc.) como referencia/migración futura.
 - La web publica el puerto 4088 del host hacia el contenedor (interno 3000). Cualquier cambio de puerto se hace en el lado izquierdo del mapeo de `docker-compose.yml`.
 - El contenedor `web` tiene un healthcheck contra `/api/health`, que responde 503 si la base no está accesible. `docker compose ps` muestra el estado; `docker compose up -d` espera a que `db` esté sano y a que `init` termine.
-- La contraseña temporal de una cuenta se deriva siempre de los últimos 4 dígitos de su DNI y **no se muestra en la interfaz ni se devuelve por API**. Para comunicársela a la persona hay que leerla del DNI, no de la pantalla.
+- Las contraseñas temporales asignadas a las cuentas no se muestran en la interfaz ni se devuelven por API. El sistema fuerza su cambio obligatorio en el primer inicio de sesión antes de permitir cualquier operación en el panel.
 - Cambiar o blanquear una contraseña cierra las sesiones abiertas de esa cuenta en otros equipos: el JWT lleva el número de `versionSesion` con el que se emitió y si no coincide con la base, la sesión deja de validar.
 - Los endpoints que modifican datos no necesitan token CSRF: la cookie de sesión es `httpOnly` + `sameSite=lax` (no viaja en pedidos de otro sitio) y ninguna escritura se hace por GET.
 - Mientras una cuenta tiene contraseña temporal, la API y las páginas del panel bloquean toda operación salvo el cambio de contraseña, y el bloqueo se aplica en el servidor.
