@@ -6,6 +6,12 @@ import type { Noticia } from "@/lib/noticiaUtils";
 
 const POR_PAGINA = 12;
 
+export type NoticiasListProps = {
+  noticiasIniciales?: Noticia[] | { noticias: Noticia[]; total: number };
+  totalInicial?: number;
+  total?: number;
+};
+
 type RespuestaNoticias = {
   noticias: Noticia[];
   total: number;
@@ -22,20 +28,51 @@ function traerPagina(pagina: number): Promise<RespuestaNoticias> {
   );
 }
 
-function hayMasPaginas(pagina: number, data: RespuestaNoticias): boolean {
+function hayMasPaginas(
+  pagina: number,
+  data: { noticias: Noticia[]; total: number; porPagina: number }
+): boolean {
   return data.noticias.length > 0 && pagina * data.porPagina < data.total;
 }
 
-export default function NoticiasList() {
-  const [noticias, setNoticias] = useState<Noticia[] | null>(null);
+export default function NoticiasList({
+  noticiasIniciales,
+  totalInicial,
+  total,
+}: NoticiasListProps = {}) {
+  const listaInicial = Array.isArray(noticiasIniciales)
+    ? noticiasIniciales
+    : noticiasIniciales?.noticias ?? null;
+
+  const totalCalculado =
+    totalInicial ??
+    total ??
+    (noticiasIniciales && !Array.isArray(noticiasIniciales)
+      ? noticiasIniciales.total
+      : listaInicial
+        ? listaInicial.length
+        : 0);
+
+  const [noticias, setNoticias] = useState<Noticia[] | null>(listaInicial);
   const [pagina, setPagina] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
-  const [hayMas, setHayMas] = useState(false);
+  const [hayMas, setHayMas] = useState(() => {
+    if (listaInicial) {
+      return hayMasPaginas(1, {
+        noticias: listaInicial,
+        total: totalCalculado,
+        porPagina: POR_PAGINA,
+      });
+    }
+    return false;
+  });
 
   // Primera página: solo se toca estado dentro de los callbacks de la promesa
   // (nunca sincrónicamente en el cuerpo del efecto).
   useEffect(() => {
+    if (listaInicial) return;
+
     let cancelado = false;
     traerPagina(1)
       .then((data) => {
@@ -51,7 +88,7 @@ export default function NoticiasList() {
     return () => {
       cancelado = true;
     };
-  }, []);
+  }, [listaInicial]);
 
   const verMas = useCallback(() => {
     const siguiente = pagina + 1;

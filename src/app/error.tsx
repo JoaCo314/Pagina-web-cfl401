@@ -23,7 +23,7 @@ export default function ErrorGlobal({
       <SiteHeaderCliente
         sesionIniciada={false}
         logoUrl="/cfl401azul_logo.jpg"
-        logoAlt="CFL 401 Azul"
+        logoAlt="Logo institucional CFL 401 Azul — Centro de Formación Laboral"
       />
 
       <div className="page-header" id="contenido" tabIndex={-1} style={{ minHeight: "65vh", display: "flex", alignItems: "center" }}>

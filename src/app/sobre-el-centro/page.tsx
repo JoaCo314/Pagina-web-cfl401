@@ -3,6 +3,8 @@ import SiteFooter from "@/components/SiteFooter";
 import HtmlEnriquecido from "@/components/HtmlEnriquecido";
 import { prisma } from "@/lib/prisma";
 import { sanitizarHtmlLectura } from "@/lib/htmlEnriquecido";
+import type { Metadata } from "next";
+import { DEFAULT_OG_IMAGE, NOMBRE_SITIO, urlSitio } from "@/lib/meta";
 import {
   SOBRE_SELECT,
   leerGaleria,
@@ -10,10 +12,35 @@ import {
   leerEstadisticas,
 } from "@/lib/sobreElCentro";
 
-export const metadata = {
-  title: "Sobre el Centro",
-  description:
-    "Historia, misión y datos del Centro de Formación Laboral N° 401 de Azul: recorré la trayectoria de la institución.",
+const title = "Sobre el Centro";
+const description =
+  "Historia, misión y datos del Centro de Formación Laboral N° 401 de Azul: recorré la trayectoria de la institución.";
+
+export const metadata: Metadata = {
+  title,
+  description,
+  alternates: {
+    canonical: "/sobre-el-centro",
+  },
+  openGraph: {
+    title,
+    description,
+    url: `${urlSitio()}/sobre-el-centro`,
+    images: [
+      {
+        url: DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: `${title} — ${NOMBRE_SITIO}`,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
 
 export const dynamic = "force-dynamic";
@@ -48,8 +75,9 @@ export default async function SobreElCentroPage() {
     <>
       <SiteHeader active="sobre" />
 
-      <div className="page-header" id="contenido" tabIndex={-1}>
-        <div className="wrap">
+      <main id="contenido" tabIndex={-1}>
+        <div className="page-header">
+          <div className="wrap">
           <h1>Sobre el Centro</h1>
           {sobre?.intro ? (
             <HtmlEnriquecido
@@ -170,7 +198,11 @@ export default async function SobreElCentroPage() {
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={foto.url}
-                        alt={foto.leyenda || "Foto histórica del CFL 401"}
+                        alt={
+                          foto.leyenda
+                            ? `${foto.leyenda} — CFL 401 Azul`
+                            : "Instalaciones y actividades del CFL 401 Azul"
+                        }
                         loading="lazy"
                       />
                       {foto.leyenda ? (
@@ -184,6 +216,8 @@ export default async function SobreElCentroPage() {
           )}
         </>
       )}
+
+      </main>
 
       <SiteFooter />
     </>

@@ -11,12 +11,17 @@ export default async function SiteHeader({ active }: SiteHeaderProps) {
   const user = await getCurrentUser();
   const config = await getSiteConfig().catch(() => null);
 
+  const logoAlt =
+    config?.logoAlt && config.logoAlt.trim() !== "" && config.logoAlt !== "CFL 401 Azul"
+      ? config.logoAlt
+      : "Logo institucional CFL 401 Azul — Centro de Formación Laboral";
+
   return (
     <SiteHeaderCliente
       active={active}
       sesionIniciada={user !== null}
       logoUrl={config?.logoUrl ?? "/cfl401azul_logo.jpg"}
-      logoAlt={config?.logoAlt ?? "CFL 401 Azul"}
+      logoAlt={logoAlt}
       telefono={config?.contactoTelefono ?? null}
     />
   );
